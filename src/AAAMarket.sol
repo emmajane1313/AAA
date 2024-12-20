@@ -5,12 +5,16 @@ import "./AAALibrary.sol";
 import "./AAANFT.sol";
 import "./AAAAccessControls.sol";
 import "./AAACollectionManager.sol";
+import "./AAAAgents.sol";
+import "./AAADevTreasury.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract AAAMarket {
     AAANFT public nft;
     AAACollectionManager public collectionManager;
     AAAAccessControls public accessControls;
+    AAAAgents public agents;
+    AAADevTreasury public devTreasury;
 
     event CollectionPurchased(
         uint256 indexed collectionId,
@@ -29,11 +33,13 @@ contract AAAMarket {
     constructor(
         address _nft,
         address _collectionManager,
-        address _accessControls
+        address _accessControls,
+        address _agents
     ) {
         nft = AAANFT(_nft);
         collectionManager = AAACollectionManager(_collectionManager);
         accessControls = AAAAccessControls(_accessControls);
+        agents = AAAAgents(_agents);
     }
 
     function buy(
@@ -69,11 +75,45 @@ contract AAAMarket {
         }
 
         uint256 _totalPrice = _tokenPrice * amount;
+        uint256 _artistShare = _totalPrice;
+        uint256 _perAgentShare = 0;
+        uint256 _agentShare = 0;
+        if (
+            collectionManager.getCollectionAmountSold(collectionId) > 1 &&
+            collectionManager.getCollectionPrices(collectionId)[0] >
+            accessControls.getTokenThreshold(paymentToken)
+        ) {
+            _agentShare = (_totalPrice * 10) / 100;
+            _perAgentShare =
+                _agentShare /
+                collectionManager.getCollectionAgentIds(collectionId).length;
+            _artistShare = _totalPrice - _agentShare;
+        }
+
+        devTreasury.receiveFunds(msg.sender, paymentToken, _agentShare);
+
+        for (
+            uint256 i = 0;
+            i < collectionManager.getCollectionAgentIds(collectionId).length;
+            i++
+        ) {
+            uint256 _agentId = collectionManager.getCollectionAgentIds(
+                collectionId
+            )[i];
+
+            agents.addBalance(
+                paymentToken,
+                _agentId,
+                _perAgentShare,
+                collectionId
+            );
+        }
+
         if (
             !IERC20(paymentToken).transferFrom(
                 msg.sender,
                 collectionManager.getCollectionArtist(collectionId),
-                _totalPrice
+                _artistShare
             )
         ) {
             revert AAAErrors.PaymentFailed();
@@ -107,5 +147,13 @@ contract AAAMarket {
 
     function setAccessControls(address _accessControls) external onlyAdmin {
         accessControls = AAAAccessControls(_accessControls);
+    }
+
+    function setAgents(address _agents) external onlyAdmin {
+        agents = AAAAgents(_agents);
+    }
+
+    function setDevTreasury(address _devTreasury) external onlyAdmin {
+        devTreasury = AAADevTreasury(_devTreasury);
     }
 }

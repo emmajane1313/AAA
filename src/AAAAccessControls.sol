@@ -4,66 +4,124 @@ pragma solidity ^0.8.28;
 import "./AAAErrors.sol";
 
 contract AAAAccessControls {
-    mapping(address => bool) public admins;
-    mapping(address => bool) public agents;
+    address public agentsContract;
+    mapping(address => bool) private _admins;
+    mapping(address => bool) private _agents;
+    mapping(address => uint256) private _thresholds;
+    mapping(address => bool) private _acceptedTokens;
 
     event AdminAdded(address indexed admin);
     event AdminRemoved(address indexed admin);
     event AgentAdded(address indexed agent);
     event AgentRemoved(address indexed agent);
+    event AcceptedTokenSet(address token);
+    event AcceptedTokenRemoved(address token);
+    event TokenThresholdSet(address token, uint256 threshold);
 
     modifier onlyAdmin() {
-        require(admins[msg.sender], "Not an admin");
+        if (!_admins[msg.sender]) {
+            revert AAAErrors.NotAdmin();
+        }
+        _;
+    }
+
+    modifier onlyAgentContract() {
+        if (msg.sender != agentsContract) {
+            revert AAAErrors.OnlyAgentContract();
+        }
         _;
     }
 
     constructor() {
-        admins[msg.sender] = true;
+        _admins[msg.sender] = true;
         emit AdminAdded(msg.sender);
     }
 
-    function addAdmin(address _admin) external onlyAdmin {
-        if (admins[_admin]) {
+    function addAdmin(address admin) external onlyAdmin {
+        if (_admins[admin]) {
             revert AAAErrors.AdminAlreadyExists();
         }
-        admins[_admin] = true;
-        emit AdminAdded(_admin);
+        _admins[admin] = true;
+        emit AdminAdded(admin);
     }
 
-    function removeAdmin(address _admin) external onlyAdmin {
-        if (!admins[_admin]) {
+    function removeAdmin(address admin) external onlyAdmin {
+        if (!_admins[admin]) {
             revert AAAErrors.AdminDoesntExist();
         }
 
-        if (_admin == msg.sender) {
+        if (admin == msg.sender) {
             revert AAAErrors.CannotRemoveSelf();
         }
 
-        admins[_admin] = false;
-        emit AdminRemoved(_admin);
+        _admins[admin] = false;
+        emit AdminRemoved(admin);
     }
 
-    function addAgent(address _agent) external onlyAdmin {
-        if (agents[_agent]) {
+    function addAgent(address agent) external onlyAgentContract {
+        if (_agents[agent]) {
             revert AAAErrors.AgentAlreadyExists();
         }
-        agents[_agent] = true;
-        emit AgentAdded(_agent);
+        _agents[agent] = true;
+        emit AgentAdded(agent);
     }
 
-    function removeAgent(address _agent) external onlyAdmin {
-        if (!agents[_agent]) {
+    function removeAgent(address agent) external onlyAgentContract {
+        if (!_agents[agent]) {
             revert AAAErrors.AgentDoesntExist();
         }
-        agents[_agent] = false;
-        emit AgentRemoved(_agent);
+        _agents[agent] = false;
+        emit AgentRemoved(agent);
     }
 
-    function isAdmin(address _address) external view returns (bool) {
-        return admins[_address];
+    function setAcceptedToken(address token) external {
+        if (_acceptedTokens[token]) {
+            revert AAAErrors.TokenAlreadyExists();
+        }
+
+        _acceptedTokens[token] = true;
+
+        emit AcceptedTokenSet(token);
     }
 
-    function isAgent(address _address) external view returns (bool) {
-        return agents[_address];
+    function setTokenThreshold(address token, uint256 threshold) external {
+        if (!_acceptedTokens[token]) {
+            revert AAAErrors.TokenNotAccepted();
+        }
+
+        _thresholds[token] = threshold;
+
+        emit TokenThresholdSet(token, threshold);
+    }
+
+    function removeAcceptedToken(address token) external {
+        if (_acceptedTokens[token]) {
+            revert AAAErrors.TokenAlreadyExists();
+        }
+
+        delete _acceptedTokens[token];
+        delete _thresholds[token];
+
+        emit AcceptedTokenRemoved(token);
+    }
+
+    function isAdmin(address _address) public view returns (bool) {
+        return _admins[_address];
+    }
+
+    function isAgent(address _address) public view returns (bool) {
+        return _agents[_address];
+    }
+
+    function isAcceptedToken(address token) public view returns (bool) {
+        return _acceptedTokens[token];
+    }
+
+    function getTokenThreshold(address token) public view returns (uint256) {
+        return _thresholds[token];
+    }
+
+    function setAgentContract(address _agentsContract) public onlyAdmin {
+        agentsContract = _agentsContract;
     }
 }

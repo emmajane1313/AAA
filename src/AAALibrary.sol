@@ -28,4 +28,11 @@ contract AAALibrary {
         string metadata;
         uint256 amount;
     }
+
+    struct Agent {
+        uint256[] collectionIdsHistory;
+        string metadata;
+        address wallet;
+        uint256 id;
+    }
 }
