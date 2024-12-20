@@ -6,7 +6,6 @@ import "./AAAErrors.sol";
 import "./AAAAccessControls.sol";
 
 contract AAACollectionManager {
-    mapping(uint256 => uint256[]) private _collectionIdsByDropId;
     mapping(address => uint256[]) private _dropIdsByArtist;
     mapping(uint256 => AAALibrary.Collection) private _collections;
     mapping(uint256 => AAALibrary.Drop) private _drops;
@@ -22,6 +21,8 @@ contract AAACollectionManager {
         uint256 indexed dropId
     );
     event DropCreated(address artist, uint256 indexed dropId);
+    event DropDeleted(address artist, uint256 indexed dropId);
+    event CollectionDeleted(address artist, uint256 indexed collectionId);
 
     modifier onlyMarket() {
         if (market != msg.sender) {
@@ -85,11 +86,78 @@ contract AAACollectionManager {
             });
 
             _collectionIds[i] = _collectionCounter;
-            _collectionIdsByDropId[_dropValue].push(_collectionCounter);
             _drops[_dropValue].collectionIds.push(_collectionCounter);
         }
 
         emit CollectionsCreated(_collectionIds, msg.sender, _dropValue);
+    }
+
+    function deleteCollection(uint256 collectionId) external {
+        if (_collections[collectionId].artist != msg.sender) {
+            revert AAAErrors.NotArtist();
+        }
+
+        if (_collections[collectionId].amountSold > 0) {
+            revert AAAErrors.CantDeleteSoldCollection();
+        }
+
+        uint256 _dropId = _collections[collectionId].dropId;
+
+        uint256[] storage collectionIds = _drops[_dropId].collectionIds;
+        for (uint256 i = 0; i < collectionIds.length; i++) {
+            if (collectionIds[i] == collectionId) {
+                collectionIds[i] = collectionIds[collectionIds.length - 1];
+                collectionIds.pop();
+                break;
+            }
+        }
+
+        if (collectionIds.length == 0) {
+            address artist = _drops[_dropId].artist;
+            uint256[] storage dropIds = _dropIdsByArtist[artist];
+            for (uint256 i = 0; i < dropIds.length; i++) {
+                if (dropIds[i] == _dropId) {
+                    dropIds[i] = dropIds[dropIds.length - 1];
+                    dropIds.pop();
+                    break;
+                }
+            }
+
+            delete _drops[_dropId];
+        }
+
+        delete _collections[collectionId];
+
+        emit CollectionDeleted(msg.sender, collectionId);
+    }
+
+    function deleteDrop(uint256 dropId) external {
+        if (_drops[dropId].artist != msg.sender) {
+            revert AAAErrors.NotArtist();
+        }
+
+        uint256[] storage collectionIds = _drops[dropId].collectionIds;
+        for (uint256 i = 0; i < collectionIds.length; i++) {
+            uint256 collectionId = collectionIds[i];
+            if (_collections[collectionId].amountSold > 0) {
+                revert AAAErrors.CantDeleteSoldCollection();
+            }
+            delete _collections[collectionId];
+        }
+
+        delete _drops[dropId];
+
+        uint256[] storage dropIds = _dropIdsByArtist[msg.sender];
+        for (uint256 i = 0; i < dropIds.length; i++) {
+            if (dropIds[i] == dropId) {
+                if (i != dropIds.length - 1) {
+                    dropIds[i] = dropIds[dropIds.length - 1];
+                }
+                dropIds.pop();
+                break;
+            }
+        }
+        emit DropDeleted(msg.sender, dropId);
     }
 
     function updateData(
@@ -111,10 +179,10 @@ contract AAACollectionManager {
         return _dropCounter;
     }
 
-    function getCollectionIdsByDropId(
+    function getDropCollectionIds(
         uint256 dropId
     ) public view returns (uint256[] memory) {
-        return _collectionIdsByDropId[dropId];
+        return _drops[dropId].collectionIds;
     }
 
     function getDropIdsByArtist(
@@ -174,7 +242,7 @@ contract AAACollectionManager {
     function getCollectionAmountSold(
         uint256 _collectionId
     ) public view returns (uint256) {
-        return _collections[_collectionId].amount;
+        return _collections[_collectionId].amountSold;
     }
 
     function setMarket(address _market) external onlyAdmin {
@@ -185,4 +253,3 @@ contract AAACollectionManager {
         accessControls = AAAAccessControls(_accessControls);
     }
 }
-

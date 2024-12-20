@@ -15,6 +15,8 @@ contract AAAErrors {
     error OnlyMarketplaceContract();
     error ZeroAddress();
     error InvalidAmount();
+    error NotArtist();
+    error CantDeleteSoldCollection();
 
 
     error NotAvailable();
