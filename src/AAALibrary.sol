@@ -17,6 +17,7 @@ contract AAALibrary {
 
     struct Drop {
         uint256[] collectionIds;
+        string metadata;
         address artist;
         uint256 id;
     }

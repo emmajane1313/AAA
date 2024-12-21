@@ -12,6 +12,8 @@ export default {
         morado: "#D076E6",
         crema: "#E8E8E8",
         ligero: "#E3DADA",
+        cielo: "#4888BC",
+        oscuro: "#58789A",
       },
     },
   },

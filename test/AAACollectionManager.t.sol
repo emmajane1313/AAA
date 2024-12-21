@@ -39,36 +39,37 @@ contract AAACollectionManagerTest is Test {
 
     function testCreateDropAndCollections() public {
         vm.startPrank(artist);
-        AAALibrary.CollectionInput[]
-            memory inputs = new AAALibrary.CollectionInput[](2);
-        inputs[0] = AAALibrary.CollectionInput({
-            tokens: new address[](2),
-            prices: new uint256[](2),
-            agentIds: new uint256[](3),
-            metadata: "Metadata 1",
-            amount: 1
-        });
-        inputs[0].tokens[0] = address(token1);
-        inputs[0].tokens[1] = address(token2);
-        inputs[0].prices[0] = 10000000000000000000;
-        inputs[0].prices[1] = 25000000000000000000;
-        inputs[0].agentIds[0] = 1;
-        inputs[0].agentIds[1] = 3;
-        inputs[0].agentIds[2] = 5;
+        AAALibrary.CollectionInput memory inputs_1 = AAALibrary
+            .CollectionInput({
+                tokens: new address[](2),
+                prices: new uint256[](2),
+                agentIds: new uint256[](3),
+                metadata: "Metadata 1",
+                amount: 1
+            });
+        inputs_1.tokens[0] = address(token1);
+        inputs_1.tokens[1] = address(token2);
+        inputs_1.prices[0] = 10000000000000000000;
+        inputs_1.prices[1] = 25000000000000000000;
+        inputs_1.agentIds[0] = 1;
+        inputs_1.agentIds[1] = 3;
+        inputs_1.agentIds[2] = 5;
 
-        inputs[1] = AAALibrary.CollectionInput({
-            tokens: new address[](1),
-            prices: new uint256[](1),
-            agentIds: new uint256[](1),
-            metadata: "Metadata 2",
-            amount: 10
-        });
+        AAALibrary.CollectionInput memory inputs_2 = AAALibrary
+            .CollectionInput({
+                tokens: new address[](1),
+                prices: new uint256[](1),
+                agentIds: new uint256[](1),
+                metadata: "Metadata 2",
+                amount: 10
+            });
 
-        inputs[1].tokens[0] = address(token2);
-        inputs[1].prices[0] = 13200000000000000000;
-        inputs[1].agentIds[0] = 3;
+        inputs_2.tokens[0] = address(token2);
+        inputs_2.prices[0] = 13200000000000000000;
+        inputs_2.agentIds[0] = 3;
 
-        collectionManager.create(inputs, 0);
+        collectionManager.create(inputs_1, 0);
+        collectionManager.create(inputs_2, 1);
 
         uint256[] memory dropIds = collectionManager.getDropIdsByArtist(artist);
         assertEq(dropIds.length, 1);
@@ -142,38 +143,40 @@ contract AAACollectionManagerTest is Test {
         testCreateDropAndCollections();
 
         vm.startPrank(artist);
-        AAALibrary.CollectionInput[]
-            memory inputs = new AAALibrary.CollectionInput[](2);
-        inputs[0] = AAALibrary.CollectionInput({
-            tokens: new address[](2),
-            prices: new uint256[](2),
-            agentIds: new uint256[](3),
-            metadata: "Metadata 3",
-            amount: 1
-        });
-        inputs[0].tokens[0] = address(token1);
-        inputs[0].tokens[1] = address(token2);
-        inputs[0].prices[0] = 10000000000000000000;
-        inputs[0].prices[1] = 25000000000000000000;
-        inputs[0].agentIds[0] = 1;
-        inputs[0].agentIds[1] = 3;
-        inputs[0].agentIds[2] = 5;
+        AAALibrary.CollectionInput memory inputs_1 = AAALibrary
+            .CollectionInput({
+                tokens: new address[](2),
+                prices: new uint256[](2),
+                agentIds: new uint256[](3),
+                metadata: "Metadata 2",
+                amount: 1
+            });
+        inputs_1.tokens[0] = address(token1);
+        inputs_1.tokens[1] = address(token2);
+        inputs_1.prices[0] = 10000000000000000000;
+        inputs_1.prices[1] = 25000000000000000000;
+        inputs_1.agentIds[0] = 1;
+        inputs_1.agentIds[1] = 3;
+        inputs_1.agentIds[2] = 5;
 
-        inputs[1] = AAALibrary.CollectionInput({
-            tokens: new address[](1),
-            prices: new uint256[](1),
-            agentIds: new uint256[](1),
-            metadata: "Metadata 4",
-            amount: 10
-        });
+        AAALibrary.CollectionInput memory inputs_2 = AAALibrary
+            .CollectionInput({
+                tokens: new address[](1),
+                prices: new uint256[](1),
+                agentIds: new uint256[](1),
+                metadata: "Metadata 3",
+                amount: 10
+            });
 
-        inputs[1].tokens[0] = address(token2);
-        inputs[1].prices[0] = 13200000000000000000;
-        inputs[1].agentIds[0] = 3;
+        inputs_2.tokens[0] = address(token2);
+        inputs_2.prices[0] = 13200000000000000000;
+        inputs_2.agentIds[0] = 3;
 
-        collectionManager.create(inputs, 1);
+        collectionManager.create(inputs_1, 1);
+        collectionManager.create(inputs_2, 1);
 
         uint256[] memory dropIds = collectionManager.getDropIdsByArtist(artist);
+
         assertEq(dropIds.length, 1);
         assertEq(dropIds[0], 1);
 
@@ -183,7 +186,7 @@ contract AAACollectionManagerTest is Test {
         assertEq(collectionIds.length, 4);
 
         vm.expectRevert(abi.encodeWithSelector(AAAErrors.DropInvalid.selector));
-        collectionManager.create(inputs, 2);
+        collectionManager.create(inputs_1, 2);
     }
 
     function testDeleteCollection() public {
@@ -224,7 +227,6 @@ contract AAACollectionManagerTest is Test {
 
         vm.startPrank(artist);
         collectionManager.deleteDrop(1);
-
 
         uint256[] memory dropIds = collectionManager.getDropIdsByArtist(artist);
         assertEq(dropIds.length, 0);

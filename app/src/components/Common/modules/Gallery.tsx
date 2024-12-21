@@ -1,14 +1,16 @@
 import { FunctionComponent, JSX } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useGallery from "../hooks/useGallery";
-import Image from "next/image";
+import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { NFTData } from "../types/common.types";
+import { useRouter } from "next/navigation";
 
 const Gallery: FunctionComponent = (): JSX.Element => {
   const { fetchMoreNFTs, nfts, getRandomSize, hasMore, loading } = useGallery();
+  const router = useRouter();
   return (
-    <div className="w-full h-full overflow-y-scroll">
+    <div className="relative w-full h-full overflow-y-scroll pb-10">
       <InfiniteScroll
         dataLength={nfts.length}
         next={fetchMoreNFTs}
@@ -22,6 +24,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
                 <div
                   key={(nft as NFTData).id}
                   className={`${getRandomSize()} bg-gray-200 flex relative cursor-pointer rounded-md shadow-sm border border-ligero`}
+                  onClick={() => router.push(`/nft/${(nft as NFTData)?.id}`)}
                 >
                   <Image
                     src={`${INFURA_GATEWAY}/ipfs/${(nft as NFTData).url}`}

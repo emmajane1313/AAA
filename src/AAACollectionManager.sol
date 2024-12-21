@@ -16,8 +16,8 @@ contract AAACollectionManager {
     AAAAccessControls public accessControls;
 
     event CollectionsCreated(
-        uint256[] collectionIds,
         address artist,
+        uint256 collectionId,
         uint256 indexed dropId
     );
     event DropCreated(address artist, uint256 indexed dropId);
@@ -43,12 +43,10 @@ contract AAACollectionManager {
     }
 
     function create(
-        AAALibrary.CollectionInput[] memory collectionInputs,
+        AAALibrary.CollectionInput memory collectionInput,
+        string memory dropMetadata,
         uint256 dropId
     ) external {
-        uint256[] memory _collectionIds = new uint256[](
-            collectionInputs.length
-        );
         uint256 _dropValue = dropId;
 
         if (_dropValue == 0) {
@@ -58,7 +56,8 @@ contract AAACollectionManager {
             _drops[_dropValue] = AAALibrary.Drop({
                 id: _dropValue,
                 artist: msg.sender,
-                collectionIds: new uint256[](0)
+                collectionIds: new uint256[](0),
+                metadata: dropMetadata
             });
 
             _dropIdsByArtist[msg.sender].push(_dropValue);
@@ -68,28 +67,23 @@ contract AAACollectionManager {
                 revert AAAErrors.DropInvalid();
             }
         }
+        _collectionCounter++;
 
-        for (uint256 i = 0; i < collectionInputs.length; i++) {
-            _collectionCounter++;
+        _collections[_collectionCounter] = AAALibrary.Collection({
+            id: _collectionCounter,
+            dropId: _dropValue,
+            erc20Tokens: collectionInput.tokens,
+            prices: collectionInput.prices,
+            agentIds: collectionInput.agentIds,
+            metadata: collectionInput.metadata,
+            artist: msg.sender,
+            amount: collectionInput.amount,
+            tokenIds: new uint256[](0),
+            amountSold: 0
+        });
 
-            _collections[_collectionCounter] = AAALibrary.Collection({
-                id: _collectionCounter,
-                dropId: _dropValue,
-                erc20Tokens: collectionInputs[i].tokens,
-                prices: collectionInputs[i].prices,
-                agentIds: collectionInputs[i].agentIds,
-                metadata: collectionInputs[i].metadata,
-                artist: msg.sender,
-                amount: collectionInputs[i].amount,
-                tokenIds: new uint256[](0),
-                amountSold: 0
-            });
-
-            _collectionIds[i] = _collectionCounter;
-            _drops[_dropValue].collectionIds.push(_collectionCounter);
-        }
-
-        emit CollectionsCreated(_collectionIds, msg.sender, _dropValue);
+        _drops[_dropValue].collectionIds.push(_collectionCounter);
+        emit CollectionsCreated(msg.sender, _collectionCounter, _dropValue);
     }
 
     function deleteCollection(uint256 collectionId) external {
@@ -183,6 +177,12 @@ contract AAACollectionManager {
         uint256 dropId
     ) public view returns (uint256[] memory) {
         return _drops[dropId].collectionIds;
+    }
+
+    function getDropMetadata(
+        uint256 dropId
+    ) public view returns (string memory) {
+        return _drops[dropId].metadata;
     }
 
     function getDropIdsByArtist(

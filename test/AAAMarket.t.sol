@@ -69,20 +69,21 @@ contract AAAMarketTest is Test {
 
     function testBuyCollection() public {
         vm.startPrank(artist);
-        AAALibrary.CollectionInput[]
-            memory inputs = new AAALibrary.CollectionInput[](1);
-        inputs[0] = AAALibrary.CollectionInput({
-            tokens: new address[](1),
-            prices: new uint256[](1),
-            agentIds: new uint256[](1),
-            metadata: "Metadata 1",
-            amount: 5
-        });
-        inputs[0].tokens[0] = address(token1);
-        inputs[0].prices[0] = 10 ether;
-        inputs[0].agentIds[0] = 1;
 
-        collectionManager.create(inputs, 0);
+        AAALibrary.CollectionInput memory inputs_1 = AAALibrary
+            .CollectionInput({
+                tokens: new address[](1),
+                prices: new uint256[](1),
+                agentIds: new uint256[](1),
+                metadata: "Metadata 1",
+                amount: 5
+            });
+
+        inputs_1.tokens[0] = address(token1);
+        inputs_1.prices[0] = 10 ether;
+        inputs_1.agentIds[0] = 1;
+
+        collectionManager.create(inputs_1, 0);
         vm.stopPrank();
 
         token1.mint(buyer, 100 ether);
@@ -109,20 +110,21 @@ contract AAAMarketTest is Test {
 
     function testBuyWithInvalidToken() public {
         vm.startPrank(artist);
-        AAALibrary.CollectionInput[]
-            memory inputs = new AAALibrary.CollectionInput[](1);
-        inputs[0] = AAALibrary.CollectionInput({
-            tokens: new address[](1),
-            prices: new uint256[](1),
-            agentIds: new uint256[](1),
-            metadata: "Metadata 2",
-            amount: 5
-        });
-        inputs[0].tokens[0] = address(token1);
-        inputs[0].prices[0] = 10 ether;
-        inputs[0].agentIds[0] = 1;
 
-        collectionManager.create(inputs, 0);
+        AAALibrary.CollectionInput memory inputs_1 = AAALibrary
+            .CollectionInput({
+                tokens: new address[](1),
+                prices: new uint256[](1),
+                agentIds: new uint256[](1),
+                metadata: "Metadata 2",
+                amount: 5
+            });
+
+        inputs_1.tokens[0] = address(token1);
+        inputs_1.prices[0] = 10 ether;
+        inputs_1.agentIds[0] = 1;
+
+        collectionManager.create(inputs_1, 0);
         vm.stopPrank();
 
         token2.mint(buyer, 100 ether);
@@ -148,20 +150,21 @@ contract AAAMarketTest is Test {
     function testBuyCollectionOverThreshold() public {
         createAgent();
         vm.startPrank(artist);
-        AAALibrary.CollectionInput[]
-            memory inputs = new AAALibrary.CollectionInput[](1);
-        inputs[0] = AAALibrary.CollectionInput({
-            tokens: new address[](1),
-            prices: new uint256[](1),
-            agentIds: new uint256[](1),
-            metadata: "Metadata Over Threshold",
-            amount: 10
-        });
-        inputs[0].tokens[0] = address(token1);
-        inputs[0].prices[0] = 70 ether;
-        inputs[0].agentIds[0] = 1;
 
-        collectionManager.create(inputs, 0);
+        AAALibrary.CollectionInput memory inputs_1 = AAALibrary
+            .CollectionInput({
+                tokens: new address[](1),
+                prices: new uint256[](1),
+                agentIds: new uint256[](1),
+                metadata: "Metadata Over Threshold",
+                amount: 10
+            });
+
+        inputs_1.tokens[0] = address(token1);
+        inputs_1.prices[0] = 70 ether;
+        inputs_1.agentIds[0] = 1;
+
+        collectionManager.create(inputs_1, 0);
         vm.stopPrank();
 
         token1.mint(buyer, 250 ether);
@@ -184,22 +187,16 @@ contract AAAMarketTest is Test {
 
         uint256 totalPrice = 70 ether * 2;
         uint256 agentShare = (totalPrice * 10) / 100;
-        uint256 artistShare = totalPrice - agentShare; 
-        uint256 perAgentShare = agentShare; 
+        uint256 artistShare = totalPrice - agentShare;
+        uint256 perAgentShare = agentShare;
 
         uint256 buyerExpectedBalance = buyerInitialBalance - totalPrice;
         uint256 artistExpectedBalance = artistInitialBalance + artistShare;
         uint256 devTreasuryExpectedBalance = devTreasuryInitialBalance +
             agentShare;
 
-        assertEq(
-            token1.balanceOf(buyer),
-            buyerExpectedBalance
-        );
-        assertEq(
-            token1.balanceOf(artist),
-            artistExpectedBalance
-        );
+        assertEq(token1.balanceOf(buyer), buyerExpectedBalance);
+        assertEq(token1.balanceOf(artist), artistExpectedBalance);
         assertEq(
             token1.balanceOf(address(devTreasury)),
             devTreasuryExpectedBalance
