@@ -95,8 +95,8 @@ contract AAAAccessControls {
     }
 
     function removeAcceptedToken(address token) external {
-        if (_acceptedTokens[token]) {
-            revert AAAErrors.TokenAlreadyExists();
+        if (!_acceptedTokens[token]) {
+            revert AAAErrors.TokenDoesntExist();
         }
 
         delete _acceptedTokens[token];
@@ -121,7 +121,7 @@ contract AAAAccessControls {
         return _thresholds[token];
     }
 
-    function setAgentContract(address _agentsContract) public onlyAdmin {
+    function setAgentsContract(address _agentsContract) public onlyAdmin {
         agentsContract = _agentsContract;
     }
 }

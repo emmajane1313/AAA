@@ -34,10 +34,8 @@ contract AAANFT is ERC721 {
     constructor(
         string memory name,
         string memory symbol,
-        address _marketplace,
         address _accessControls
     ) ERC721(name, symbol) {
-        marketplace = _marketplace;
         accessControls = AAAAccessControls(_accessControls);
     }
 

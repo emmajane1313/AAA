@@ -39,6 +39,10 @@ contract AAADevTreasury {
         address paymentToken,
         uint256 amount
     ) external {
+        if (IERC20(paymentToken).balanceOf(buyer) < amount) {
+            revert AAAErrors.InsufficientBalance();
+        }
+
         _balance[paymentToken] += amount;
 
         if (!IERC20(paymentToken).transferFrom(buyer, address(this), amount)) {

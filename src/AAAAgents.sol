@@ -37,14 +37,9 @@ contract AAAAgents {
         _;
     }
 
-    constructor(
-        address _accessControls,
-        address _market,
-        address _devTreasury
-    ) {
+    constructor(address _accessControls, address _devTreasury) {
         accessControls = AAAAccessControls(_accessControls);
         devTreasury = AAADevTreasury(_devTreasury);
-        market = _market;
     }
 
     function createAgent(
@@ -59,6 +54,8 @@ contract AAAAgents {
             wallet: wallet,
             collectionIdsHistory: new uint256[](0)
         });
+
+        accessControls.addAgent(wallet);
 
         emit AgentCreated(wallet, msg.sender, _agentCounter);
     }
@@ -79,6 +76,7 @@ contract AAAAgents {
     }
 
     function deleteAgent(uint256 agentId) external onlyAdmin {
+        accessControls.removeAgent(_agents[agentId].wallet);
         delete _agents[agentId];
 
         emit AgentDeleted(_agentCounter);

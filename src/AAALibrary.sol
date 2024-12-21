@@ -35,4 +35,13 @@ contract AAALibrary {
         address wallet;
         uint256 id;
     }
+
+    struct Order {
+        uint256[] mintedTokens;
+        uint256 collectionId;
+        address token;
+        uint256 amount;
+        uint256 totalPrice;
+        uint256 id;
+    }
 }
