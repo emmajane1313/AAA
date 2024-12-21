@@ -6,6 +6,9 @@ import Drop from "./Drop";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY, TOKENS } from "@/lib/constants";
 import ChooseAgent from "./ChooseAgent";
+import { createPublicClient, http } from "viem";
+import { useAccount } from "wagmi";
+import { chains } from "@lens-network/sdk/viem";
 
 const MintSwitch: FunctionComponent<MintSwitchProps> = ({
   mintSwitcher,
@@ -14,8 +17,13 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
   agents,
   allDrops,
 }): JSX.Element => {
+  const { address } = useAccount();
+  const publicClient = createPublicClient({
+    chain: chains.testnet,
+    transport: http(),
+  });
   const { handleMint, mintLoading, mintData, setMintData, agentsLoading } =
-    useMint(agents, setAgents);
+    useMint(agents, setAgents, publicClient, address);
 
   switch (mintSwitcher) {
     case MintSwitcher.Agent:

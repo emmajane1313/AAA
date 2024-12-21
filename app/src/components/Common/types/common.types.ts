@@ -7,4 +7,8 @@ export interface NFTData {
   prices: string[];
   tokens: string[];
   agents: string[];
+  artist: string;
+  amountSold: number;
+  tokenIds: string[];
+  amount: number;
 }

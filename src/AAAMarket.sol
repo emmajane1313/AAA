@@ -80,6 +80,20 @@ contract AAAMarket {
             _artistShare = _totalPrice - _agentShare;
         }
 
+        if (IERC20(paymentToken).balanceOf(msg.sender) < amount) {
+            revert AAAErrors.InsufficientBalance();
+        }
+
+        if (
+            !IERC20(paymentToken).transferFrom(
+                msg.sender,
+                address(devTreasury),
+                amount
+            )
+        ) {
+            revert AAAErrors.PaymentFailed();
+        }
+
         devTreasury.receiveFunds(msg.sender, paymentToken, _agentShare);
         if (_agentShare > 0) {
             for (

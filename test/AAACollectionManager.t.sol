@@ -68,8 +68,8 @@ contract AAACollectionManagerTest is Test {
         inputs_2.prices[0] = 13200000000000000000;
         inputs_2.agentIds[0] = 3;
 
-        collectionManager.create(inputs_1, 0);
-        collectionManager.create(inputs_2, 1);
+        collectionManager.create(inputs_1, "some drop URI", 0);
+        collectionManager.create(inputs_2, "", 1);
 
         uint256[] memory dropIds = collectionManager.getDropIdsByArtist(artist);
         assertEq(dropIds.length, 1);
@@ -172,8 +172,8 @@ contract AAACollectionManagerTest is Test {
         inputs_2.prices[0] = 13200000000000000000;
         inputs_2.agentIds[0] = 3;
 
-        collectionManager.create(inputs_1, 1);
-        collectionManager.create(inputs_2, 1);
+        collectionManager.create(inputs_1, "", 1);
+        collectionManager.create(inputs_2, "", 1);
 
         uint256[] memory dropIds = collectionManager.getDropIdsByArtist(artist);
 
@@ -186,7 +186,7 @@ contract AAACollectionManagerTest is Test {
         assertEq(collectionIds.length, 4);
 
         vm.expectRevert(abi.encodeWithSelector(AAAErrors.DropInvalid.selector));
-        collectionManager.create(inputs_1, 2);
+        collectionManager.create(inputs_1, "", 2);
     }
 
     function testDeleteCollection() public {

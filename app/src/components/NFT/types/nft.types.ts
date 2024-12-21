@@ -9,5 +9,10 @@ export type DataProps = {
 
 export type PurchaseProps = {
   nft: NFTData;
-
+  nftLoading: boolean
 };
+
+export interface CollectData {
+  amount: number;
+  token: string;
+}

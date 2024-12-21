@@ -64,6 +64,7 @@ contract AAAMarketTest is Test {
             address(token2),
             100000000000000000000
         );
+        devTreasury.setMarket(address(market));
         vm.stopPrank();
     }
 
@@ -83,7 +84,7 @@ contract AAAMarketTest is Test {
         inputs_1.prices[0] = 10 ether;
         inputs_1.agentIds[0] = 1;
 
-        collectionManager.create(inputs_1, 0);
+        collectionManager.create(inputs_1, "some drop uri", 0);
         vm.stopPrank();
 
         token1.mint(buyer, 100 ether);
@@ -124,7 +125,7 @@ contract AAAMarketTest is Test {
         inputs_1.prices[0] = 10 ether;
         inputs_1.agentIds[0] = 1;
 
-        collectionManager.create(inputs_1, 0);
+        collectionManager.create(inputs_1, "some 2 drop", 0);
         vm.stopPrank();
 
         token2.mint(buyer, 100 ether);
@@ -164,7 +165,7 @@ contract AAAMarketTest is Test {
         inputs_1.prices[0] = 70 ether;
         inputs_1.agentIds[0] = 1;
 
-        collectionManager.create(inputs_1, 0);
+        collectionManager.create(inputs_1, "some 3 drop", 0);
         vm.stopPrank();
 
         token1.mint(buyer, 250 ether);

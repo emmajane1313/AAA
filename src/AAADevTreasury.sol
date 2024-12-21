@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract AAADevTreasury {
     AAAAccessControls public accessControls;
     AAAAgents public agents;
+    address public market;
     mapping(address => uint256) private _balance;
 
     modifier onlyAdmin() {
@@ -39,15 +40,10 @@ contract AAADevTreasury {
         address paymentToken,
         uint256 amount
     ) external {
-        if (IERC20(paymentToken).balanceOf(buyer) < amount) {
-            revert AAAErrors.InsufficientBalance();
+        if (msg.sender != market) {
+            revert AAAErrors.OnlyMarketplaceContract();
         }
-
         _balance[paymentToken] += amount;
-
-        if (!IERC20(paymentToken).transferFrom(buyer, address(this), amount)) {
-            revert AAAErrors.PaymentFailed();
-        }
 
         emit FundsReceived(buyer, paymentToken, amount);
     }
@@ -88,5 +84,9 @@ contract AAADevTreasury {
 
     function setAgents(address _agents) external onlyAdmin {
         agents = AAAAgents(_agents);
+    }
+
+    function setMarket(address _market) external onlyAdmin {
+        market = _market;
     }
 }
