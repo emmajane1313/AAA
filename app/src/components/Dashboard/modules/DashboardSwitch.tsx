@@ -1,21 +1,46 @@
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useContext } from "react";
 import useDashboard from "../hooks/useDashboard";
-import { MintSwitcher, Switcher } from "../types/dashboard.types";
+import { Switcher } from "../types/dashboard.types";
 import Agents from "./Agents";
 import MintSwitch from "./MintSwitch";
 import Sales from "./Sales";
 import Drops from "./Drops";
+import Collects from "./Collects";
+import { ModalContext } from "@/app/providers";
+import DropsSwitch from "./DropsSwitch";
 
 const DashboardSwitch: FunctionComponent = (): JSX.Element => {
-  const { setSwitcher, switcher, mintSwitcher, setMintSwitcher } =
-    useDashboard();
+  const {
+    setSwitcher,
+    switcher,
+    mintSwitcher,
+    setMintSwitcher,
+    allDrops,
+    allDropsLoading,
+  } = useDashboard();
+  const context = useContext(ModalContext);
 
   switch (switcher) {
     case Switcher.Drops:
-      return <Drops setSwitcher={setSwitcher} />;
+      return (
+        <DropsSwitch
+          setSwitcher={setSwitcher}
+          allDrops={allDrops}
+          allDropsLoading={allDropsLoading}
+        />
+      );
+
+    case Switcher.Collects:
+      return <Collects setSwitcher={setSwitcher} />;
 
     case Switcher.Agents:
-      return <Agents setSwitcher={setSwitcher} />;
+      return (
+        <Agents
+          setAgents={context?.setAgents!}
+          agents={context?.agents!}
+          setSwitcher={setSwitcher}
+        />
+      );
 
     case Switcher.Mint:
       return (
@@ -45,6 +70,10 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
             <MintSwitch
               mintSwitcher={mintSwitcher}
               setMintSwitcher={setMintSwitcher}
+              agents={context?.agents!}
+              setAgents={context?.setAgents!}
+              allDrops={allDrops}
+              allDropsLoading={allDropsLoading}
             />
             <div className="relative w-full h-fit flex items-end justify-between flex-row gap-4">
               <div
@@ -146,12 +175,12 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"
+                    d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
                   />
                 </svg>
               ),
-              switcher: Switcher.Drops,
-              title: "Drops",
+              switcher: Switcher.Collects,
+              title: "Collects",
             },
             {
               svg: (
@@ -172,6 +201,26 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
               ),
               switcher: Switcher.Agents,
               title: "Agents",
+            },
+            {
+              svg: (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"
+                  />
+                </svg>
+              ),
+              switcher: Switcher.Drops,
+              title: "Drops",
             },
             {
               svg: (

@@ -1,8 +1,10 @@
+import { NFTData } from "@/components/Common/types/common.types";
 import { SetStateAction } from "react";
 
 export enum Switcher {
   Home,
   Sales,
+  Collects,
   Agents,
   Mint,
   Drops,
@@ -15,16 +17,33 @@ export enum MintSwitcher {
   Mint,
 }
 
+export enum DropSwitcher {
+  Drops,
+  Collection,
+}
+
 export type MintSwitchProps = {
   mintSwitcher: MintSwitcher;
   setMintSwitcher: (e: SetStateAction<MintSwitcher>) => void;
+  setAgents: (e: SetStateAction<Agent[]>) => void;
+  agents: Agent[];
+  allDrops: DropInterface[];
+  allDropsLoading: boolean;
 };
 
 export type DropsProps = {
   setSwitcher: (e: SetStateAction<Switcher>) => void;
+  allDrops: DropInterface[];
+  allDropsLoading: boolean;
+  setDropSwitcher: (e: SetStateAction<DropSwitcher>) => void;
+  setDrop: (e: SetStateAction<DropInterface | undefined>) => void;
 };
 
 export type SalesProps = {
+  setSwitcher: (e: SetStateAction<Switcher>) => void;
+};
+
+export type CollectsProps = {
   setSwitcher: (e: SetStateAction<Switcher>) => void;
 };
 
@@ -54,6 +73,8 @@ export type ChooseAgentProps = {
 
 export type AgentProps = {
   setSwitcher: (e: SetStateAction<Switcher>) => void;
+  agents: Agent[];
+  setAgents: (e: SetStateAction<Agent[]>) => void;
 };
 
 export type MintData = {
@@ -83,3 +104,26 @@ export interface DropInterface {
   cover: string;
   collectionIds: string[];
 }
+
+export interface Order {
+  id: string;
+  totalPrice: string;
+  token: string;
+  amount: string;
+  collectionId: string;
+  mintedTokenIds: string[];
+  blockTimestamp: string;
+  collection: NFTData;
+}
+
+export type DropsSwitchProps = {
+  allDrops: DropInterface[];
+  allDropsLoading: boolean;
+  setSwitcher: (e: SetStateAction<Switcher>) => void;
+};
+
+export type CollectionProps = {
+  setDropSwitcher: (e: SetStateAction<DropSwitcher>) => void;
+  drop: DropInterface | undefined;
+  setDrop: (e: SetStateAction<DropInterface | undefined>) => void;
+};

@@ -30,8 +30,6 @@ export const ModalContext = createContext<
       setImageView: (e: SetStateAction<string | undefined>) => void;
       agents: Agent[];
       setAgents: (e: SetStateAction<Agent[]>) => void;
-      allDrops: DropInterface[];
-      setAllDrops: (e: SetStateAction<DropInterface[]>) => void;
     }
   | undefined
 >(undefined);
@@ -39,7 +37,6 @@ export const ModalContext = createContext<
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [imageView, setImageView] = useState<string | undefined>();
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [allDrops, setAllDrops] = useState<DropInterface[]>([]);
   const clienteLens = PublicClient.create({
     environment: testnet,
   });
@@ -54,8 +51,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               setImageView,
               agents,
               setAgents,
-              allDrops,
-              setAllDrops,
             }}
           >
             {children}

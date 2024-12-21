@@ -1,13 +1,15 @@
 import { FunctionComponent, JSX } from "react";
 
-import { SalesProps, Switcher } from "../types/dashboard.types";
-import useSales from "../hooks/useSales";
-import { useRouter } from "next/navigation";
+import { CollectsProps, Switcher } from "../types/dashboard.types";
+import useCollects from "../hooks/useCollects";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 
-const Sales: FunctionComponent<SalesProps> = ({ setSwitcher }): JSX.Element => {
-  const { salesLoading, allSales } = useSales();
+const Collects: FunctionComponent<CollectsProps> = ({
+  setSwitcher,
+}): JSX.Element => {
+  const { collectsLoading, allCollects } = useCollects();
   const router = useRouter();
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
@@ -36,10 +38,10 @@ const Sales: FunctionComponent<SalesProps> = ({ setSwitcher }): JSX.Element => {
         <div className="flex relative w-full h-full items-center justify-start overflow-x-scroll">
           <div
             className={`relative h-full flex flex-row gap-6 ${
-              !salesLoading && allSales?.length < 1 ? "w-full" : "w-fit"
+              !collectsLoading && allCollects?.length < 1 ? "w-full" : "w-fit"
             }`}
           >
-            {salesLoading ? (
+            {collectsLoading ? (
               Array.from({ length: 10 }).map((_, key) => {
                 return (
                   <div
@@ -48,12 +50,12 @@ const Sales: FunctionComponent<SalesProps> = ({ setSwitcher }): JSX.Element => {
                   ></div>
                 );
               })
-            ) : allSales?.length < 1 ? (
+            ) : allCollects?.length < 1 ? (
               <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600">
-                No Sales Yet.
+                No Collects Yet.
               </div>
             ) : (
-              allSales?.map((sale, key) => {
+              allCollects?.map((sale, key) => {
                 return (
                   <div
                     key={key}
@@ -86,4 +88,4 @@ const Sales: FunctionComponent<SalesProps> = ({ setSwitcher }): JSX.Element => {
   );
 };
 
-export default Sales;
+export default Collects;

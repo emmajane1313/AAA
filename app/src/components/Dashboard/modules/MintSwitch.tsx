@@ -5,16 +5,17 @@ import Mint from "./Mint";
 import Drop from "./Drop";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY, TOKENS } from "@/lib/constants";
-import { ModalContext } from "@/app/providers";
 import ChooseAgent from "./ChooseAgent";
 
 const MintSwitch: FunctionComponent<MintSwitchProps> = ({
   mintSwitcher,
   setMintSwitcher,
+  setAgents,
+  agents,
+  allDrops,
 }): JSX.Element => {
-  const context = useContext(ModalContext);
   const { handleMint, mintLoading, mintData, setMintData, agentsLoading } =
-    useMint(context?.agents!, context?.setAgents!);
+    useMint(agents, setAgents);
 
   switch (mintSwitcher) {
     case MintSwitcher.Agent:
@@ -22,7 +23,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
         <ChooseAgent
           mintData={mintData}
           setMintData={setMintData}
-          agents={context?.agents!}
+          agents={agents}
           agentsLoading={agentsLoading}
         />
       );
@@ -33,7 +34,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
           mintLoading={mintLoading}
           mintData={mintData}
           setMintData={setMintData}
-          allDrops={context?.allDrops!}
+          allDrops={allDrops}
           setMintSwitcher={setMintSwitcher}
         />
       );
@@ -44,8 +45,8 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
           mintData={mintData}
           setMintData={setMintData}
           handleMint={handleMint}
-          allDrops={context?.allDrops!}
-          agents={context?.agents!}
+          allDrops={allDrops}
+          agents={agents}
           mintLoading={mintLoading}
         />
       );
@@ -204,6 +205,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                           !mintData.tokens?.includes(token.contract) ||
                           mintLoading
                         }
+                        value={mintData?.prices?.[key]}
                         type="number"
                         min={1}
                         step={1}
