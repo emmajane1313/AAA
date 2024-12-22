@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 import "forge-std/Test.sol";
 import "./../src/AAAMarket.sol";
@@ -54,7 +54,7 @@ contract AAAMarketTest is Test {
         vm.startPrank(admin);
         collectionManager.setMarket(address(market));
         accessControls.setAgentsContract(address(agents));
-        nft.setMarketplace(address(market));
+        nft.setMarket(address(market));
         market.setDevTreasury(address(devTreasury));
         agents.setMarket(address(market));
         accessControls.setAcceptedToken(address(token1));

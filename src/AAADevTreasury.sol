@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 import "./AAAErrors.sol";
 import "./AAAAccessControls.sol";
@@ -31,7 +31,7 @@ contract AAADevTreasury {
         uint256 amount
     );
 
-    constructor(address _accessControls) {
+    constructor(address _accessControls) payable {
         accessControls = AAAAccessControls(_accessControls);
     }
 
@@ -41,7 +41,7 @@ contract AAADevTreasury {
         uint256 amount
     ) external {
         if (msg.sender != market) {
-            revert AAAErrors.OnlyMarketplaceContract();
+            revert AAAErrors.OnlyMarketContract();
         }
         _balance[paymentToken] += amount;
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 import "forge-std/Test.sol";
 import "src/AAACollectionManager.sol";
@@ -255,7 +255,7 @@ contract AAACollectionManagerTest is Test {
         uint256[] memory mintedTokenIds = new uint256[](1);
         mintedTokenIds[0] = 1;
         vm.expectRevert(
-            abi.encodeWithSelector(AAAErrors.OnlyMarketplaceContract.selector)
+            abi.encodeWithSelector(AAAErrors.OnlyMarketContract.selector)
         );
         collectionManager.updateData(mintedTokenIds, 1, 1);
     }

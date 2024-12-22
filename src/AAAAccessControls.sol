@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 import "./AAAErrors.sol";
 
@@ -32,7 +32,7 @@ contract AAAAccessControls {
         _;
     }
 
-    constructor() {
+    constructor() payable {
         _admins[msg.sender] = true;
         emit AdminAdded(msg.sender);
     }

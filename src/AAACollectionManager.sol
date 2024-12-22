@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 import "./AAALibrary.sol";
 import "./AAAErrors.sol";
@@ -26,7 +26,7 @@ contract AAACollectionManager {
 
     modifier onlyMarket() {
         if (market != msg.sender) {
-            revert AAAErrors.OnlyMarketplaceContract();
+            revert AAAErrors.OnlyMarketContract();
         }
         _;
     }
@@ -38,7 +38,7 @@ contract AAACollectionManager {
         _;
     }
 
-    constructor(address _accessControls) {
+    constructor(address _accessControls) payable {
         accessControls = AAAAccessControls(_accessControls);
     }
 

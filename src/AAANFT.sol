@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./AAAErrors.sol";
@@ -24,9 +24,9 @@ contract AAANFT is ERC721 {
         string tokenURI
     );
 
-    modifier onlyMarketplace() {
+    modifier onlyMarket() {
         if (msg.sender != marketplace) {
-            revert AAAErrors.OnlyMarketplaceContract();
+            revert AAAErrors.OnlyMarketContract();
         }
         _;
     }
@@ -35,7 +35,7 @@ contract AAANFT is ERC721 {
         string memory name,
         string memory symbol,
         address _accessControls
-    ) ERC721(name, symbol) {
+    ) payable ERC721(name, symbol) {
         accessControls = AAAAccessControls(_accessControls);
     }
 
@@ -43,7 +43,7 @@ contract AAANFT is ERC721 {
         uint256 amount,
         address to,
         string memory newTokenURI
-    ) external onlyMarketplace returns (uint256[] memory) {
+    ) external onlyMarket returns (uint256[] memory) {
         if (to == address(0)) {
             revert AAAErrors.ZeroAddress();
         }
@@ -78,7 +78,7 @@ contract AAANFT is ERC721 {
         return _tokenCounter;
     }
 
-    function setMarketplace(address _marketplace) external onlyAdmin {
+    function setMarket(address _marketplace) external onlyAdmin {
         marketplace = _marketplace;
     }
 

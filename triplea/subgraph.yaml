@@ -1,0 +1,35 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: AAACollectionManager
+    network: lens-testnet
+    source:
+      address: "0xDa626C237eD10F908Ef716DC6e5B2339A6FA52a9"
+      abi: AAACollectionManager
+      startBlock: 81629
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - CollectionDeleted
+        - CollectionsCreated
+        - DropCreated
+        - DropDeleted
+      abis:
+        - name: AAACollectionManager
+          file: ./abis/AAACollectionManager.json
+      eventHandlers:
+        - event: CollectionDeleted(address,indexed uint256)
+          handler: handleCollectionDeleted
+        - event: CollectionsCreated(address,uint256,indexed uint256)
+          handler: handleCollectionsCreated
+        - event: DropCreated(address,indexed uint256)
+          handler: handleDropCreated
+        - event: DropDeleted(address,indexed uint256)
+          handler: handleDropDeleted
+      file: ./src/aaa-collection-manager.ts

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 contract AAAErrors {
     error NotAdmin();
@@ -15,7 +15,7 @@ contract AAAErrors {
 
     error DropInvalid();
 
-    error OnlyMarketplaceContract();
+    error OnlyMarketContract();
     error ZeroAddress();
     error InvalidAmount();
     error NotArtist();

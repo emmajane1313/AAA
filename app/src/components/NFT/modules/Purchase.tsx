@@ -15,7 +15,10 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
   const { isConnected, address } = useAccount();
   const publicClient = createPublicClient({
     chain: chains.testnet,
-    transport: http(),
+    transport: http(
+      "https://rpc.testnet.lens.dev"
+      // `https://lens-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_LENS_KEY}`
+    ),
   });
   const {
     purchaseLoading,

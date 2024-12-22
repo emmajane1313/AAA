@@ -48,6 +48,7 @@ out/
 # env files (can opt-in for committing if needed)
 /app/.env
 
+/SolidityFlattery
 # vercel
 /app/.vercel
 /app/package-lock.json

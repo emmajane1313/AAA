@@ -1,0 +1,36 @@
+type CollectionDeleted @entity(immutable: true) {
+  id: Bytes!
+  artist: Bytes! # address
+  collectionId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CollectionsCreated @entity(immutable: true) {
+  id: Bytes!
+  artist: Bytes! # address
+  collectionId: BigInt! # uint256
+  dropId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DropCreated @entity(immutable: true) {
+  id: Bytes!
+  artist: Bytes! # address
+  dropId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DropDeleted @entity(immutable: true) {
+  id: Bytes!
+  artist: Bytes! # address
+  dropId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

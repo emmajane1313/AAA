@@ -17,7 +17,10 @@ export const config = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string,
   chains: [chains.testnet],
   transports: {
-    [chains.testnet.id]: http(),
+    [chains.testnet.id]: http(
+      "https://rpc.testnet.lens.dev"
+      // `https://lens-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_LENS_KEY}`
+    ),
   },
   ssr: true,
 });

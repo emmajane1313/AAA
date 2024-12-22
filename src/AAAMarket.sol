@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSE
-pragma solidity ^0.8.28;
+pragma solidity 0.8.24;
 
 import "./AAALibrary.sol";
 import "./AAANFT.sol";
@@ -39,7 +39,7 @@ contract AAAMarket {
         address _collectionManager,
         address _accessControls,
         address _agents
-    ) {
+    ) payable {
         nft = AAANFT(_nft);
         collectionManager = AAACollectionManager(_collectionManager);
         accessControls = AAAAccessControls(_accessControls);
@@ -80,7 +80,7 @@ contract AAAMarket {
             _artistShare = _totalPrice - _agentShare;
         }
 
-        if (IERC20(paymentToken).balanceOf(msg.sender) < amount) {
+        if (IERC20(paymentToken).balanceOf(msg.sender) < _agentShare) {
             revert AAAErrors.InsufficientBalance();
         }
 
@@ -88,7 +88,7 @@ contract AAAMarket {
             !IERC20(paymentToken).transferFrom(
                 msg.sender,
                 address(devTreasury),
-                amount
+                _agentShare
             )
         ) {
             revert AAAErrors.PaymentFailed();
