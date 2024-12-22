@@ -129,7 +129,7 @@ type DropMetadata @entity {
 
 type AgentMetadata @entity {
   id: ID!
-  title: String!
+  name: String!
   description: String!
   cover: String!
 }

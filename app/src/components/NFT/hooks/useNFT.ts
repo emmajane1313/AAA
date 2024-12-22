@@ -1,6 +1,7 @@
 import { NFTData } from "@/components/Common/types/common.types";
-import { TOKENS } from "@/lib/constants";
+import { INFURA_GATEWAY } from "@/lib/constants";
 import { useEffect, useState } from "react";
+import { getCollection } from "../../../../graphql/queries/getCollection";
 
 const useNFT = (id: string) => {
   const [nft, setNft] = useState<NFTData | undefined>();
@@ -9,19 +10,31 @@ const useNFT = (id: string) => {
   const handleNFT = async () => {
     setNftLoading(true);
     try {
+      const collData = await getCollection(Number(id));
+
+      let collection = collData?.data?.collectionCreateds?.[0];
+      if (!collData?.data?.collectionCreateds?.[0]?.metadata) {
+        const cadena = await fetch(
+          `${INFURA_GATEWAY}/ipfs/${
+            collData?.data?.collectionCreateds?.[0]?.uri.split("ipfs://")?.[1]
+          }`
+        );
+        collection.metadata = await cadena.json();
+      }
+
       setNft({
-        id: Number(id),
-        image: "",
-        title: "NFT " + id,
-        description: "Some description here",
-        blocktimestamp: "",
-        prices: ["200000000000000000000"],
-        tokens: [TOKENS[0]?.contract],
-        agents: [],
-        artist: "0xsadfadfdsfdasasdflasdf1232",
-        amount: 10,
-        amountSold: 2,
-        tokenIds: ["1", "2"],
+        id: collection?.id,
+        image: collection?.metadata?.image,
+        title: collection?.metadata?.title,
+        description: collection?.metadata?.description,
+        blocktimestamp: collection?.blockTimestamp,
+        prices: collection?.prices,
+        tokens: collection?.tokens,
+        agents: collection?.agents,
+        artist: collection?.artist,
+        amountSold: collection?.amountSold,
+        tokenIds: collection?.tokenIds,
+        amount: collection?.amount,
       });
     } catch (err: any) {
       console.error(err.message);

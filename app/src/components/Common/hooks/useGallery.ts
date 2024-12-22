@@ -1,27 +1,52 @@
 import { useEffect, useState } from "react";
 import { NFTData } from "../types/common.types";
+import { getCollections } from "../../../../graphql/queries/getGallery";
+import { INFURA_GATEWAY } from "@/lib/constants";
 
 const useGallery = () => {
   const [nfts, setNfts] = useState<NFTData[]>([]);
-  const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(true);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [galleryLoading, setGalleryLoading] = useState<boolean>(false);
 
-  const fetchNFTs = async (page: number): Promise<NFTData[]> => {
-    return Array.from({ length: 20 }, (_, id: number) => ({
-      id,
-      cover: "",
-      title: "",
-      description: "",
-      tokenIds: [],
-      agents: [],
-      prices: [],
-      tokens: [],
-      artist: "",
-      blocktimestamp: "",
-      amount: 2,
-      amountSold: 0,
-    }));
+  const handleGallery = async (): Promise<void> => {
+    setGalleryLoading(true);
+    try {
+      const data = await getCollections(page);
+
+      const gallery: NFTData[] = await Promise.all(
+        data?.data?.collectionCreateds.map(async (collection: any) => {
+          if (!collection.metadata) {
+            const cadena = await fetch(
+              `${INFURA_GATEWAY}/ipfs/${collection.uri.split("ipfs://")?.[1]}`
+            );
+            collection.metadata = await cadena.json();
+          }
+
+          return {
+            id: collection?.collectionId,
+            image: collection?.metadata?.image,
+            title: collection?.metadata?.title,
+            description: collection?.metadata?.description,
+            blocktimestamp: collection?.blockTimestamp,
+            prices: collection?.prices,
+            tokens: collection?.tokens,
+            agents: collection?.agents,
+            artist: collection?.artist,
+            amountSold: collection?.amountSold,
+            tokenIds: collection?.tokenIds,
+            amount: collection?.amount,
+          };
+        })
+      );
+
+      setPage(gallery?.length == 20 ? 20 : 0);
+      setHasMore(gallery?.length == 20 ? true : false);
+      setNfts(gallery);
+    } catch (err: any) {
+      console.error(err.message);
+    }
+    setGalleryLoading(false);
   };
 
   const getRandomSize = () => {
@@ -34,31 +59,57 @@ const useGallery = () => {
   };
 
   useEffect(() => {
-    const loadInitialNFTs = async () => {
-      setLoading(true);
-      const initialNFTs = await fetchNFTs(1);
-      setNfts(initialNFTs);
-      setLoading(false);
-    };
-
-    loadInitialNFTs();
+    if (nfts?.length < 1) {
+      handleGallery();
+    }
   }, []);
 
-  const fetchMoreNFTs = async () => {
-    setLoading(true);
-    const newPage = page + 1;
-    const newImages = await fetchNFTs(newPage);
-    setNfts((prev) => [...prev, ...newImages]);
-    setPage(newPage);
-    setLoading(false);
+  const handleMoreGallery = async () => {
+    setGalleryLoading(true);
+    try {
+      const data = await getCollections(page);
+
+      const gallery: NFTData[] = await Promise.all(
+        data?.data?.collectionCreateds.map(async (collection: any) => {
+          if (!collection.metadata) {
+            const cadena = await fetch(
+              `${INFURA_GATEWAY}/ipfs/${collection.uri.split("ipfs://")?.[1]}`
+            );
+            collection.metadata = await cadena.json();
+          }
+
+          return {
+            id: collection?.id,
+            image: collection?.metadata?.image,
+            title: collection?.metadata?.title,
+            description: collection?.metadata?.description,
+            blocktimestamp: collection?.blockTimestamp,
+            prices: collection?.prices,
+            tokens: collection?.tokens,
+            agents: collection?.agents,
+            artist: collection?.artist,
+            amountSold: collection?.amountSold,
+            tokenIds: collection?.tokenIds,
+            amount: collection?.amount,
+          };
+        })
+      );
+
+      setPage(gallery?.length == 20 ? page + 20 : page);
+      setHasMore(gallery?.length == 20 ? true : false);
+      setNfts([...nfts, ...gallery]);
+    } catch (err: any) {
+      console.error(err.message);
+    }
+    setGalleryLoading(false);
   };
 
   return {
-    fetchMoreNFTs,
+    handleMoreGallery,
     nfts,
     getRandomSize,
     hasMore,
-    loading,
+    galleryLoading,
   };
 };
 

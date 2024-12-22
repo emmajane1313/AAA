@@ -5,9 +5,11 @@ import useSales from "../hooks/useSales";
 import { useRouter } from "next/navigation";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
+import { useAccount } from "wagmi";
 
 const Sales: FunctionComponent<SalesProps> = ({ setSwitcher }): JSX.Element => {
-  const { salesLoading, allSales } = useSales();
+  const { address } = useAccount();
+  const { salesLoading, allSales } = useSales(address);
   const router = useRouter();
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">

@@ -7,18 +7,18 @@ import { NFTData } from "../types/common.types";
 import { useRouter } from "next/navigation";
 
 const Gallery: FunctionComponent = (): JSX.Element => {
-  const { fetchMoreNFTs, nfts, getRandomSize, hasMore, loading } = useGallery();
+  const { handleMoreGallery, nfts, getRandomSize, hasMore, galleryLoading } = useGallery();
   const router = useRouter();
   return (
     <div className="relative w-full h-full overflow-y-scroll pb-10">
       <InfiniteScroll
         dataLength={nfts.length}
-        next={fetchMoreNFTs}
+        next={handleMoreGallery}
         hasMore={hasMore}
         loader={<></>}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
-          {(loading ? [...nfts, ...Array.from({ length: 20 })] : nfts).map(
+          {(galleryLoading ? [...nfts, ...Array.from({ length: 20 })] : nfts).map(
             (nft: NFTData | unknown, indice: number) =>
               (nft as any)?.id !== undefined ? (
                 <div

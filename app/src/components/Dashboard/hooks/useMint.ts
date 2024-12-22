@@ -1,9 +1,10 @@
 import { SetStateAction, useEffect, useState } from "react";
 import { Agent, MintData } from "../types/dashboard.types";
-import { COLLECTION_MANAGER_CONTRACT } from "@/lib/constants";
+import { COLLECTION_MANAGER_CONTRACT, INFURA_GATEWAY } from "@/lib/constants";
 import CollectionManagerAbi from "@abis/CollectionManagerAbi.json";
 import { createWalletClient, custom, PublicClient } from "viem";
 import { chains } from "@lens-network/sdk/viem";
+import { getAgents } from "../../../../graphql/queries/getAgents";
 
 const useMint = (
   agents: Agent[],
@@ -149,6 +150,29 @@ const useMint = (
     setAgentsLoading(true);
 
     try {
+      const data = await getAgents();
+
+      const allAgents: Agent[] = await Promise.all(
+        data?.data?.agentCreateds.map(async (agent: any) => {
+          if (!agent.metadata) {
+            const cadena = await fetch(
+              `${INFURA_GATEWAY}/ipfs/${agent.uri.split("ipfs://")?.[1]}`
+            );
+            agent.metadata = await cadena.json();
+          }
+
+          return {
+            id: agent?.AAAAgents_id,
+            cover: agent?.metadata?.image,
+            name: agent?.metadata?.name,
+            description: agent?.metadata?.description,
+            wallet: agent?.wallet,
+            balance: agent?.balances,
+          };
+        })
+      );
+
+      setAgents(allAgents);
     } catch (err: any) {
       console.error(err.message);
     }

@@ -5,11 +5,13 @@ import useCollects from "../hooks/useCollects";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useRouter } from "next/navigation";
+import { useAccount } from "wagmi";
 
 const Collects: FunctionComponent<CollectsProps> = ({
   setSwitcher,
 }): JSX.Element => {
-  const { collectsLoading, allCollects } = useCollects();
+  const { address } = useAccount();
+  const { collectsLoading, allCollects } = useCollects(address);
   const router = useRouter();
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">

@@ -94,3 +94,5 @@ out/
 # Hardhat files
 /triplea/cache
 /triplea/package-lock.json
+
+/zkout/
