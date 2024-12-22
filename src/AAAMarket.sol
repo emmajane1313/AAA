@@ -96,25 +96,14 @@ contract AAAMarket {
         }
 
         devTreasury.receiveFunds(msg.sender, paymentToken, _agentShare);
-        if (_agentShare > 0) {
-            for (
-                uint256 i = 0;
-                i <
-                collectionManager.getCollectionAgentIds(collectionId).length;
-                i++
-            ) {
-                uint256 _agentId = collectionManager.getCollectionAgentIds(
-                    collectionId
-                )[i];
 
-                agents.addBalance(
-                    paymentToken,
-                    _agentId,
-                    _perAgentShare,
-                    collectionId
-                );
-            }
-        }
+        _manageAgents(
+            paymentToken,
+            _agentShare,
+            collectionId,
+            _perAgentShare,
+            amount
+        );
 
         if (
             !IERC20(paymentToken).transferFrom(
@@ -148,6 +137,44 @@ contract AAAMarket {
             msg.sender,
             paymentToken
         );
+    }
+
+    function _manageAgents(
+        address paymentToken,
+        uint256 agentShare,
+        uint256 collectionId,
+        uint256 perAgentShare,
+        uint256 amount
+    ) internal {
+        bool soldOut = false;
+
+        if (
+            amount + collectionManager.getCollectionAmountSold(collectionId) ==
+            collectionManager.getCollectionAmount(collectionId)
+        ) {
+            soldOut = true;
+        }
+
+        if (agentShare > 0) {
+            for (
+                uint256 i = 0;
+                i <
+                collectionManager.getCollectionAgentIds(collectionId).length;
+                i++
+            ) {
+                uint256 _agentId = collectionManager.getCollectionAgentIds(
+                    collectionId
+                )[i];
+
+                agents.addBalance(
+                    paymentToken,
+                    _agentId,
+                    perAgentShare,
+                    collectionId,
+                    soldOut
+                );
+            }
+        }
     }
 
     function _createOrder(

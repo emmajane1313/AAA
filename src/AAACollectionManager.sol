@@ -97,22 +97,22 @@ contract AAACollectionManager {
 
         uint256 _dropId = _collections[collectionId].dropId;
 
-        uint256[] storage collectionIds = _drops[_dropId].collectionIds;
-        for (uint256 i = 0; i < collectionIds.length; i++) {
-            if (collectionIds[i] == collectionId) {
-                collectionIds[i] = collectionIds[collectionIds.length - 1];
-                collectionIds.pop();
+        uint256[] storage _collectionIds = _drops[_dropId].collectionIds;
+        for (uint256 i = 0; i < _collectionIds.length; i++) {
+            if (_collectionIds[i] == collectionId) {
+                _collectionIds[i] = _collectionIds[_collectionIds.length - 1];
+                _collectionIds.pop();
                 break;
             }
         }
 
-        if (collectionIds.length == 0) {
-            address artist = _drops[_dropId].artist;
-            uint256[] storage dropIds = _dropIdsByArtist[artist];
-            for (uint256 i = 0; i < dropIds.length; i++) {
-                if (dropIds[i] == _dropId) {
-                    dropIds[i] = dropIds[dropIds.length - 1];
-                    dropIds.pop();
+        if (_collectionIds.length == 0) {
+            address _artist = _drops[_dropId].artist;
+            uint256[] storage _dropIds = _dropIdsByArtist[_artist];
+            for (uint256 i = 0; i < _dropIds.length; i++) {
+                if (_dropIds[i] == _dropId) {
+                    _dropIds[i] = _dropIds[_dropIds.length - 1];
+                    _dropIds.pop();
                     break;
                 }
             }
@@ -130,9 +130,9 @@ contract AAACollectionManager {
             revert AAAErrors.NotArtist();
         }
 
-        uint256[] storage collectionIds = _drops[dropId].collectionIds;
-        for (uint256 i = 0; i < collectionIds.length; i++) {
-            uint256 collectionId = collectionIds[i];
+        uint256[] storage _collectionIds = _drops[dropId].collectionIds;
+        for (uint256 i = 0; i < _collectionIds.length; i++) {
+            uint256 collectionId = _collectionIds[i];
             if (_collections[collectionId].amountSold > 0) {
                 revert AAAErrors.CantDeleteSoldCollection();
             }
@@ -141,13 +141,13 @@ contract AAACollectionManager {
 
         delete _drops[dropId];
 
-        uint256[] storage dropIds = _dropIdsByArtist[msg.sender];
-        for (uint256 i = 0; i < dropIds.length; i++) {
-            if (dropIds[i] == dropId) {
-                if (i != dropIds.length - 1) {
-                    dropIds[i] = dropIds[dropIds.length - 1];
+        uint256[] storage _dropIds = _dropIdsByArtist[msg.sender];
+        for (uint256 i = 0; i < _dropIds.length; i++) {
+            if (_dropIds[i] == dropId) {
+                if (i != _dropIds.length - 1) {
+                    _dropIds[i] = _dropIds[_dropIds.length - 1];
                 }
-                dropIds.pop();
+                _dropIds.pop();
                 break;
             }
         }

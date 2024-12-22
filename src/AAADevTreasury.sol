@@ -11,6 +11,9 @@ contract AAADevTreasury {
     AAAAgents public agents;
     address public market;
     mapping(address => uint256) private _balance;
+    mapping(address => uint256) private _services;
+    mapping(address => uint256) private _allTimeBalance;
+    mapping(address => uint256) private _allTimeServices;
 
     modifier onlyAdmin() {
         if (!accessControls.isAdmin(msg.sender)) {
@@ -26,9 +29,9 @@ contract AAADevTreasury {
     );
     event FundsWithdrawn(address indexed token, uint256 amount);
     event AgentFundsWithdrawn(
-        address indexed agent,
-        address indexed token,
-        uint256 amount
+        address[] tokens,
+        uint256[] amounts,
+        address indexed agent
     );
 
     constructor(address _accessControls) payable {
@@ -44,6 +47,7 @@ contract AAADevTreasury {
             revert AAAErrors.OnlyMarketContract();
         }
         _balance[paymentToken] += amount;
+        _allTimeBalance[paymentToken] += amount;
 
         emit FundsReceived(buyer, paymentToken, amount);
     }
@@ -56,26 +60,85 @@ contract AAADevTreasury {
         emit FundsWithdrawn(token, amount);
     }
 
-    function withdrawAgentFunds(
+    function withdrawFundsStuck(
         address token,
-        uint256 agentId,
-        uint256 amount,
-        uint256 collectionId
+        uint256 amount
+    ) external onlyAdmin {
+        IERC20(token).transferFrom(address(this), msg.sender, amount);
+
+        emit FundsWithdrawn(token, amount);
+    }
+
+    function withdrawFundsServices(
+        address token,
+        uint256 amount
+    ) external onlyAdmin {
+        IERC20(token).transferFrom(address(this), msg.sender, amount);
+
+        _services[token] -= amount;
+
+        emit FundsWithdrawn(token, amount);
+    }
+
+    function agentPayRent(
+        address[] memory tokens,
+        uint256[] memory collectionIds,
+        uint256[] memory amounts,
+        uint256 agentId
     ) external {
         if (msg.sender != address(agents)) {
             revert AAAErrors.OnlyAgentsContract();
         }
-        if (
-            agents.getAgentActiveBalance(token, agentId, collectionId) >= amount
-        ) {
-            revert AAAErrors.InvalidAmount();
+
+        for (uint256 i = 0; i < collectionIds.length; i++) {
+            if (
+                agents.getAgentActiveBalance(
+                    tokens[i],
+                    agentId,
+                    collectionIds[i]
+                ) < amounts[i]
+            ) {
+                revert AAAErrors.InsufficientBalance();
+            }
         }
 
-        IERC20(token).transferFrom(address(this), msg.sender, amount);
+        for (uint256 i = 0; i < collectionIds.length; i++) {
+            IERC20(tokens[i]).transferFrom(
+                address(this),
+                msg.sender,
+                amounts[i]
+            );
 
-        _balance[token] -= amount;
+            _balance[tokens[i]] -= amounts[i];
+            _services[tokens[i]] += amounts[i];
+            _allTimeServices[tokens[i]] += amounts[i];
+        }
 
-        emit AgentFundsWithdrawn(agents.getAgentWallet(agentId), token, amount);
+        emit AgentFundsWithdrawn(
+            tokens,
+            amounts,
+            agents.getAgentWallet(agentId)
+        );
+    }
+
+    function getBalanceByToken(address token) public view returns (uint256) {
+        return _balance[token];
+    }
+
+    function getServicesPaidByToken(
+        address token
+    ) public view returns (uint256) {
+        return _services[token];
+    }
+
+    function getAllTimeBalanceByToken(
+        address token
+    ) public view returns (uint256) {
+        return _allTimeBalance[token];
+    }
+
+    function getAllTimeServices(address token) public view returns (uint256) {
+        return _allTimeServices[token];
     }
 
     function setAccessControls(address _accessControls) external onlyAdmin {

@@ -20,6 +20,7 @@ import {
   BalanceAdded,
   BalanceWithdrawn,
   Balance,
+  AgentActiveCollection,
 } from "../generated/schema";
 import { AgentMetadata as AgentMetadataTemplate } from "../generated/templates";
 
@@ -163,6 +164,27 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
     entityAgent.balances = balances;
 
     entityAgent.save();
+
+    let agentActive = AgentActiveCollection.load(
+      Bytes.fromByteArray(ByteArray.fromBigInt(entity.agentId))
+    );
+
+    if (!agentActive) {
+      agentActive = new AgentActiveCollection(
+        Bytes.fromByteArray(ByteArray.fromBigInt(entity.agentId))
+      );
+    }
+
+    let collectionIds = agents.getAgentActiveCollectionIds(entity.agentId);
+
+    let activeCollections: Bytes[] = [];
+    for (let i = 0; i < collectionIds.length; i++) {
+      activeCollections.push(
+        Bytes.fromByteArray(ByteArray.fromBigInt(collectionIds[i]))
+      );
+    }
+    agentActive.collections = activeCollections;
+    agentActive.save();
   }
 }
 
@@ -179,7 +201,6 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   entity.save();
-
 
   let entityAgent = AgentCreated.load(
     Bytes.fromByteArray(ByteArray.fromBigInt(entity.agentId))

@@ -58,7 +58,7 @@ type AgentCreated @entity(immutable: false) {
   balances: [Balance!]
 }
 
-type Balance @entity {
+type Balance @entity(immutable: false) {
   id: Bytes!
   token: Bytes!
   activeBalance: BigInt!
@@ -114,20 +114,20 @@ type CollectionPurchased @entity(immutable: false) {
   transactionHash: Bytes!
 }
 
-type CollectionMetadata @entity {
+type CollectionMetadata @entity(immutable: false) {
   id: ID!
   title: String!
   description: String!
   image: String!
 }
 
-type DropMetadata @entity {
+type DropMetadata @entity(immutable: false) {
   id: ID!
   title: String!
   cover: String!
 }
 
-type AgentMetadata @entity {
+type AgentMetadata @entity(immutable: false) {
   id: ID!
   name: String!
   description: String!
@@ -145,4 +145,10 @@ type Order @entity(immutable: false) {
   blockTimestamp: BigInt!
   collection: CollectionCreated
   transactionHash: Bytes!
+}
+
+type AgentActiveCollection @entity(immutable: false) {
+  id: Bytes!
+  agentId: BigInt!
+  collections: [CollectionCreated!]
 }

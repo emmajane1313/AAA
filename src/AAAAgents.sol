@@ -27,11 +27,12 @@ contract AAAAgents {
         uint256 collectionId
     );
     event BalanceWithdrawn(
-        address token,
-        uint256 agentId,
-        uint256 amount,
-        uint256 collectionId
+        address[] tokens,
+        uint256[] collectionIds,
+        uint256[] amounts,
+        uint256 agentId
     );
+    event CollectionI(address wallet, address creator, uint256 indexed id);
 
     modifier onlyAdmin() {
         if (!accessControls.isAdmin(msg.sender)) {
@@ -62,7 +63,8 @@ contract AAAAgents {
             id: _agentCounter,
             metadata: metadata,
             wallet: wallet,
-            collectionIdsHistory: new uint256[](0)
+            collectionIdsHistory: new uint256[](0),
+            activeCollectionIds: new uint256[](0)
         });
 
         accessControls.addAgent(wallet);
@@ -79,7 +81,8 @@ contract AAAAgents {
             id: agentId,
             metadata: metadata,
             wallet: wallet,
-            collectionIdsHistory: _agents[agentId].collectionIdsHistory
+            collectionIdsHistory: _agents[agentId].collectionIdsHistory,
+            activeCollectionIds: _agents[agentId].activeCollectionIds
         });
 
         emit AgentEdited(_agentCounter);
@@ -96,20 +99,36 @@ contract AAAAgents {
         address token,
         uint256 agentId,
         uint256 amount,
-        uint256 collectionId
+        uint256 collectionId,
+        bool soldOut
     ) external onlyMarket {
         _agentActiveBalances[agentId][token][collectionId] += amount;
         _agentTotalBalances[agentId][token][collectionId] += amount;
         _agents[agentId].collectionIdsHistory.push(collectionId);
 
+        uint256[] storage activeCollections = _agents[agentId]
+            .activeCollectionIds;
+
+        bool isCollectionActive = false;
+        for (uint256 i = 0; i < activeCollections.length; i++) {
+            if (activeCollections[i] == collectionId) {
+                isCollectionActive = true;
+                break;
+            }
+        }
+
+        if (!isCollectionActive && !soldOut) {
+            activeCollections.push(collectionId);
+        }
+
         emit BalanceAdded(token, agentId, amount, collectionId);
     }
 
-    function withdrawBalance(
-        address token,
-        uint256 agentId,
-        uint256 amount,
-        uint256 collectionId
+    function payRent(
+        address[] memory tokens,
+        uint256[] memory collectionIds,
+        uint256[] memory amounts,
+        uint256 agentId
     ) external {
         if (
             !accessControls.isAgent(msg.sender) ||
@@ -118,15 +137,9 @@ contract AAAAgents {
             revert AAAErrors.NotAgent();
         }
 
-        if (_agentActiveBalances[agentId][token][collectionId] >= amount) {
-            revert AAAErrors.InsufficientBalance();
-        }
+        devTreasury.agentPayRent(tokens, collectionIds, amounts, agentId);
 
-        devTreasury.withdrawAgentFunds(token, agentId, amount, collectionId);
-
-        _agentActiveBalances[agentId][token][collectionId] -= amount;
-
-        emit BalanceWithdrawn(token, agentId, amount, collectionId);
+        emit BalanceWithdrawn(tokens, collectionIds, amounts, agentId);
     }
 
     function getAgentCounter() public view returns (uint256) {
@@ -163,6 +176,12 @@ contract AAAAgents {
         uint256 agentId
     ) public view returns (uint256[] memory) {
         return _agents[agentId].collectionIdsHistory;
+    }
+
+    function getAgentActiveCollectionIds(
+        uint256 agentId
+    ) public view returns (uint256[] memory) {
+        return _agents[agentId].activeCollectionIds;
     }
 
     function setAccessControls(address _accessControls) external onlyAdmin {

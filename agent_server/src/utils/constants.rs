@@ -9,6 +9,8 @@ pub static MARKET: &'static str = "";
 pub static AGENTS: &'static str = "";
 pub static DEV_TREASURY: &'static str = "";
 pub static LENS_RPC_URL: &'static str = "https://rpc.testnet.lens.dev";
+pub static AAA_URI: &str = "https://api.studio.thegraph.com/query/37770/triplea/version/latest";
+
 pub static LENS_CHAIN_ID: LazyLock<Chain> =
     LazyLock::new(|| Chain::try_from(37111 as u64).expect("Invalid chain ID"));
 

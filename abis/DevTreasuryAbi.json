@@ -25,11 +25,63 @@
   },
   {
     "type": "function",
+    "name": "agentPayRent",
+    "inputs": [
+      { "name": "tokens", "type": "address[]", "internalType": "address[]" },
+      {
+        "name": "collectionIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      },
+      { "name": "amounts", "type": "uint256[]", "internalType": "uint256[]" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "agents",
     "inputs": [],
     "outputs": [
       { "name": "", "type": "address", "internalType": "contract AAAAgents" }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllTimeBalanceByToken",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllTimeServices",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getBalanceByToken",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getServicesPaidByToken",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -83,19 +135,27 @@
   },
   {
     "type": "function",
-    "name": "withdrawAgentFunds",
+    "name": "withdrawFunds",
     "inputs": [
       { "name": "token", "type": "address", "internalType": "address" },
-      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
-      { "name": "amount", "type": "uint256", "internalType": "uint256" },
-      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
   {
     "type": "function",
-    "name": "withdrawFunds",
+    "name": "withdrawFundsServices",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawFundsStuck",
     "inputs": [
       { "name": "token", "type": "address", "internalType": "address" },
       { "name": "amount", "type": "uint256", "internalType": "uint256" }
@@ -108,22 +168,22 @@
     "name": "AgentFundsWithdrawn",
     "inputs": [
       {
+        "name": "tokens",
+        "type": "address[]",
+        "indexed": false,
+        "internalType": "address[]"
+      },
+      {
+        "name": "amounts",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
         "name": "agent",
         "type": "address",
         "indexed": true,
         "internalType": "address"
-      },
-      {
-        "name": "token",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "amount",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
       }
     ],
     "anonymous": false
@@ -172,7 +232,7 @@
     ],
     "anonymous": false
   },
-  { "type": "error", "name": "InvalidAmount", "inputs": [] },
+  { "type": "error", "name": "InsufficientBalance", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
   { "type": "error", "name": "OnlyAgentsContract", "inputs": [] },
   { "type": "error", "name": "OnlyMarketContract", "inputs": [] }

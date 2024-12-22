@@ -4,10 +4,12 @@ use ethers::{
     middleware::SignerMiddleware,
     providers::{Http, Provider},
     signers::Wallet,
+    types::U256,
 };
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TripleAAgent {
     pub id: u32,
     pub name: String,
@@ -22,6 +24,7 @@ pub struct TripleAAgent {
 #[derive(Debug, Clone)]
 pub struct AgentManager {
     pub agent: TripleAAgent,
+    pub current_queue: Vec<AgentActivity>,
     pub lens_hub_contract: Arc<
         ContractInstance<
             Arc<SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>>,
@@ -34,16 +37,22 @@ pub struct AgentManager {
             SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,
         >,
     >,
-    pub dev_treasury_contract: Arc<
-        ContractInstance<
-            Arc<SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>>,
-            SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,
-        >,
-    >,
-    pub market_contract: Arc<
-        ContractInstance<
-            Arc<SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>>,
-            SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,
-        >,
-    >,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Collection {
+    pub image: String,
+    pub title: String,
+    pub description: String,
+    pub artist: String,
+    pub collection_id: U256,
+    pub prices: Vec<U256>,
+    pub tokens: Vec<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct AgentActivity {
+    pub collection: Collection,
+    pub token: String,
+    pub amount: U256,
 }
