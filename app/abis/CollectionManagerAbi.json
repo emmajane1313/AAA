@@ -8,7 +8,7 @@
         "internalType": "address"
       }
     ],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -51,6 +51,7 @@
           { "name": "amount", "type": "uint256", "internalType": "uint256" }
         ]
       },
+      { "name": "dropMetadata", "type": "string", "internalType": "string" },
       { "name": "dropId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
@@ -201,6 +202,15 @@
   },
   {
     "type": "function",
+    "name": "getDropMetadata",
+    "inputs": [
+      { "name": "dropId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "market",
     "inputs": [],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
@@ -245,25 +255,6 @@
   },
   {
     "type": "event",
-    "name": "CollectionDeleted",
-    "inputs": [
-      {
-        "name": "artist",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
-      },
-      {
-        "name": "collectionId",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
     "name": "CollectionCreated",
     "inputs": [
       {
@@ -280,6 +271,25 @@
       },
       {
         "name": "dropId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CollectionDeleted",
+    "inputs": [
+      {
+        "name": "artist",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "collectionId",
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
@@ -329,5 +339,5 @@
   { "type": "error", "name": "DropInvalid", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
   { "type": "error", "name": "NotArtist", "inputs": [] },
-  { "type": "error", "name": "OnlyMarketplaceContract", "inputs": [] }
+  { "type": "error", "name": "OnlyMarketContract", "inputs": [] }
 ]

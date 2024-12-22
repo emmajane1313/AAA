@@ -10,7 +10,7 @@
         "internalType": "address"
       }
     ],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -154,7 +154,7 @@
   },
   {
     "type": "function",
-    "name": "setMarketplace",
+    "name": "setMarket",
     "inputs": [
       { "name": "_marketplace", "type": "address", "internalType": "address" }
     ],
@@ -358,6 +358,6 @@
   },
   { "type": "error", "name": "InvalidAmount", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
-  { "type": "error", "name": "OnlyMarketplaceContract", "inputs": [] },
+  { "type": "error", "name": "OnlyMarketContract", "inputs": [] },
   { "type": "error", "name": "ZeroAddress", "inputs": [] }
 ]
