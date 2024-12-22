@@ -21,9 +21,10 @@ contract AAAMarket {
     mapping(uint256 => AAALibrary.Order) private _orders;
 
     event CollectionPurchased(
-        uint256 indexed collectionId,
-        address indexed buyer,
+        uint256 indexed orderId,
+        uint256 collectionId,
         uint256 amount,
+        address buyer,
         address paymentToken
     );
 
@@ -141,9 +142,10 @@ contract AAAMarket {
             _totalPrice
         );
         emit CollectionPurchased(
+            _orderCounter,
             collectionId,
-            msg.sender,
             amount,
+            msg.sender,
             paymentToken
         );
     }
@@ -239,6 +241,10 @@ contract AAAMarket {
         uint256 orderId
     ) public view returns (uint256[] memory) {
         return _orders[orderId].mintedTokens;
+    }
+
+    function getOrderTotalPrice(uint256 orderId) public view returns (uint256) {
+        return _orders[orderId].totalPrice;
     }
 
     function getOrderCounter() public view returns (uint256) {

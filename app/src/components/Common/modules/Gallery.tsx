@@ -27,7 +27,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
                   onClick={() => router.push(`/nft/${(nft as NFTData)?.id}`)}
                 >
                   <Image
-                    src={`${INFURA_GATEWAY}/ipfs/${(nft as NFTData).url}`}
+                    src={`${INFURA_GATEWAY}/ipfs/${(nft as NFTData).image}`}
                     alt={"NFT " + (nft as NFTData).id}
                     className="w-full h-full flex relative"
                     layout="fill"

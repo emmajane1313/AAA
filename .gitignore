@@ -56,3 +56,41 @@ out/
 # typescript
 /app/*.tsbuildinfo
 /app/next-env.d.ts
+
+
+
+# Graph CLI generated artifacts
+/triplea/build/
+/triplea/generated/
+
+# Dependency directories
+/triplea/node_modules/
+/triplea/jspm_packages/
+
+# Logs
+/triplea/logs
+/triplea/*.log
+/triplea/npm-debug.log*
+/triplea/yarn-debug.log*
+/triplea/yarn-error.log*
+
+# Optional npm cache directory
+/triplea/.npm
+
+# Optional eslint cache
+/triplea/.eslintcache
+
+# dotenv environment variables file
+/triplea/.env
+
+# Testing
+/triplea/coverage
+/triplea/coverage.json
+
+# Typechain
+/triplea/typechain
+/triplea/typechain-types
+
+# Hardhat files
+/triplea/cache
+/triplea/package-lock.json

@@ -96,6 +96,14 @@ export interface Agent {
   name: string;
   description: string;
   wallet: string;
+  balance: Balances[];
+}
+
+export interface Balances {
+  token: string;
+  activeBalance: number;
+  totalBalance: number;
+  collectionId: number;
 }
 
 export interface DropInterface {
@@ -114,6 +122,7 @@ export interface Order {
   mintedTokenIds: string[];
   blockTimestamp: string;
   collection: NFTData;
+  buyer: string;
 }
 
 export type DropsSwitchProps = {

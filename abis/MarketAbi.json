@@ -125,6 +125,17 @@
   },
   {
     "type": "function",
+    "name": "getOrderTotalPrice",
+    "inputs": [
+      { "name": "orderId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "uint256", "internalType": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getOrderToken",
     "inputs": [
       { "name": "orderId", "type": "uint256", "internalType": "uint256" }
@@ -199,22 +210,28 @@
     "name": "CollectionPurchased",
     "inputs": [
       {
-        "name": "collectionId",
+        "name": "orderId",
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
       },
       {
-        "name": "buyer",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
       },
       {
         "name": "amount",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
+      },
+      {
+        "name": "buyer",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
       },
       {
         "name": "paymentToken",

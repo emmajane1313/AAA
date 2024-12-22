@@ -264,7 +264,7 @@
   },
   {
     "type": "event",
-    "name": "CollectionsCreated",
+    "name": "CollectionCreated",
     "inputs": [
       {
         "name": "artist",

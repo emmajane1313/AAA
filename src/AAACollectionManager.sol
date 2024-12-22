@@ -15,7 +15,7 @@ contract AAACollectionManager {
     address public market;
     AAAAccessControls public accessControls;
 
-    event CollectionsCreated(
+    event CollectionCreated(
         address artist,
         uint256 collectionId,
         uint256 indexed dropId
@@ -83,7 +83,7 @@ contract AAACollectionManager {
         });
 
         _drops[_dropValue].collectionIds.push(_collectionCounter);
-        emit CollectionsCreated(msg.sender, _collectionCounter, _dropValue);
+        emit CollectionCreated(msg.sender, _collectionCounter, _dropValue);
     }
 
     function deleteCollection(uint256 collectionId) external {

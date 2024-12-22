@@ -2,7 +2,7 @@ import { newMockEvent } from "matchstick-as"
 import { ethereum, Address, BigInt } from "@graphprotocol/graph-ts"
 import {
   CollectionDeleted,
-  CollectionsCreated,
+  CollectionCreated,
   DropCreated,
   DropDeleted
 } from "../generated/AAACollectionManager/AAACollectionManager"
@@ -28,29 +28,29 @@ export function createCollectionDeletedEvent(
   return collectionDeletedEvent
 }
 
-export function createCollectionsCreatedEvent(
+export function createCollectionCreatedEvent(
   artist: Address,
   collectionId: BigInt,
   dropId: BigInt
-): CollectionsCreated {
-  let collectionsCreatedEvent = changetype<CollectionsCreated>(newMockEvent())
+): CollectionCreated {
+  let collectionCreatedEvent = changetype<CollectionCreated>(newMockEvent())
 
-  collectionsCreatedEvent.parameters = new Array()
+  collectionCreatedEvent.parameters = new Array()
 
-  collectionsCreatedEvent.parameters.push(
+  collectionCreatedEvent.parameters.push(
     new ethereum.EventParam("artist", ethereum.Value.fromAddress(artist))
   )
-  collectionsCreatedEvent.parameters.push(
+  collectionCreatedEvent.parameters.push(
     new ethereum.EventParam(
       "collectionId",
       ethereum.Value.fromUnsignedBigInt(collectionId)
     )
   )
-  collectionsCreatedEvent.parameters.push(
+  collectionCreatedEvent.parameters.push(
     new ethereum.EventParam("dropId", ethereum.Value.fromUnsignedBigInt(dropId))
   )
 
-  return collectionsCreatedEvent
+  return collectionCreatedEvent
 }
 
 export function createDropCreatedEvent(

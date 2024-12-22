@@ -11,7 +11,7 @@ const useNFT = (id: string) => {
     try {
       setNft({
         id: Number(id),
-        url: "",
+        image: "",
         title: "NFT " + id,
         description: "Some description here",
         blocktimestamp: "",

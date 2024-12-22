@@ -10,7 +10,17 @@ const useGallery = () => {
   const fetchNFTs = async (page: number): Promise<NFTData[]> => {
     return Array.from({ length: 20 }, (_, id: number) => ({
       id,
-      url: "",
+      cover: "",
+      title: "",
+      description: "",
+      tokenIds: [],
+      agents: [],
+      prices: [],
+      tokens: [],
+      artist: "",
+      blocktimestamp: "",
+      amount: 2,
+      amountSold: 0,
     }));
   };
 
@@ -48,10 +58,8 @@ const useGallery = () => {
     nfts,
     getRandomSize,
     hasMore,
-    loading
+    loading,
   };
 };
 
 export default useGallery;
-
-

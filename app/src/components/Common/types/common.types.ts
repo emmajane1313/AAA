@@ -1,6 +1,6 @@
 export interface NFTData {
   id: number;
-  url: string;
+  image: string;
   title: string;
   description: string;
   blocktimestamp: string;

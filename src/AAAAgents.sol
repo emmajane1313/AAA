@@ -20,8 +20,18 @@ contract AAAAgents {
     event AgentCreated(address wallet, address creator, uint256 indexed id);
     event AgentDeleted(uint256 indexed id);
     event AgentEdited(uint256 indexed id);
-    event BalanceAdded(address token, uint256 agentId, uint256 amount);
-    event BalanceWithdrawn(address token, uint256 agentId, uint256 amount);
+    event BalanceAdded(
+        address token,
+        uint256 agentId,
+        uint256 amount,
+        uint256 collectionId
+    );
+    event BalanceWithdrawn(
+        address token,
+        uint256 agentId,
+        uint256 amount,
+        uint256 collectionId
+    );
 
     modifier onlyAdmin() {
         if (!accessControls.isAdmin(msg.sender)) {
@@ -92,7 +102,7 @@ contract AAAAgents {
         _agentTotalBalances[agentId][token][collectionId] += amount;
         _agents[agentId].collectionIdsHistory.push(collectionId);
 
-        emit BalanceAdded(token, agentId, amount);
+        emit BalanceAdded(token, agentId, amount, collectionId);
     }
 
     function withdrawBalance(
@@ -116,7 +126,7 @@ contract AAAAgents {
 
         _agentActiveBalances[agentId][token][collectionId] -= amount;
 
-        emit BalanceWithdrawn(token, agentId, amount);
+        emit BalanceWithdrawn(token, agentId, amount, collectionId);
     }
 
     function getAgentCounter() public view returns (uint256) {

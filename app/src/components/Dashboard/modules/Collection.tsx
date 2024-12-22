@@ -63,7 +63,7 @@ const Collection: FunctionComponent<CollectionProps> = ({
                           layout="fill"
                           draggable={false}
                           alt={collection?.title}
-                          src={`${INFURA_GATEWAY}/ipfs/${collection?.url}`}
+                          src={`${INFURA_GATEWAY}/ipfs/${collection?.image}`}
                           className="rounded-md"
                         />
                       </div>
