@@ -55,17 +55,20 @@ impl AgentManager {
     async fn pay_rent(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
         let rent_amounts = vec![];
 
-        let method = self.agents_contract.method::<_, H256>(
-            "payRent",
-            (
-                self.current_queue
-                    .iter()
-                    .map(|item| item.collection.collection_id),
-                vec![],
-                rent_amounts,
-                self.agent.id,
-            ),
-        );
+        let method = self
+            .agents_contract
+            .method::<(Vec<Address>, Vec<U256>, Vec<U256>, u32), H256>(
+                "payRent",
+                (
+                    vec![],
+                    self.current_queue
+                        .iter()
+                        .map(|item| item.collection.collection_id)
+                        .collect::<Vec<U256>>(),
+                    rent_amounts,
+                    self.agent.id,
+                ),
+            );
 
         match method {
             Ok(call) => {
@@ -111,7 +114,10 @@ impl AgentManager {
                     Ok(())
                 } else {
                     eprintln!("Error in sending Transaction");
-                    Err(Box::new("Error in sending Transaction".into()))
+                    Err(Box::new(io::Error::new(
+                        io::ErrorKind::Other,
+                        "Error in sending Transaction",
+                    )))
                 }
             }
 
@@ -179,7 +185,7 @@ impl AgentManager {
                 eprintln!("Time out: {:?}", err);
                 Err(Box::new(io::Error::new(
                     io::ErrorKind::TimedOut,
-                    err.to_string(),
+                    format!("Timeout: {:?}", err),
                 )))
             }
         }
@@ -207,6 +213,8 @@ impl AgentManager {
                 "Processing collection ID: {:?}",
                 collection.collection.collection_id
             );
+
+            // subir a ipfs, hacer la publicacion, elimina la coleccion de la fila
 
             if interval > 0 {
                 time::sleep(std::time::Duration::from_secs(interval as u64)).await;

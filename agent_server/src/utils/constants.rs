@@ -5,11 +5,11 @@ use ethers::addressbook::Chain;
 use once_cell::sync::Lazy;
 
 pub static LENS_HUB_PROXY: &'static str = "";
-pub static MARKET: &'static str = "";
 pub static AGENTS: &'static str = "";
-pub static DEV_TREASURY: &'static str = "";
+pub static LENS_API: &'static str = "https://api.testnet.lens.dev/graphql";
 pub static LENS_RPC_URL: &'static str = "https://rpc.testnet.lens.dev";
 pub static AAA_URI: &str = "https://api.studio.thegraph.com/query/37770/triplea/version/latest";
+pub static LLAMA_URL: &'static str = "https://glorious-eft-deeply.ngrok-free.app/run_llama";
 
 pub static LENS_CHAIN_ID: LazyLock<Chain> =
     LazyLock::new(|| Chain::try_from(37111 as u64).expect("Invalid chain ID"));
