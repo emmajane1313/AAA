@@ -1,16 +1,14 @@
 use ethers::{
+    abi::{Token, Tokenizable, Tokenize},
     contract::ContractInstance,
     core::k256::ecdsa::SigningKey,
     middleware::SignerMiddleware,
     providers::{Http, Provider},
     signers::Wallet,
-    types::U256,
+    types::{Address, Bytes, U256},
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-
-#[derive(Clone)]
-pub struct Llama;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TripleAAgent {
@@ -22,6 +20,7 @@ pub struct TripleAAgent {
     pub clock: u32,
     pub last_active_time: u32,
     pub daily_active: u32,
+    pub profile_id: U256,
 }
 
 #[derive(Debug, Clone)]
@@ -40,6 +39,7 @@ pub struct AgentManager {
             SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,
         >,
     >,
+    pub tokens: Option<SavedTokens>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -59,8 +59,6 @@ pub struct AgentActivity {
     pub token: String,
     pub amount: U256,
 }
-
-
 
 #[derive(Debug, Clone, Serialize)]
 pub struct LlamaOptions {
@@ -107,4 +105,86 @@ pub struct LensTokens {
     pub access_token: String,
     pub refresh_token: String,
     pub identity_token: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LlamaResponse {
+    pub response: String,
+    pub json: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Publication {
+    #[serde(rename = "$schema")]
+    pub schema: String,
+    pub lens: Content,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MetadataAttribute {
+    pub key: String,
+    #[serde(rename = "type")]
+    pub tipo: String,
+    pub value: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub struct Image {
+    #[serde(rename = "type")]
+    pub tipo: String,
+    pub item: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Content {
+    pub mainContentFocus: String,
+    pub title: String,
+    pub content: String,
+    pub appId: String,
+    pub id: String,
+    pub hideFromFeed: bool,
+    pub locale: String,
+    pub tags: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image: Option<Image>,
+    pub attributes: Option<Vec<MetadataAttribute>>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MakePub {
+    pub profileId: U256,
+    pub contentURI: String,
+    pub actionModules: Vec<Address>,
+    pub actionModulesInitDatas: Vec<Bytes>,
+    pub referenceModule: Address,
+    pub referenceModuleInitData: Bytes,
+}
+
+impl Tokenize for MakePub {
+    fn into_tokens(self) -> Vec<Token> {
+        vec![
+            Token::Uint(self.profileId),
+            Token::String(self.contentURI),
+            Token::Array(
+                self.actionModules
+                    .into_iter()
+                    .map(|addr| addr.into_token())
+                    .collect(),
+            ),
+            Token::Array(
+                self.actionModulesInitDatas
+                    .into_iter()
+                    .map(|data| Token::Bytes(data.to_vec()))
+                    .collect(),
+            ),
+            self.referenceModule.into_token(),
+            Token::Bytes(self.referenceModuleInitData.to_vec()),
+        ]
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SavedTokens {
+    pub tokens: LensTokens,
+    pub expiry: i64,
 }

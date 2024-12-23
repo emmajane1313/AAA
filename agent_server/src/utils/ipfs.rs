@@ -14,16 +14,16 @@ use std::{
 use crate::IPFSResponse;
 
 static INIT: Once = Once::new();
-static mut CLIENTE: Option<Arc<Client>> = None;
+static mut CLIENT: Option<Arc<Client>> = None;
 
-pub fn cliente() -> Arc<Client> {
+pub fn create_client() -> Arc<Client> {
     unsafe {
         INIT.call_once(|| {
             dotenv().ok();
             let client = Client::new();
-            CLIENTE = Some(Arc::new(client));
+            CLIENT = Some(Arc::new(client));
         });
-        CLIENTE.clone().expect("Cliente no es inicializado")
+        CLIENT.clone().expect("Client not initialized")
     }
 }
 
@@ -36,7 +36,7 @@ pub fn authentication() -> String {
 }
 
 pub async fn upload_ipfs(data: String) -> Result<IPFSResponse, Box<dyn Error>> {
-    let client = cliente();
+    let client = create_client();
     let aut_encoded = authentication();
 
     let form: Form = Form::new().part("file", Part::text(data.clone()).file_name("data.json"));
