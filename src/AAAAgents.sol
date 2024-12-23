@@ -137,6 +137,15 @@ contract AAAAgents {
             revert AAAErrors.NotAgent();
         }
 
+        for (uint256 i = 0; i < collectionIds.length; i++) {
+            if (
+                _agentActiveBalances[agentId][tokens[i]][collectionIds[i]] <
+                amounts[i]
+            ) {
+                revert AAAErrors.InsufficientBalance();
+            }
+        }
+
         devTreasury.agentPayRent(tokens, collectionIds, amounts, agentId);
 
         emit BalanceWithdrawn(tokens, collectionIds, amounts, agentId);

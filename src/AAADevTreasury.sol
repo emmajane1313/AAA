@@ -91,18 +91,6 @@ contract AAADevTreasury {
         }
 
         for (uint256 i = 0; i < collectionIds.length; i++) {
-            if (
-                agents.getAgentActiveBalance(
-                    tokens[i],
-                    agentId,
-                    collectionIds[i]
-                ) < amounts[i]
-            ) {
-                revert AAAErrors.InsufficientBalance();
-            }
-        }
-
-        for (uint256 i = 0; i < collectionIds.length; i++) {
             IERC20(tokens[i]).transferFrom(
                 address(this),
                 msg.sender,

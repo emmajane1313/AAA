@@ -12,13 +12,15 @@ use crate::{
 use chrono::{Timelike, Utc};
 use ethers::{
     abi::{Token, Tokenize},
-    contract::FunctionCall,
-    middleware::Middleware,
-    types::{Address, Bytes, Eip1559TransactionRequest, NameOrAddress, H256, U256},
+    contract::{self, FunctionCall},
+    middleware::{Middleware, SignerMiddleware},
+    providers::{Http, Provider},
+    signers::LocalWallet,
+    types::{Address, Bytes, Eip1559TransactionRequest, NameOrAddress, H160, H256, U256},
 };
 use reqwest::{get, Client};
 use serde_json::{from_str, from_value, json, to_string, Value};
-use std::{error::Error, io, str::FromStr};
+use std::{error::Error, io, str::FromStr, sync::Arc};
 use tokio::time;
 use uuid::Uuid;
 
@@ -146,79 +148,131 @@ impl AgentManager {
         }
     }
 
-    async fn pay_rent(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let rent_amounts = vec![];
+    async fn pay_rent(&mut self) -> Result<(), Box<dyn Error + Send + Sync>> {
+        let mut rent_amounts: Vec<U256> = Vec::new();
+        let mut rent_tokens: Vec<H160> = vec![];
+        let mut rent_collection_ids: Vec<U256> = vec![];
 
-        let method = self
-            .agents_contract
-            .method::<(Vec<Address>, Vec<U256>, Vec<U256>, u32), H256>(
-                "payRent",
-                (
-                    vec![],
-                    self.current_queue
-                        .iter()
-                        .map(|item| item.collection.collection_id)
-                        .collect::<Vec<U256>>(),
-                    rent_amounts,
-                    self.agent.id,
-                ),
-            );
+        for collection in &self.current_queue {
+            for token in &collection.collection.tokens {
+                let method = self.agents_contract.method::<_, U256>(
+                    "getAgentActiveBalance",
+                    (
+                        token.to_string(),
+                        self.agent.id,
+                        collection.collection.collection_id,
+                    ),
+                );
 
-        match method {
-            Ok(call) => {
-                let FunctionCall { tx, .. } = call;
+                match method {
+                    Ok(call) => {
+                        let result: Result<
+                            U256,
+                            contract::ContractError<
+                                SignerMiddleware<Arc<Provider<Http>>, LocalWallet>,
+                            >,
+                        > = call.call().await;
 
-                if let Some(tx_request) = tx.as_eip1559_ref() {
-                    let gas_price = U256::from(500_000_000_000u64);
-                    let max_priority_fee = U256::from(25_000_000_000u64);
-                    let gas_limit = U256::from(300_000);
-
-                    let client = self.agents_contract.client().clone();
-                    let chain_id = *LENS_CHAIN_ID;
-                    let req = Eip1559TransactionRequest {
-                        from: Some(self.agent.wallet.parse::<Address>().unwrap()),
-                        to: Some(NameOrAddress::Address(AGENTS.parse::<Address>().unwrap())),
-                        gas: Some(gas_limit),
-                        value: tx_request.value,
-                        data: tx_request.data.clone(),
-                        max_priority_fee_per_gas: Some(max_priority_fee),
-                        max_fee_per_gas: Some(gas_price + max_priority_fee),
-                        chain_id: Some(chain_id.into()),
-                        ..Default::default()
-                    };
-
-                    let pending_tx = match client.send_transaction(req, None).await {
-                        Ok(tx) => tx,
-                        Err(e) => {
-                            eprintln!("Error sending the transaction for payRent: {:?}", e);
-                            Err(Box::new(e))?
+                        match result {
+                            Ok(balance) => {
+                                if balance >= U256::from(10 * 10u128.pow(18)) {
+                                    rent_tokens.push(H160::from_str(token).unwrap());
+                                    rent_amounts.push(U256::from(10 * 10u128.pow(18)));
+                                    rent_collection_ids.push(collection.collection.collection_id);
+                                }
+                            }
+                            Err(err) => {
+                                eprintln!("Error calling token balance: {}", err);
+                            }
                         }
-                    };
-
-                    let tx_hash = match pending_tx.confirmations(1).await {
-                        Ok(hash) => hash,
-                        Err(e) => {
-                            eprintln!("Error with transaction confirmation: {:?}", e);
-                            Err(Box::new(e))?
-                        }
-                    };
-
-                    println!("Transaction sent with has: {:?}", tx_hash);
-
-                    Ok(())
-                } else {
-                    eprintln!("Error in sending Transaction");
-                    Err(Box::new(io::Error::new(
-                        io::ErrorKind::Other,
-                        "Error in sending Transaction",
-                    )))
+                    }
+                    Err(err) => {
+                        eprintln!("Error getting active token balance: {}", err);
+                    }
                 }
             }
+        }
 
-            Err(err) => {
-                eprintln!("Error in create method for payRent: {:?}", err);
-                Err(Box::new(err))
+        if rent_amounts.len() > 0 {
+            let method = self
+                .agents_contract
+                .method::<(Vec<Address>, Vec<U256>, Vec<U256>, u32), H256>(
+                    "payRent",
+                    (
+                        rent_tokens,
+                        rent_collection_ids.clone(),
+                        rent_amounts,
+                        self.agent.id,
+                    ),
+                );
+
+            match method {
+                Ok(call) => {
+                    let FunctionCall { tx, .. } = call;
+
+                    if let Some(tx_request) = tx.as_eip1559_ref() {
+                        let gas_price = U256::from(500_000_000_000u64);
+                        let max_priority_fee = U256::from(25_000_000_000u64);
+                        let gas_limit = U256::from(300_000);
+
+                        let client = self.agents_contract.client().clone();
+                        let chain_id = *LENS_CHAIN_ID;
+                        let req = Eip1559TransactionRequest {
+                            from: Some(self.agent.wallet.parse::<Address>().unwrap()),
+                            to: Some(NameOrAddress::Address(AGENTS.parse::<Address>().unwrap())),
+                            gas: Some(gas_limit),
+                            value: tx_request.value,
+                            data: tx_request.data.clone(),
+                            max_priority_fee_per_gas: Some(max_priority_fee),
+                            max_fee_per_gas: Some(gas_price + max_priority_fee),
+                            chain_id: Some(chain_id.into()),
+                            ..Default::default()
+                        };
+
+                        let pending_tx = match client.send_transaction(req, None).await {
+                            Ok(tx) => tx,
+                            Err(e) => {
+                                eprintln!("Error sending the transaction for payRent: {:?}", e);
+                                Err(Box::new(e))?
+                            }
+                        };
+
+                        let tx_hash = match pending_tx.confirmations(1).await {
+                            Ok(hash) => hash,
+                            Err(e) => {
+                                eprintln!("Error with transaction confirmation: {:?}", e);
+                                Err(Box::new(e))?
+                            }
+                        };
+
+                        println!("Transaction sent with has: {:?}", tx_hash);
+
+                        for collection in &rent_collection_ids {
+                            self.current_queue
+                                .retain(|item| &item.collection.collection_id == collection);
+                        }
+
+                        Ok(())
+                    } else {
+                        self.current_queue = Vec::new();
+                        eprintln!("Error in sending Transaction");
+                        Err(Box::new(io::Error::new(
+                            io::ErrorKind::Other,
+                            "Error in sending Transaction",
+                        )))
+                    }
+                }
+
+                Err(err) => {
+                    self.current_queue = Vec::new();
+                    eprintln!("Error in create method for payRent: {:?}", err);
+                    Err(Box::new(err))
+                }
             }
+        } else {
+            self.current_queue = Vec::new();
+
+            Ok(())
         }
     }
 
@@ -304,8 +358,7 @@ impl AgentManager {
 
         let mut i = 0;
 
-        while i < self.current_queue.len() {
-            let collection = &self.current_queue[i];
+        for collection in &self.current_queue {
             println!(
                 "Processing collection ID: {:?}",
                 collection.collection.collection_id
