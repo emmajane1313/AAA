@@ -1,0 +1,14 @@
+{
+  "lens-testnet": {
+    "AAACollectionManager": {
+      "address": "0x839d0C63495BeA892e292Be6DE7410BB93948F2E",
+      "startBlock": 81629
+    },
+    "AAAAgents": {
+      "address": "0x4eD74d03D9d4F6f4DC2E50DC2f0C701326DF156a"
+    },
+    "AAAMarkets": {
+      "address": "0xE50016e155Cf193E92cA48140Ee2501dB6f0F182"
+    }
+  }
+}

@@ -1,0 +1,103 @@
+# Compiler files
+/contracts/cache/
+/contracts/out/
+
+# Ignores development broadcast logs
+/contracts/!/broadcast
+/contracts/broadcast/*/31337/
+/contracts/broadcast/**/dry-run/
+
+# Docs
+/contracts/docs/
+/contracts/lib/
+/contracts/.github/
+
+.github/
+# Dotenv file
+/contracts/.env
+
+# dependencies
+/triplea_app/node_modules/
+/triplea_app/.pnp
+/triplea_app/.pnp.*
+/triplea_app/.yarn/*
+/triplea_app/!.yarn/patches
+/triplea_app/!.yarn/plugins
+/triplea_app/!.yarn/releases
+/triplea_app/!.yarn/versions
+
+# testing
+/triplea_app/coverage
+
+# next.js
+/triplea_app/.next/
+/triplea_app/out/
+
+# production
+/triplea_app/build
+
+# misc
+/triplea_app/.DS_Store
+/triplea_app/*.pem
+
+# debug
+/triplea_app/npm-debug.log*
+/triplea_app/yarn-debug.log*
+/triplea_app/yarn-error.log*
+/triplea_app/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+/triplea_app/.env
+
+/contracts/SolidityFlattery
+# vercel
+/triplea_app/.vercel
+/triplea_app/package-lock.json
+
+# typescript
+/triplea_app/*.tsbuildinfo
+/triplea_app/next-env.d.ts
+
+
+
+# Graph CLI generated artifacts
+/triplea/build/
+/triplea/generated/
+
+# Dependency directories
+/triplea/node_modules/
+/triplea/jspm_packages/
+
+# Logs
+/triplea/logs
+/triplea/*.log
+/triplea/npm-debug.log*
+/triplea/yarn-debug.log*
+/triplea/yarn-error.log*
+
+# Optional npm cache directory
+/triplea/.npm
+
+# Optional eslint cache
+/triplea/.eslintcache
+
+# dotenv environment variables file
+/triplea/.env
+
+# Testing
+/triplea/coverage
+/triplea/coverage.json
+
+# Typechain
+/triplea/typechain
+/triplea/typechain-types
+
+# Hardhat files
+/triplea/cache
+/triplea/package-lock.json
+
+zkout/
+
+/agent_server/.env
+/agent_server/Cargo.lock
+/agent_server/target/
