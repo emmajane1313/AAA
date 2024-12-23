@@ -1,10 +1,10 @@
 const { ethers } = require("ethers");
-const accessAbi = require("./abis/AccessControlsAbi.json");
-const nftAbi = require("./abis/NFTAbi.json");
-const marketAbi = require("./abis/MarketAbi.json");
-const agentsAbi = require("./abis/AgentsAbi.json");
-const devsAbi = require("./abis/DevTreasuryAbi.json");
-const collectionAbi = require("./abis/CollectionManagerAbi.json");
+const accessAbi = require("../abis/AccessControlsAbi.json");
+const nftAbi = require("../abis/NFTAbi.json");
+const marketAbi = require("../abis/MarketAbi.json");
+const agentsAbi = require("../abis/AgentsAbi.json");
+const devsAbi = require("../abis/DevTreasuryAbi.json");
+const collectionAbi = require("../abis/CollectionManagerAbi.json");
 require("dotenv").config();
 
 const provider = new ethers.JsonRpcProvider(

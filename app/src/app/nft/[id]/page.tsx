@@ -11,6 +11,7 @@ export default function NFT() {
   const id = useParams();
   const context = useContext(ModalContext);
   const { nft, nftLoading } = useNFT(id?.id as string);
+
   return (
     <div className="relative w-full h-full flex flex-row items-start justify-between gap-4 pb-10">
       <Data

@@ -1,7 +1,6 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   reactStrictMode: false,
+  swcMinify: true,
   experimental: {
     scrollRestoration: true,
     optimizeCss: true,
@@ -21,13 +20,7 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: true,
   async headers() {
-    let headersConfig: {
-      source: string;
-      headers: {
-        key: string;
-        value: string;
-      }[];
-    }[] = [];
+    let headersConfig = [];
 
     const allowedOrigins = ["https://thedial.infura-ipfs.io"];
     allowedOrigins.forEach((origin) => {

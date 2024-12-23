@@ -1,19 +1,20 @@
 # Compiler files
-cache/
-out/
+/contracts/cache/
+/contracts/out/
 
 # Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
+/contracts/!/broadcast
+/contracts/broadcast/*/31337/
+/contracts/broadcast/**/dry-run/
 
 # Docs
-/docs/
-/lib/
-.github/
+/contracts/docs/
+/contracts/lib/
+/contracts/.github/
 
+.github/
 # Dotenv file
-.env
+/contracts/.env
 
 # dependencies
 /app/node_modules/
@@ -48,7 +49,7 @@ out/
 # env files (can opt-in for committing if needed)
 /app/.env
 
-/SolidityFlattery
+/contracts/SolidityFlattery
 # vercel
 /app/.vercel
 /app/package-lock.json

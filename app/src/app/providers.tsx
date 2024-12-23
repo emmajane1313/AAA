@@ -6,10 +6,9 @@ import { WagmiProvider, http } from "wagmi";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { createContext, SetStateAction, useState } from "react";
 import { chains } from "@lens-network/sdk/viem";
-import { PublicClient, testnet } from "@lens-protocol/client";
+import { Context, PublicClient, testnet } from "@lens-protocol/client";
 import {
   Agent,
-  DropInterface,
 } from "@/components/Dashboard/types/dashboard.types";
 
 export const config = getDefaultConfig({
@@ -33,6 +32,7 @@ export const ModalContext = createContext<
       setImageView: (e: SetStateAction<string | undefined>) => void;
       agents: Agent[];
       setAgents: (e: SetStateAction<Agent[]>) => void;
+      lensClient: PublicClient<Context>
     }
   | undefined
 >(undefined);
@@ -40,7 +40,7 @@ export const ModalContext = createContext<
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [imageView, setImageView] = useState<string | undefined>();
   const [agents, setAgents] = useState<Agent[]>([]);
-  const clienteLens = PublicClient.create({
+  const lensClient = PublicClient.create({
     environment: testnet,
   });
 
@@ -54,6 +54,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               setImageView,
               agents,
               setAgents,
+              lensClient
             }}
           >
             {children}
