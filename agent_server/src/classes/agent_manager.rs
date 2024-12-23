@@ -3,7 +3,7 @@ use crate::{
         constants::{AAA_URI, AGENTS, LENS_CHAIN_ID, LENS_HUB_PROXY, OPEN_ACTION_MODULE},
         contracts::{initialize_api, initialize_contracts},
         ipfs::upload_ipfs,
-        lens::make_publication,
+        lens::{handle_tokens, make_publication},
         llama::call_llama,
         types::{AgentManager, Content, MakePub, Publication, TripleAAgent},
     },
@@ -88,14 +88,27 @@ impl AgentManager {
                         None => panic!("collection key not found in ipfs_json"),
                     };
 
-                    match self.format_publication(&llm_message, &collection).await {
-                        Ok(_) => {
-                            self.current_queue.retain(|item| {
-                                item.collection.collection_id != collection.collection_id
-                            });
+                    let tokens =
+                        handle_tokens(&self.agent.name, self.agent.profile_id, self.tokens.clone())
+                            .await;
+
+                    match tokens {
+                        Ok(new_tokens) => {
+                            self.tokens = Some(new_tokens);
+                            match self.format_publication(&llm_message, &collection).await {
+                                Ok(_) => {
+                                    self.current_queue.retain(|item| {
+                                        item.collection.collection_id != collection.collection_id
+                                    });
+                                }
+                                Err(err) => {
+                                    eprintln!("Error in making lens post: {:?}", err);
+                                }
+                            }
                         }
+
                         Err(err) => {
-                            eprintln!("Error in making lens post: {:?}", err);
+                            eprintln!("Error renewing Lens tokens: {:?}", err);
                         }
                     }
                 }
@@ -118,9 +131,14 @@ impl AgentManager {
             Ok(info) => {
                 self.current_queue = info;
 
-                self.pay_rent().await;
-
-                self.queue_lens_activity();
+                match self.pay_rent().await {
+                    Ok(_) => {
+                        self.queue_lens_activity().await;
+                    }
+                    Err(err) => {
+                        eprintln!("Error paying rent: {:?}", err);
+                    }
+                }
             }
             Err(err) => {
                 eprintln!("Error obtaining collection information: {:?}", err);

@@ -1,12 +1,19 @@
-use std::{collections::BTreeMap, sync::Arc};
+use std::{
+    collections::BTreeMap,
+    sync::Arc,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use crate::{
     utils::contracts::{initialize_api, initialize_wallet},
-    LensTokens,
+    LensTokens, SavedTokens,
 };
 use ethers::{
     signers::{LocalWallet, Signer},
-    types::transaction::eip712::{EIP712Domain, Eip712DomainType, TypedData},
+    types::{
+        transaction::eip712::{EIP712Domain, Eip712DomainType, TypedData},
+        U256,
+    },
     utils::hex,
 };
 use reqwest::Client;
@@ -14,7 +21,7 @@ use serde_json::{json, Value};
 
 use super::constants::LENS_API;
 
-pub async fn refresh(
+async fn refresh(
     client: Arc<Client>,
     refresh_tokens: &str,
     auth_tokens: &str,
@@ -72,7 +79,7 @@ pub async fn refresh(
     }
 }
 
-pub async fn authenticate(
+async fn authenticate(
     client: Arc<Client>,
     wallet: &LocalWallet,
     profile_id: &str,
@@ -173,6 +180,41 @@ pub async fn authenticate(
         }
     } else {
         return Err(format!("Error: {}", response.status()).into());
+    }
+}
+
+pub async fn handle_tokens(
+    private_key: &str,
+    profile_id: U256,
+    tokens: Option<SavedTokens>,
+) -> Result<SavedTokens, Box<dyn std::error::Error>> {
+    let client = initialize_api();
+    let wallet = initialize_wallet(&private_key);
+
+    if let Some(saved) = tokens {
+        let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
+
+        if now < saved.expiry.try_into().unwrap() {
+            return Ok(saved);
+        } else {
+            let new_tokens = refresh(
+                client,
+                &saved.tokens.refresh_token,
+                &saved.tokens.access_token,
+            )
+            .await?;
+
+            return Ok(SavedTokens {
+                expiry: (SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 30 * 60) as i64,
+                tokens: new_tokens,
+            });
+        }
+    } else {
+        let new_tokens = authenticate(client, &wallet, &format!("0x0{:x}", profile_id)).await?;
+        return Ok(SavedTokens {
+            expiry: (SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 30 * 60) as i64,
+            tokens: new_tokens,
+        });
     }
 }
 

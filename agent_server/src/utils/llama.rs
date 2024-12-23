@@ -33,6 +33,7 @@ pub async fn call_llama(
     let payload_inicial = serde_json::json!({
         "api_key": llama_key,
         "prompt": prompt.trim(),
+        "collection": collection,
         "model": "Meta-Llama-3.1-8B-Instruct-Q8_0.gguf",
         "options": LlamaOptions {
             num_keep: 5,
@@ -65,7 +66,7 @@ pub async fn call_llama(
             use_mlock: false,
             num_thread: 8
         },
-        "perfil_id": profile_id,
+        "profile_id": profile_id,
     });
 
     let response = cliente

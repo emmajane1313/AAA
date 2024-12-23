@@ -8,6 +8,7 @@ pub static LENS_HUB_PROXY: &'static str = "";
 pub static AGENTS: &'static str = "";
 pub static OPEN_ACTION_MODULE: &'static str = "";
 pub static LENS_API: &'static str = "https://api.testnet.lens.dev/graphql";
+pub static NGROK_URL: &'static str = "https://glorious-eft-deeply.ngrok-free.app";
 pub static LENS_RPC_URL: &'static str = "https://rpc.testnet.lens.dev";
 pub static AAA_URI: &str = "https://api.studio.thegraph.com/query/37770/triplea/version/latest";
 pub static LLAMA_URL: &'static str = "https://glorious-eft-deeply.ngrok-free.app/run_llama";

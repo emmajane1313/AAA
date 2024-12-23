@@ -1,12 +1,13 @@
 use chrono::{Timelike, Utc};
 use dotenv::dotenv;
-use futures_util::{future::try_join_all, lock::Mutex, SinkExt, StreamExt};
-use serde_json::{from_str, Value};
+use futures_util::StreamExt;
+use serde_json::{from_str, to_string, Value};
 use std::{collections::HashMap, env, error::Error, net::SocketAddr, sync::Arc, time::Duration};
-use tokio::net::{TcpListener, TcpStream};
 use tokio::{
-    spawn,
+    net::{TcpListener, TcpStream},
+    runtime, spawn,
     sync::RwLock,
+    task,
     time::{self},
 };
 use tokio_tungstenite::{
@@ -19,7 +20,10 @@ use tokio_tungstenite::{
 use tungstenite::http::method;
 mod classes;
 mod utils;
-use utils::{constants::AGENT_LIST, types::*};
+use utils::{
+    constants::{AGENT_LIST, NGROK_URL},
+    types::*,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -67,7 +71,7 @@ async fn handle_connection(
     stream: TcpStream,
     render_key: String,
     agents: Arc<RwLock<HashMap<u32, AgentManager>>>,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     let ws_stream = accept_hdr_async(stream, |req: &Request, respuesta: Response| {
         if req.method() != method::Method::GET && req.method() != method::Method::HEAD {
             return Err(ErrorResponse::new(Some(
@@ -88,7 +92,7 @@ async fn handle_connection(
                             match origen.to_str() {
                                 Ok(origen_str) => {
                                     // if origen_str ==
-                                    //          "https://glorious-eft-deeply.ngrok-free.app"
+                                    //          NGROK_URL
 
                                     // {
                                     return Ok(respuesta);
@@ -123,7 +127,7 @@ async fn handle_connection(
     })
     .await?;
 
-    let (mut write, mut read) = ws_stream.split();
+    let (_, mut read) = ws_stream.split();
 
     while let Some(Ok(msg)) = read.next().await {
         match msg {
@@ -133,26 +137,35 @@ async fn handle_connection(
                         if data_type == "llamaContent" {
                             if let Some(agent_key) = parsed.get("agent_key").and_then(Value::as_str)
                             {
-                                let mut agents_guard = agents.write().await;
+                                let agent_key = agent_key.parse::<u32>().unwrap_or_default();
 
-                                if let Some(agent) = agents_guard.get_mut(
-                                    &agent_key
-                                        .parse::<u32>()
-                                        .expect("Failed to parse string to u32"),
-                                ) {
-                                    if let Some(json) = parsed.get("json") {
-                                        if let Ok(json_string) = serde_json::to_string(json) {
-                                            agent.llama_response(&json_string);
-                                        } else {
-                                            eprintln!(
-                                                "Error al convertir el contenido JSON a cadena"
-                                            );
-                                        }
+                                if let Some(json) = parsed.get("json") {
+                                    if let Ok(json_string) = to_string(json) {
+                                        let agents_clone = agents.clone();
+                                        task::spawn_blocking(move || {
+                                            let rt = runtime::Handle::current();
+                                            rt.block_on(async move {
+                                                let mut agents_guard = agents_clone.write().await;
+
+                                                if let Some(agent) =
+                                                    agents_guard.get_mut(&agent_key)
+                                                {
+                                                    agent.llama_response(&json_string).await;
+                                                } else {
+                                                    eprintln!(
+                                                        "Agent not found for key: {}",
+                                                        agent_key
+                                                    );
+                                                }
+                                            });
+                                        });
+                                    } else {
+                                        eprintln!("Error converting JSON to string");
                                     }
                                 }
                             }
                         } else {
-                            eprintln!("Event not recognised: {}", data_type);
+                            eprintln!("Type not recognised: {}", data_type);
                         }
                     }
                 }
@@ -167,28 +180,37 @@ async fn handle_connection(
 
 async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
     loop {
-        let tasks = {
-            let agents_snapshot = agents.read().await.clone();
+        let agent_ids: Vec<u32>;
+        {
+            let agents_guard = agents.read().await;
 
-            agents_snapshot
+            agent_ids = agents_guard
                 .values()
-                .filter_map(|agent| {
-                    if should_trigger(&agent.agent) {
-                        let mut agent_clone = agent.clone();
-                        Some(spawn(async move {
-                            agent_clone.resolve_activity().await;
-                        }))
-                    } else {
-                        None
-                    }
-                })
-                .collect::<Vec<_>>()
-        };
+                .filter(|agent_manager| should_trigger(&agent_manager.agent))
+                .map(|agent_manager| agent_manager.agent.id)
+                .collect();
+        }
 
-        for task in tasks {
-            if let Err(e) = task.await {
-                eprintln!("Error executing agent activity: {}", e);
-            }
+        for id in agent_ids {
+            let agents_clone = agents.clone();
+            spawn(async move {
+                if let Some(mut agent_manager) = {
+                    let mut agents_guard = agents_clone.write().await;
+                    agents_guard.get_mut(&id).cloned()
+                } {
+                    spawn(async move {
+                        agent_manager.resolve_activity().await;
+
+                        let agents_clone = agents_clone.clone();
+                        spawn(async move {
+                            let mut agents_guard = agents_clone.write().await;
+                            if let Some(manager) = agents_guard.get_mut(&id) {
+                                *manager = agent_manager;
+                            }
+                        });
+                    });
+                }
+            });
         }
 
         time::sleep(Duration::from_secs(60)).await;
