@@ -1,6 +1,6 @@
 import { FunctionComponent, JSX, useContext } from "react";
 import useDashboard from "../hooks/useDashboard";
-import { Switcher } from "../types/dashboard.types";
+import { MintSwitcher, Switcher } from "../types/dashboard.types";
 import Agents from "./Agents";
 import MintSwitch from "./MintSwitch";
 import Sales from "./Sales";
@@ -8,8 +8,11 @@ import Collects from "./Collects";
 import { ModalContext } from "@/app/providers";
 import DropsSwitch from "./DropsSwitch";
 import Account from "./Account";
+import { useAccount } from "wagmi";
 
 const DashboardSwitch: FunctionComponent = (): JSX.Element => {
+  const { address } = useAccount();
+  const context = useContext(ModalContext);
   const {
     setSwitcher,
     switcher,
@@ -17,8 +20,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
     setMintSwitcher,
     allDrops,
     allDropsLoading,
-  } = useDashboard();
-  const context = useContext(ModalContext);
+  } = useDashboard(address, context?.lensConnected);
 
   switch (switcher) {
     case Switcher.Account:
@@ -36,6 +38,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
           setSwitcher={setSwitcher}
           allDrops={allDrops}
           allDropsLoading={allDropsLoading}
+          lensClient={context?.lensClient!}
         />
       );
 
@@ -50,6 +53,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
           setAgents={context?.setAgents!}
           agents={context?.agents!}
           setSwitcher={setSwitcher}
+          lensConnected={context?.lensConnected!}
         />
       );
 
@@ -85,6 +89,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
               setAgents={context?.setAgents!}
               allDrops={allDrops}
               allDropsLoading={allDropsLoading}
+              lensConnected={context?.lensConnected!}
             />
             <div className="relative w-full h-fit flex items-end justify-between flex-row gap-4">
               <div
@@ -95,7 +100,11 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
                 }`}
                 onClick={() =>
                   setMintSwitcher(
-                    mintSwitcher > 0 ? mintSwitcher - 1 : mintSwitcher
+                    mintSwitcher !== MintSwitcher.Success
+                      ? mintSwitcher > 0
+                        ? mintSwitcher - 1
+                        : mintSwitcher
+                      : 0
                   )
                 }
               >

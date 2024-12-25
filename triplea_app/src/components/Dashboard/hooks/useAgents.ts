@@ -2,10 +2,13 @@ import { SetStateAction, useEffect, useState } from "react";
 import { Agent } from "../types/dashboard.types";
 import { getAgents } from "../../../../graphql/queries/getAgents";
 import { INFURA_GATEWAY } from "@/lib/constants";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
+import { evmAddress, SessionClient } from "@lens-protocol/client";
 
 const useAgents = (
   agents: Agent[],
-  setAgents: (e: SetStateAction<Agent[]>) => void
+  setAgents: (e: SetStateAction<Agent[]>) => void,
+  lensClient: SessionClient
 ) => {
   const [agentsLoading, setAgentsLoading] = useState<boolean>(false);
 
@@ -24,13 +27,21 @@ const useAgents = (
             agent.metadata = await cadena.json();
           }
 
+          const result = await fetchAccountsAvailable(
+            {
+              managedBy: evmAddress(agent?.wallet),
+            },
+            lensClient
+          );
+
           return {
             id: agent?.AAAAgents_id,
-            cover: agent?.metadata?.image,
-            name: agent?.metadata?.name,
+            cover: agent?.metadata?.cover,
+            title: agent?.metadata?.title,
             description: agent?.metadata?.description,
             wallet: agent?.wallet,
             balance: agent?.balances,
+            profile: (result as any)?.[0]?.account,
           };
         })
       );

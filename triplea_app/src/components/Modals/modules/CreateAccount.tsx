@@ -9,9 +9,16 @@ const CreateAccount: FunctionComponent<CreateAccountProps> = ({
   lensConnected,
   setLensConnected,
   setCreateAccount,
+  setError,
 }): JSX.Element => {
   const { account, accountLoading, setAccount, handleCreateAccount } =
-    useCreateAccount(address, lensConnected, setLensConnected, setCreateAccount);
+    useCreateAccount(
+      address,
+      lensConnected,
+      setLensConnected,
+      setCreateAccount,
+      setError
+    );
   return (
     <div
       className="inset-0 justify-center fixed z-50 bg-opacity-50 backdrop-blur-sm overflow-y-hidden grid grid-flow-col auto-cols-auto w-full h-auto cursor-pointer items-center justify-center"

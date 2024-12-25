@@ -31,14 +31,16 @@ const Gallery: FunctionComponent = (): JSX.Element => {
                 className={`${getRandomSize()} bg-gray-200 flex relative cursor-pointer rounded-md shadow-sm border border-ligero`}
                 onClick={() =>
                   router.push(
-                    `/nft/${(nft as NFTData)?.profile?.username?.value}/${
-                      (nft as NFTData)?.profile?.username?.value
+                    `/nft/${
+                      (nft as NFTData)?.profile?.username?.value?.split(
+                        "lens/"
+                      )?.[1]
                     }/${(nft as NFTData)?.id}`
                   )
                 }
               >
                 <Image
-                  src={`${INFURA_GATEWAY}/ipfs/${(nft as NFTData).image}`}
+                  src={`${INFURA_GATEWAY}/ipfs/${(nft as NFTData).image?.split("ipfs://")?.[1]}`}
                   alt={"NFT " + (nft as NFTData).id}
                   className="w-full h-full flex relative"
                   layout="fill"

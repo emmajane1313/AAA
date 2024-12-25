@@ -52,19 +52,23 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                 >
                   <div className="relative w-full h-full rounded-md flex">
                     <Image
-                      objectFit="cover"
+                      objectFit="contain"
                       layout="fill"
                       draggable={false}
-                      alt={agent?.name}
-                      src={`${INFURA_GATEWAY}/ipfs/${agent?.cover}`}
+                      alt={agent?.title}
+                      src={`${INFURA_GATEWAY}/ipfs/${
+                        agent?.cover?.includes("ipfs")
+                          ? agent?.cover?.split("ipfs://")?.[1]
+                          : agent?.cover
+                      }`}
                       className="rounded-md"
                     />
                   </div>
                   <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
                     <div className="relative w-fit h-fit flex text-lg">
-                      {agent.name}
+                      {agent.title}
                     </div>
-                    <div className="relative w-fit h-fit flex text-sm">
+                    <div className="relative w-fit overflow-y-scroll max-h-40 h-fit flex text-sm">
                       {agent.description}
                     </div>
                   </div>

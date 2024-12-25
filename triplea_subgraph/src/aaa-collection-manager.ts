@@ -1,4 +1,4 @@
-import { Address, ByteArray, Bytes, store } from "@graphprotocol/graph-ts";
+import { Address, ByteArray, Bytes, log, store } from "@graphprotocol/graph-ts";
 import {
   AAACollectionManager,
   CollectionDeleted as CollectionDeletedEvent,
@@ -93,12 +93,22 @@ export function handleDropCreated(event: DropCreatedEvent): void {
   let collectionManager = AAACollectionManager.bind(
     Address.fromString("0x839d0C63495BeA892e292Be6DE7410BB93948F2E")
   );
-  entity.uri = collectionManager.getDropMetadata(entity.dropId);
+  let uriResult = collectionManager.try_getDropMetadata(entity.dropId);
+  if (uriResult.reverted) {
+    log.warning("getDropMetadata reverted for dropId: {}", [
+      entity.dropId.toString(),
+    ]);
+    return;
+  }
+  entity.uri = uriResult.value;
 
-  let ipfsHash = (entity.uri as String).split("/").pop();
-  if (ipfsHash != null) {
-    entity.metadata = ipfsHash;
-    DropMetadataTemplate.create(ipfsHash);
+  // log.debug("entity uri {}", [entity.uri as string]);
+  if (entity.uri !== null) {
+    let ipfsHash = (entity.uri as string).split("/").pop();
+    if (ipfsHash != null) {
+      entity.metadata = ipfsHash;
+      DropMetadataTemplate.create(ipfsHash);
+    }
   }
 
   entity.collectionIds = collectionManager.getDropCollectionIds(entity.dropId);

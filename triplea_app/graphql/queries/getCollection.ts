@@ -2,8 +2,8 @@ import { aaaClient } from "@/lib/graph/client";
 import { FetchResult, gql } from "@apollo/client";
 
 const COLLECTION = gql`
-  query ($collection_id: Int!) {
-    collectionCreateds(where: { collection_id: $collection_id }, first: 1) {
+  query ($collectionId: Int!) {
+    collectionCreateds(where: { collectionId: $collectionId }, first: 1) {
       id
       artist
       collectionId
@@ -27,12 +27,12 @@ const COLLECTION = gql`
 `;
 
 export const getCollection = async (
-  collection_id: number
+  collectionId: number
 ): Promise<FetchResult | void> => {
   let timeoutId: NodeJS.Timeout | undefined;
   const queryPromise = aaaClient.query({
     query: COLLECTION,
-    variables: { collection_id },
+    variables: { collectionId },
     fetchPolicy: "no-cache",
     errorPolicy: "all",
   });

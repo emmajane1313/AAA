@@ -1,5 +1,5 @@
 import { LensConnected, NFTData } from "@/components/Common/types/common.types";
-import { PublicClient } from "@lens-protocol/client";
+import { Account, PublicClient } from "@lens-protocol/client";
 import { SetStateAction } from "react";
 
 export enum Switcher {
@@ -17,6 +17,7 @@ export enum MintSwitcher {
   Agent,
   Drop,
   Mint,
+  Success,
 }
 
 export enum DropSwitcher {
@@ -31,6 +32,7 @@ export type MintSwitchProps = {
   agents: Agent[];
   allDrops: DropInterface[];
   allDropsLoading: boolean;
+  lensConnected: LensConnected;
 };
 
 export type DropsProps = {
@@ -79,6 +81,7 @@ export type AgentProps = {
   setSwitcher: (e: SetStateAction<Switcher>) => void;
   agents: Agent[];
   setAgents: (e: SetStateAction<Agent[]>) => void;
+  lensConnected: LensConnected | undefined;
 };
 
 export type AccountProps = {
@@ -103,10 +106,11 @@ export type MintData = {
 export interface Agent {
   id: string;
   cover: string;
-  name: string;
+  title: string;
   description: string;
   wallet: string;
   balance: Balances[];
+  profile?: Account;
 }
 
 export interface Balances {
@@ -131,6 +135,7 @@ export interface Order {
   collectionId: string;
   mintedTokenIds: string[];
   blockTimestamp: string;
+  transactionHash: string;
   collection: NFTData;
   buyer: string;
 }
@@ -139,10 +144,12 @@ export type DropsSwitchProps = {
   allDrops: DropInterface[];
   allDropsLoading: boolean;
   setSwitcher: (e: SetStateAction<Switcher>) => void;
+  lensClient: PublicClient;
 };
 
 export type CollectionProps = {
   setDropSwitcher: (e: SetStateAction<DropSwitcher>) => void;
   drop: DropInterface | undefined;
   setDrop: (e: SetStateAction<DropInterface | undefined>) => void;
+  lensClient: PublicClient;
 };

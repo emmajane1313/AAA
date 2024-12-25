@@ -9,6 +9,7 @@ import ChooseAgent from "./ChooseAgent";
 import { createPublicClient, http } from "viem";
 import { useAccount } from "wagmi";
 import { chains } from "@lens-network/sdk/viem";
+import { useRouter } from "next/navigation";
 
 const MintSwitch: FunctionComponent<MintSwitchProps> = ({
   mintSwitcher,
@@ -16,8 +17,10 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
   setAgents,
   agents,
   allDrops,
+  lensConnected,
 }): JSX.Element => {
   const { address } = useAccount();
+  const router = useRouter();
   const publicClient = createPublicClient({
     chain: chains.testnet,
     transport: http(
@@ -25,9 +28,8 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
       // `https://lens-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_LENS_KEY}`
     ),
   });
-  const { handleMint, mintLoading, mintData, setMintData, agentsLoading } =
-    useMint(agents, setAgents, publicClient, address);
-
+  const { handleMint, mintLoading, mintData, setMintData, agentsLoading, id } =
+    useMint(agents, setAgents, publicClient, address, setMintSwitcher, lensConnected?.sessionClient!);
   switch (mintSwitcher) {
     case MintSwitcher.Agent:
       return (
@@ -60,6 +62,27 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
           agents={agents}
           mintLoading={mintLoading}
         />
+      );
+
+    case MintSwitcher.Success:
+      return (
+        <div className="relative w-full h-full flex flex-col gap-6 items-center justify-center">
+          <div className="relative flex w-fit h-10 text-center text-black bg-gray-200 text-3xl">
+            Minted!
+          </div>
+          <div className="relative w-full h-fit flex items-center justify-center">
+            <div
+              className={`relative w-fit px-6 py-1 h-12 bg-black text-white cursor-pointer hover:opacity-70 text-base rounded-md flex items-center justify-center`}
+              onClick={() =>
+                router.push(
+                  `/nft/${lensConnected?.profile?.username?.localName}/${id}`
+                )
+              }
+            >
+              Go to NFT
+            </div>
+          </div>
+        </div>
       );
 
     default:

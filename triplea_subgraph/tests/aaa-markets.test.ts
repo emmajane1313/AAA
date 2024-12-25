@@ -8,9 +8,9 @@ import {
 } from "matchstick-as/assembly/index"
 import { BigInt, Address } from "@graphprotocol/graph-ts"
 import { CollectionPurchased } from "../generated/schema"
-import { CollectionPurchased as CollectionPurchasedEvent } from "../generated/AAAMarkets/AAAMarkets"
-import { handleCollectionPurchased } from "../src/aaa-markets"
-import { createCollectionPurchasedEvent } from "./aaa-markets-utils"
+import { CollectionPurchased as CollectionPurchasedEvent } from "../generated/AAAMarket/AAAMarket"
+import { handleCollectionPurchased } from "../src/aaa-market"
+import { createCollectionPurchasedEvent } from "./aaa-market-utils"
 
 // Tests structure (matchstick-as >=0.5.0)
 // https://thegraph.com/docs/en/developer/matchstick/#tests-structure-0-5-0

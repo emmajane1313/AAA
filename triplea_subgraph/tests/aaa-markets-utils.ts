@@ -1,6 +1,6 @@
 import { newMockEvent } from "matchstick-as"
 import { ethereum, BigInt, Address } from "@graphprotocol/graph-ts"
-import { CollectionPurchased } from "../generated/AAAMarkets/AAAMarkets"
+import { CollectionPurchased } from "../generated/AAAMarket/AAAMarket"
 
 export function createCollectionPurchasedEvent(
   collectionId: BigInt,

@@ -1,9 +1,12 @@
-import { NFTData } from "@/components/Common/types/common.types";
+import { Collector, NFTData } from "@/components/Common/types/common.types";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useEffect, useState } from "react";
 import { getCollection } from "../../../../graphql/queries/getCollection";
+import { evmAddress, PublicClient } from "@lens-protocol/client";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
+import { getCollectors } from "../../../../graphql/queries/getCollectors";
 
-const useNFT = (id: string) => {
+const useNFT = (id: string, lensClient: PublicClient) => {
   const [nft, setNft] = useState<NFTData | undefined>();
   const [nftLoading, setNftLoading] = useState<boolean>(false);
 
@@ -22,6 +25,38 @@ const useNFT = (id: string) => {
         collection.metadata = await cadena.json();
       }
 
+      const result = await fetchAccountsAvailable(
+        {
+          managedBy: evmAddress(collection?.artist),
+        },
+        lensClient
+      );
+
+      const res = await getCollectors(Number(id));
+
+      console.log({res})
+
+      let collectors: Collector[] = [];
+
+      for (let i = 0; i < res?.data?.orders?.length; i++) {
+        const accounts = await fetchAccountsAvailable(
+          {
+            managedBy: evmAddress(res?.data?.orders?.[i]?.buyer),
+          },
+          lensClient
+        );
+
+        collectors.push({
+          transactionHash: res?.data?.orders?.[i]?.transactionHash,
+          blockTimestamp: res?.data?.orders?.[i]?.blockTimestamp,
+          amount: res?.data?.orders?.[i]?.amount,
+          address: res?.data?.orders?.[i]?.buyer,
+          pfp: (accounts as any)?.[0]?.account?.username?.namespace?.metadata
+            ?.picture,
+          name: (accounts as any)?.[0]?.account?.username?.localName,
+        });
+      }
+
       setNft({
         id: collection?.id,
         image: collection?.metadata?.image,
@@ -35,6 +70,8 @@ const useNFT = (id: string) => {
         amountSold: collection?.amountSold,
         tokenIds: collection?.tokenIds,
         amount: collection?.amount,
+        profile: (result as any)?.[0]?.account,
+        collectors,
       });
     } catch (err: any) {
       console.error(err.message);
@@ -51,6 +88,7 @@ const useNFT = (id: string) => {
   return {
     nft,
     nftLoading,
+    setNft
   };
 };
 

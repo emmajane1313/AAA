@@ -3,7 +3,7 @@ import { NFTData } from "../types/common.types";
 import { getCollections } from "../../../../graphql/queries/getGallery";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
-import fetchAccount from "../../../../graphql/lens/queries/account";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 
 const useGallery = (lensClient: PublicClient) => {
   const [nfts, setNfts] = useState<NFTData[]>([]);
@@ -25,9 +25,9 @@ const useGallery = (lensClient: PublicClient) => {
             collection.metadata = await cadena.json();
           }
 
-          const result = await fetchAccount(
+          const result = await fetchAccountsAvailable(
             {
-              address: evmAddress(collection?.artist),
+              managedBy: evmAddress(collection?.artist),
             },
             lensClient
           );
@@ -45,7 +45,7 @@ const useGallery = (lensClient: PublicClient) => {
             amountSold: collection?.amountSold,
             tokenIds: collection?.tokenIds,
             amount: collection?.amount,
-            profile: result,
+            profile: (result as any)?.[0]?.account,
           };
         })
       );

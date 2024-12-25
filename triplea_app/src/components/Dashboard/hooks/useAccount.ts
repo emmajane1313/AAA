@@ -1,15 +1,13 @@
 import { LensConnected } from "@/components/Common/types/common.types";
-import { chains } from "@lens-network/sdk/viem";
 import { SetStateAction, useState } from "react";
-import { createWalletClient, custom } from "viem";
 import { Maybe, ProfilePicture } from "../../../../generated";
-import { Account, evmAddress } from "@lens-protocol/client";
+import { Account } from "@lens-protocol/client";
 import pollResult from "@/lib/helpers/pollResult";
 import fetchAccount from "../../../../graphql/lens/queries/account";
 import updateAccount from "../../../../graphql/lens/mutations/updateAccount";
+import { v4 as uuidv4 } from "uuid";
 
 const useAccount = (
-  address: `0x${string}` | undefined,
   lensConnected: LensConnected | undefined,
   setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void
 ) => {
@@ -19,7 +17,7 @@ const useAccount = (
     bio: string;
     pfp?: Blob | Maybe<ProfilePicture>;
   }>({
-    pfp: lensConnected?.profile?.metadata?.picture,
+    pfp: lensConnected?.profile?.username?.namespace?.metadata?.picture,
     localname: lensConnected?.profile?.username?.localName || "",
     bio:
       lensConnected?.profile?.username?.namespace?.metadata?.description || "",
@@ -29,17 +27,11 @@ const useAccount = (
     if (!lensConnected?.sessionClient) return;
     setAccountLoading(true);
     try {
-      const signer = createWalletClient({
-        chain: chains.testnet,
-        transport: custom(window.ethereum!),
-        account: address,
-      });
-
       let picture = {};
-      if (newAccount?.pfp) {
+      if (newAccount?.pfp && newAccount.pfp instanceof Blob) {
         const response = await fetch("/api/ipfs", {
           method: "POST",
-          body: newAccount?.pfp,
+          body: newAccount?.pfp as Blob,
         });
 
         if (!response.ok) {
@@ -55,12 +47,24 @@ const useAccount = (
         };
       }
 
+      // const prof = profile({
+      //   name: newAccount?.localname,
+      //   bio: newAccount?.bio,
+      //   ...picture,
+      // });
+
+      // console.log({ prof });
+
       const accountIPFSResponse = await fetch("/api/ipfs", {
         method: "POST",
         body: JSON.stringify({
-          name: newAccount?.localname,
-          bio: newAccount?.bio,
-          ...picture,
+          $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
+          lens: {
+            id: uuidv4(),
+            name: newAccount?.localname,
+            bio: newAccount?.bio,
+            ...picture,
+          },
         }),
       });
 
@@ -72,14 +76,15 @@ const useAccount = (
       }
 
       const accountResponseJSON = await accountIPFSResponse.json();
+      console.log({
+        metadataUri: "lens://" + accountResponseJSON.cid,
+      });
       const accountResponse = await updateAccount(
         {
-          metadataUri: "ipfs://" + accountResponseJSON.cid,
+          metadataUri: "lens://" + accountResponseJSON.cid,
         },
         lensConnected?.sessionClient
       );
-
-      console.log(accountResponse);
 
       if ((accountResponse as any)?.hash) {
         if (
@@ -90,7 +95,7 @@ const useAccount = (
         ) {
           const result = await fetchAccount(
             {
-              address: evmAddress(signer.account?.address!),
+              address: lensConnected?.profile?.address,
             },
             lensConnected?.sessionClient
           );

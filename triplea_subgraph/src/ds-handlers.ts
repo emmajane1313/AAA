@@ -39,9 +39,9 @@ export function handleAgentMetadata(content: Bytes): void {
     if (cover && cover.kind === JSONValueKind.STRING) {
       metadata.cover = cover.toString();
     }
-    let name = value.get("name");
-    if (name && name.kind === JSONValueKind.STRING) {
-      metadata.name = name.toString();
+    let title = value.get("title");
+    if (title && title.kind === JSONValueKind.STRING) {
+      metadata.title = title.toString();
     }
     let description = value.get("description");
     if (description && description.kind === JSONValueKind.STRING) {

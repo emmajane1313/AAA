@@ -81,29 +81,31 @@ contract AAAMarket {
             _artistShare = _totalPrice - _agentShare;
         }
 
-        if (IERC20(paymentToken).balanceOf(msg.sender) < _agentShare) {
-            revert AAAErrors.InsufficientBalance();
-        }
+        if (_agentShare > 0) {
+            if (IERC20(paymentToken).balanceOf(msg.sender) < _agentShare) {
+                revert AAAErrors.InsufficientBalance();
+            }
 
-        if (
-            !IERC20(paymentToken).transferFrom(
-                msg.sender,
-                address(devTreasury),
-                _agentShare
-            )
-        ) {
-            revert AAAErrors.PaymentFailed();
-        }
+            if (
+                !IERC20(paymentToken).transferFrom(
+                    msg.sender,
+                    address(devTreasury),
+                    _agentShare
+                )
+            ) {
+                revert AAAErrors.PaymentFailed();
+            }
 
-        devTreasury.receiveFunds(msg.sender, paymentToken, _agentShare);
+            devTreasury.receiveFunds(msg.sender, paymentToken, _agentShare);
 
-        _manageAgents(
+            _manageAgents(
             paymentToken,
             _agentShare,
             collectionId,
             _perAgentShare,
             amount
         );
+        }
 
         if (
             !IERC20(paymentToken).transferFrom(

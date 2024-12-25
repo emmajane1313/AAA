@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { Order } from "../types/dashboard.types";
 import { getOrders } from "../../../../graphql/queries/getOrders";
-import { getCollection } from "../../../../graphql/queries/getCollection";
-import { INFURA_GATEWAY } from "@/lib/constants";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
-import fetchAccount from "../../../../graphql/lens/queries/account";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 
 const useCollects = (
   address: `0x${string}` | undefined,
@@ -18,54 +16,40 @@ const useCollects = (
     setCollectsLoading(true);
     try {
       const data = await getOrders(address);
-
       const collects: Order[] = await Promise.all(
-        data?.data?.collectionCreateds.map(async (sale: any) => {
-          const collData = await getCollection(sale?.collectionId);
-
-          let collection = collData?.data?.collectionCreateds?.[0];
-          if (!collData?.data?.collectionCreateds?.[0]?.metadata) {
-            const cadena = await fetch(
-              `${INFURA_GATEWAY}/ipfs/${
-                collData?.data?.collectionCreateds?.[0]?.uri.split(
-                  "ipfs://"
-                )?.[1]
-              }`
-            );
-            collection.metadata = await cadena.json();
-          }
-
-          const result = await fetchAccount(
+        data?.data?.orders?.map(async (collect: any) => {
+          const result = await fetchAccountsAvailable(
             {
-              address: evmAddress(collection?.artist),
+              managedBy: evmAddress(collect?.collection?.artist),
             },
             lensClient
           );
 
           return {
-            id: sale?.id,
-            totalPrice: sale?.totalPrice,
-            token: sale?.token,
-            amount: sale?.amount,
-            collectionId: sale?.collectionId,
-            mintedTokenIds: sale?.mintedTokenIds,
-            blockTimestamp: sale?.blockTimestamp,
+            id: collect?.id,
+            totalPrice: collect?.totalPrice,
+            token: collect?.token,
+            amount: collect?.amount,
+            collectionId: collect?.collectionId,
+            mintedTokenIds: collect?.mintedTokenIds,
+            blockTimestamp: collect?.blockTimestamp,
+            transactionHash: collect?.transactionHash,
             collection: {
-              id: collection?.id,
-              image: collection?.metadata?.image,
-              title: collection?.metadata?.title,
-              description: collection?.metadata?.description,
-              blocktimestamp: collection?.blockTimestamp,
-              prices: collection?.prices,
-              tokens: collection?.tokens,
-              agents: collection?.agents,
-              artist: collection?.artist,
-              amountSold: collection?.amountSold,
-              tokenIds: collection?.tokenIds,
-              amount: collection?.amount,
+              id: collect?.collection?.id,
+              image: collect?.collection?.metadata?.image,
+              title: collect?.collection?.metadata?.title,
+              description: collect?.collection?.metadata?.description,
+              blocktimestamp: collect?.collection?.blockTimestamp,
+              prices: collect?.collection?.prices,
+              tokens: collect?.collection?.tokens,
+              agents: collect?.collection?.agents,
+              artist: collect?.collection?.artist,
+              amountSold: collect?.collection?.amountSold,
+              tokenIds: collect?.collection?.tokenIds,
+              amount: collect?.collection?.amount,
             },
-            buyer: sale?.buyer,
-            profile: result,
+            buyer: collect?.buyer,
+            profile: (result as any)?.[0]?.account,
           };
         })
       );

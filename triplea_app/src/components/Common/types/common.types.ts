@@ -14,9 +14,24 @@ export interface NFTData {
   tokenIds: string[];
   amount: number;
   profile: Account;
+  collectors?: Collector[];
 }
 
 export interface LensConnected {
   profile?: Account;
   sessionClient?: SessionClient;
+  authTokens?: {
+    accessToken: string;
+    refreshToken: string;
+    idToken: string;
+  };
+}
+
+export interface Collector {
+  pfp?: string;
+  name?: string;
+  address: string;
+  transactionHash: string;
+  amount: number;
+  blockTimestamp: string;
 }

@@ -1,26 +1,35 @@
 import { aaaClient } from "@/lib/graph/client";
 import { FetchResult, gql } from "@apollo/client";
 
-const DROP = gql`
-  query ($dropId: Int!) {
-    collectionCreateds(where: { dropId: $dropId }) {
-      collectionId
+const COLLECTIONS_SEARCH = gql`
+  query ($target: String!) {
+    collectionCreateds(
+      where: {
+        or: [
+          { metadata_: { description_contains: $target } }
+          { metadata_: { title_contains: $target } }
+        ]
+      }
+    ) {
       artist
-      uri
+      collectionId
       metadata {
         image
         title
         description
       }
+      uri
     }
   }
 `;
 
-export const getDrop = async (dropId: number): Promise<FetchResult | void> => {
+export const getCollectionSearch = async (
+  target: string
+): Promise<FetchResult | void> => {
   let timeoutId: NodeJS.Timeout | undefined;
   const queryPromise = aaaClient.query({
-    query: DROP,
-    variables: { dropId },
+    query: COLLECTIONS_SEARCH,
+    variables: { target },
     fetchPolicy: "no-cache",
     errorPolicy: "all",
   });

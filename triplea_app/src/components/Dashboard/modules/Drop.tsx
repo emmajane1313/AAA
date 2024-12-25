@@ -10,6 +10,7 @@ const Drop: FunctionComponent<DropProps> = ({
   allDrops,
   setMintSwitcher,
 }): JSX.Element => {
+
   return (
     <div className="relative w-full h-full flex flex-row gap-6 items-center justify-center">
       <div className="relative flex w-full h-full items-start justify-between flex-col gap-3">
@@ -92,7 +93,7 @@ const Drop: FunctionComponent<DropProps> = ({
           </div>
         </div>
       </div>
-      <div className="relative flex w-full h-full items-center justify-between flex-col gap-5">
+      <div className="relative flex w-full h-full items-center justify-start flex-col gap-5">
         <div className="relative w-full text-gray-600 flex text-center h-fit text-xl items-center justify-center">
           {allDrops?.length < 1 || !allDrops
             ? "Create New Drop"
@@ -115,7 +116,7 @@ const Drop: FunctionComponent<DropProps> = ({
               >
                 <Image
                   className="rounded-md"
-                  src={`${INFURA_GATEWAY}/ipfs/${drop.cover}`}
+                  src={`${INFURA_GATEWAY}/ipfs/${drop.cover?.split("ipfs://")?.[1]}`}
                   layout="fill"
                   draggable={false}
                   objectFit="cover"

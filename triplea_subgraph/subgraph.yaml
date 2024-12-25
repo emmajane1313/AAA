@@ -66,11 +66,11 @@ dataSources:
           handler: handleBalanceWithdrawn
       file: ./src/aaa-agents.ts
   - kind: ethereum
-    name: AAAMarkets
+    name: AAAMarket
     network: lens-testnet
     source:
-      address: "0xE50016e155Cf193E92cA48140Ee2501dB6f0F182"
-      abi: AAAMarkets
+      address: "0x4B0f1be07f50D9C6Ef9d378268810ABFf55EBc1a"
+      abi: AAAMarket
       startBlock: 81629
     mapping:
       kind: ethereum/events
@@ -79,12 +79,14 @@ dataSources:
       entities:
         - CollectionPurchased
       abis:
-        - name: AAAMarkets
-          file: ./abis/AAAMarkets.json
+        - name: AAAMarket
+          file: ./abis/AAAMarket.json
+        - name: AAACollectionManager
+          file: ./abis/AAACollectionManager.json
       eventHandlers:
         - event: CollectionPurchased(indexed uint256,uint256,uint256,address,address)
           handler: handleCollectionPurchased
-      file: ./src/aaa-markets.ts
+      file: ./src/aaa-market.ts
 templates:
   - name: AgentMetadata
     kind: file/ipfs

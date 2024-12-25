@@ -13,8 +13,16 @@ const ORDERS = gql`
         metadata {
           image
           title
+          description
         }
         id
+        artist
+        agents
+        prices
+        tokens
+        tokenIds
+        amountSold
+        amount
       }
       buyer
       amount

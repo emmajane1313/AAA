@@ -58,7 +58,7 @@ const Drops: FunctionComponent<DropsProps> = ({
                 return (
                   <div
                     key={key}
-                    className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between p-2`}
+                    className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between cursor-pointer p-2`}
                     onClick={() => {
                       setDrop(drop);
                       setDropSwitcher(DropSwitcher.Collection);
@@ -70,12 +70,14 @@ const Drops: FunctionComponent<DropsProps> = ({
                         layout="fill"
                         draggable={false}
                         alt={drop?.title}
-                        src={`${INFURA_GATEWAY}/ipfs/${drop?.cover}`}
+                        src={`${INFURA_GATEWAY}/ipfs/${
+                          drop?.cover?.split("ipfs://")?.[1]
+                        }`}
                         className="rounded-md"
                       />
                     </div>
-                    <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
-                      <div className="relative w-fit h-fit flex text-lg">
+                    <div className="relative w-full h-fit flex flex-col items-center justify-center gap-3">
+                      <div className="relative w-fit h-fit flex text-lg text-white py-4">
                         {drop.title}
                       </div>
                     </div>

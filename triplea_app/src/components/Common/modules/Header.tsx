@@ -20,14 +20,18 @@ const Header: FunctionComponent = (): JSX.Element => {
   const {
     openAccount,
     setOpenAccount,
-    handleSearch,
+    searchItems,
     searchLoading,
-
     handleLensConnect,
     lensLoading,
+    search,
+    setSearch,
+    handleSearch,
+    setSearchItems,
   } = useHeader(
     address,
     context?.lensClient,
+    context?.setError,
     context?.setCreateAccount,
     context?.setLensConnected
   );
@@ -71,8 +75,51 @@ const Header: FunctionComponent = (): JSX.Element => {
           <input
             className="relative flex w-full h-full text-left text-black bg-gray-200 focus:outline-none"
             placeholder="Search"
-            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key == "Enter") {
+                handleSearch();
+              }
+            }}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
+          {searchItems?.length > 0 && (
+            <div className="absolute w-full h-fit max-h-60 rounded-md flex bg-crema right-0 top-10 flex-col gap-3 shadow-lg p-2 overflow-y-scroll">
+              {searchItems?.map((item, key) => {
+                return (
+                  <div
+                    key={key}
+                    className="cursor-pointer relative w-full h-fit flex flex-row gap-2 items-center justify-between hover:opacity-70"
+                    onClick={() => {
+                      router.push(
+                        `/nft/${item?.profile?.username?.localName}/${item?.id}`
+                      );
+                      setSearch("");
+                      setSearchItems([]);
+                    }}
+                  >
+                    <div className="relative w-fit h-fit flex  items-center justify-center">
+                      <div className="relative w-12 h-12 rounded-md flex items-center justify-center">
+                        <Image
+                          src={`${INFURA_GATEWAY}/ipfs/${
+                            item?.image?.split("ipfs://")?.[1]
+                          }`}
+                          alt="nft"
+                          draggable={false}
+                          objectFit="cover"
+                          layout="fill"
+                          className="rounded-md"
+                        />
+                      </div>
+                    </div>
+                    <div className="text-sm text-black flex w-fit h-fit">
+                      {item?.title?.slice(0, 20)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </label>
         <div className="relative flex items-center justify-center w-fit h-fit">
           <div
@@ -102,46 +149,48 @@ const Header: FunctionComponent = (): JSX.Element => {
                 }`}
                 onClick={() => address && router.push("/dashboard")}
               >
-                {context?.lensConnected?.profile?.metadata?.picture ? (
-                  <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
-                    <Image
-                      src={
-                        createProfilePicture(
-                          context?.lensConnected?.profile?.username?.namespace
-                            ?.metadata?.picture
-                        ) || ""
-                      }
-                      draggable={false}
-                      className="rounded-full"
-                    />
-                  </div>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-6 flex items-center justify-center"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
-                    />
-                  </svg>
-                )}
-
-                {context?.lensConnected?.profile?.metadata?.name ? (
-                  <div className="relative w-full h-fit flex items-center justify-center">
-                    {context?.lensConnected?.profile?.metadata?.name?.slice(
+                <div className="relative w-fit h-fit flex">
+                  {context?.lensConnected?.profile?.username?.namespace
+                    ?.metadata?.picture ? (
+                    <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
+                      <Image
+                        src={
+                          createProfilePicture(
+                            context?.lensConnected?.profile?.username?.namespace
+                              ?.metadata?.picture
+                          ) || ""
+                        }
+                        draggable={false}
+                        className="rounded-full"
+                      />
+                    </div>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="size-6 flex items-center justify-center"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
+                      />
+                    </svg>
+                  )}
+                </div>
+                {context?.lensConnected?.profile?.username?.localName ? (
+                  <div className="relative w-full h-fit flex items-center justify-center text-left">
+                    {context?.lensConnected?.profile?.username?.localName?.slice(
                       0,
                       10
-                    ) + "..."}
+                    ) + " ..."}
                   </div>
                 ) : (
                   address && (
-                    <div className="relative w-full h-fit flex items-center justify-center">
+                    <div className="relative w-full h-fit flex items-center justify-center text-left">
                       {address?.slice(0, 10) + "..."}
                     </div>
                   )

@@ -1,15 +1,18 @@
 import { FunctionComponent, JSX } from "react";
-
 import { SalesProps, Switcher } from "../types/dashboard.types";
 import useSales from "../hooks/useSales";
 import { useRouter } from "next/navigation";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useAccount } from "wagmi";
+import moment from "moment";
 
-const Sales: FunctionComponent<SalesProps> = ({ setSwitcher }): JSX.Element => {
+const Sales: FunctionComponent<SalesProps> = ({
+  setSwitcher,
+  lensClient,
+}): JSX.Element => {
   const { address } = useAccount();
-  const { salesLoading, allSales } = useSales(address);
+  const { salesLoading, allSales } = useSales(address, lensClient);
   const router = useRouter();
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
@@ -60,25 +63,48 @@ const Sales: FunctionComponent<SalesProps> = ({ setSwitcher }): JSX.Element => {
                   <div
                     key={key}
                     className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between p-2`}
-                    onClick={() =>
-                      router.push(
-                        `/nft/${sale?.collection?.profile?.username?.value}/${sale?.collection?.id}`
-                      )
-                    }
                   >
-                    <div className="relative w-full h-full rounded-md flex">
+                    <div
+                      className="relative w-full h-full rounded-md flex cursor-pointer"
+                      onClick={() =>
+                        router.push(
+                          `/nft/${
+                            sale?.collection?.profile?.username?.value?.split(
+                              "lens/"
+                            )?.[1]
+                          }/${sale?.collection?.id}`
+                        )
+                      }
+                    >
                       <Image
                         objectFit="cover"
                         layout="fill"
                         draggable={false}
                         alt={sale?.collection?.title}
-                        src={`${INFURA_GATEWAY}/ipfs/${sale?.collection?.image}`}
+                        src={`${INFURA_GATEWAY}/ipfs/${
+                          sale?.collection?.image?.split("ipfs://")?.[1]
+                        }`}
                         className="rounded-md"
                       />
                     </div>
                     <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
                       <div className="relative w-fit h-fit flex text-lg">
                         {sale?.collection?.title}
+                      </div>
+                      <div
+                        className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
+                        onClick={() =>
+                          window.open(
+                            `https://block-explorer.testnet.lens.dev/tx/${sale?.transactionHash}`
+                          )
+                        }
+                      >
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                          X {sale?.amount}
+                        </div>
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                          {moment.unix(Number(sale?.blockTimestamp)).fromNow()}
+                        </div>
                       </div>
                     </div>
                   </div>

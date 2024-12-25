@@ -1,8 +1,8 @@
 import { Address, ByteArray, Bytes } from "@graphprotocol/graph-ts";
 import {
-  AAAMarkets,
+  AAAMarket,
   CollectionPurchased as CollectionPurchasedEvent,
-} from "../generated/AAAMarkets/AAAMarkets";
+} from "../generated/AAAMarket/AAAMarket";
 import {
   CollectionCreated,
   CollectionPurchased,
@@ -27,8 +27,8 @@ export function handleCollectionPurchased(
 
   entity.save();
 
-  let market = AAAMarkets.bind(
-    Address.fromString("0xE50016e155Cf193E92cA48140Ee2501dB6f0F182")
+  let market = AAAMarket.bind(
+    Address.fromString("0x4B0f1be07f50D9C6Ef9d378268810ABFf55EBc1a")
   );
 
   let entityOrder = new Order(

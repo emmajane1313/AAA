@@ -1,12 +1,18 @@
 import { SetStateAction, useState } from "react";
-import { createAccountWithUsername } from "@lens-protocol/client/actions";
 import { LensConnected } from "@/components/Common/types/common.types";
-import { Account, evmAddress } from "@lens-protocol/client";
+import {
+  Account,
+  AuthenticationTokens,
+  evmAddress,
+} from "@lens-protocol/client";
 import { createWalletClient, custom } from "viem";
 import { chains } from "@lens-network/sdk/viem";
 import fetchAccount from "./../../../../graphql/lens/queries/account";
 import pollResult from "@/lib/helpers/pollResult";
 import createAccount from "../../../../graphql/lens/mutations/createAccount";
+import switchAccount from "../../../../graphql/lens/mutations/switchAccount";
+import { v4 as uuidv4 } from "uuid";
+import { profile } from "@lens-protocol/metadata";
 
 const useCreateAccount = (
   address: `0x${string}` | undefined,
@@ -14,7 +20,8 @@ const useCreateAccount = (
   setLensConnected:
     | ((e: SetStateAction<LensConnected | undefined>) => void)
     | undefined,
-  setCreateAccount: (e: SetStateAction<boolean>) => void
+  setCreateAccount: (e: SetStateAction<boolean>) => void,
+  setError: (e: SetStateAction<string | undefined>) => void
 ) => {
   const [account, setAccount] = useState<{
     localname: string;
@@ -50,6 +57,7 @@ const useCreateAccount = (
           const errorText = await response.text();
           console.error("Error from API:", errorText);
           setAccountLoading(false);
+          setError?.("Error with IPFS");
           return;
         }
 
@@ -59,19 +67,24 @@ const useCreateAccount = (
         };
       }
 
+      const prof = profile({
+        name: account?.localname,
+        bio: account?.bio,
+        ...picture,
+      });
+
+      console.log({prof})
+
       const accountIPFSResponse = await fetch("/api/ipfs", {
         method: "POST",
-        body: JSON.stringify({
-          name: account?.localname,
-          bio: account?.bio,
-          ...picture,
-        }),
+        body: JSON.stringify(prof),
       });
 
       if (!accountIPFSResponse.ok) {
         const errorText = await accountIPFSResponse.text();
         console.error("Error from API:", errorText);
         setAccountLoading(false);
+        setError?.("Error with IPFS API");
         return;
       }
 
@@ -82,47 +95,67 @@ const useCreateAccount = (
           username: {
             localName: account?.username,
           },
-          metadataUri: "ipfs://" + accountResponseJSON.cid,
+          metadataUri: "lens://" + accountResponseJSON.cid,
         },
         lensConnected?.sessionClient
       );
 
-      console.log(accountResponse);
-
       if ((accountResponse as any)?.hash) {
-        if (
-          await pollResult(
-            (accountResponse as any)?.hash,
-            lensConnected?.sessionClient
-          )
-        ) {
-          const result = await fetchAccount(
+        const res = await pollResult(
+          (accountResponse as any)?.hash,
+          lensConnected?.sessionClient
+        );
+        if (res) {
+          const newAcc = await fetchAccount(
             {
-              address: evmAddress(signer.account.address),
+              username: {
+                localName: account?.username,
+              },
             },
             lensConnected?.sessionClient
           );
-          console.log({ result });
 
-          if ((result as any)?.__typename == "Account") {
-            setLensConnected?.({
-              ...lensConnected,
-              profile: result as Account,
-            });
-            setCreateAccount(false);
-            setAccount({
-              localname: "",
-              bio: "",
-              username: "",
-            });
+          if ((newAcc as any)?.address) {
+            const authTokens = await switchAccount(
+              {
+                account: (newAcc as any)?.address,
+              },
+              lensConnected?.sessionClient
+            );
+
+            if ((authTokens as any)?.accessToken) {
+              setLensConnected?.({
+                ...lensConnected,
+                profile: newAcc as Account,
+                authTokens: authTokens as AuthenticationTokens,
+              });
+              setCreateAccount(false);
+              setAccount({
+                localname: "",
+                bio: "",
+                username: "",
+              });
+            } else {
+              console.error(accountResponse);
+              setError?.("Error with Auth Tokens");
+              setAccountLoading(false);
+              return;
+            }
+          } else {
+            console.error(accountResponse);
+            setError?.("Error with Fetching New Account");
+            setAccountLoading(false);
+            return;
           }
         } else {
           console.error(accountResponse);
+          setError?.("Error with Account Creation");
           setAccountLoading(false);
           return;
         }
       } else {
         console.error(accountResponse);
+        setError?.("Error with Account Creation");
         setAccountLoading(false);
         return;
       }

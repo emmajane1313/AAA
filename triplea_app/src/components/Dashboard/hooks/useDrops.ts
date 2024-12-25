@@ -4,7 +4,7 @@ import { DropInterface } from "../types/dashboard.types";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { getDrop } from "../../../../graphql/queries/getDrop";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
-import fetchAccount from "../../../../graphql/lens/queries/account";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 
 const useDrops = (
   drop: DropInterface | undefined,
@@ -18,7 +18,7 @@ const useDrops = (
     setCollectionsLoading(true);
 
     try {
-      const data = await getDrop(drop?.id);
+      const data = await getDrop(Number(drop?.id));
 
       const collections: NFTData[] = await Promise.all(
         data?.data?.collectionCreateds.map(async (collection: any) => {
@@ -29,9 +29,9 @@ const useDrops = (
             collection.metadata = await cadena.json();
           }
 
-          const result = await fetchAccount(
+          const result = await fetchAccountsAvailable(
             {
-              address: evmAddress(collection?.artist),
+              managedBy: evmAddress(collection?.artist),
             },
             lensClient
           );
@@ -40,7 +40,8 @@ const useDrops = (
             id: collection?.collectionId,
             image: collection?.metadata?.image,
             title: collection?.metadata?.title,
-            profile: result,
+            description: collection?.metadata?.description,
+            profile: (result as any)?.[0]?.account,
           };
         })
       );

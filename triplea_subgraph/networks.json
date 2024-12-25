@@ -7,8 +7,8 @@
     "AAAAgents": {
       "address": "0x4eD74d03D9d4F6f4DC2E50DC2f0C701326DF156a"
     },
-    "AAAMarkets": {
-      "address": "0xE50016e155Cf193E92cA48140Ee2501dB6f0F182"
+    "AAAMarket": {
+      "address": "0x4B0f1be07f50D9C6Ef9d378268810ABFf55EBc1a"
     }
   }
 }

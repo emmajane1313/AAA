@@ -9,8 +9,9 @@ const Collection: FunctionComponent<CollectionProps> = ({
   setDropSwitcher,
   drop,
   setDrop,
+  lensClient,
 }): JSX.Element => {
-  const { allCollections, collectionsLoading } = useDrops(drop);
+  const { allCollections, collectionsLoading } = useDrops(drop, lensClient);
   const router = useRouter();
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
@@ -57,7 +58,11 @@ const Collection: FunctionComponent<CollectionProps> = ({
                       className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between p-2 cursor-pointer`}
                       onClick={() =>
                         router.push(
-                          `/nft/${collection?.profile?.username?.value}/${collection.id}`
+                          `/nft/${
+                            collection?.profile?.username?.value?.split(
+                              "lens/"
+                            )?.[1]
+                          }/${collection.id}`
                         )
                       }
                     >
@@ -67,11 +72,11 @@ const Collection: FunctionComponent<CollectionProps> = ({
                           layout="fill"
                           draggable={false}
                           alt={collection?.title}
-                          src={`${INFURA_GATEWAY}/ipfs/${collection?.image}`}
+                          src={`${INFURA_GATEWAY}/ipfs/${collection?.image?.split("ipfs://")?.[1]}`}
                           className="rounded-md"
                         />
                       </div>
-                      <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
+                      <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 text-white">
                         <div className="relative w-fit h-fit flex text-lg">
                           {collection.title}
                         </div>

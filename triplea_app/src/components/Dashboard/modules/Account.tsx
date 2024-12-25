@@ -2,20 +2,16 @@ import { FunctionComponent, JSX } from "react";
 import { AccountProps, Switcher } from "../types/dashboard.types";
 import Image from "next/legacy/image";
 import useAccount from "../hooks/useAccount";
-import { useAccount as useAccountWagmi } from "wagmi";
 import createProfilePicture from "@/lib/helpers/createProfilePicture";
+import { AiOutlineLoading } from "react-icons/ai";
 
 const Account: FunctionComponent<AccountProps> = ({
   setSwitcher,
   lensConnected,
   setLensConnected,
 }): JSX.Element => {
-  const { address } = useAccountWagmi();
-  const { accountLoading, setNewAccount, newAccount } = useAccount(
-    address,
-    lensConnected,
-    setLensConnected
-  );
+  const { accountLoading, setNewAccount, newAccount, handleUpdateAccount } =
+    useAccount(lensConnected, setLensConnected);
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
       <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
@@ -40,7 +36,7 @@ const Account: FunctionComponent<AccountProps> = ({
             </svg>
           </div>
         </div>
-        <div className="relative w-full h-fit flex flex-col gap-3 items-center justify-center">
+        <div className="relative w-full h-full flex flex-col gap-3 items-center justify-center">
           <div className="relative items-center justify-center flex w-fit h-fit">
             <label
               className="relative w-20 rounded-full h-20 flex items-center justify-center border border-black cursor-pointer bg-crema"
@@ -51,9 +47,9 @@ const Account: FunctionComponent<AccountProps> = ({
               {newAccount?.pfp && (
                 <Image
                   src={
-                    typeof newAccount.pfp
-                      ? createProfilePicture(newAccount.pfp)
-                      : URL.createObjectURL(newAccount.pfp) || ""
+                    newAccount.pfp instanceof Blob
+                      ? URL.createObjectURL(newAccount.pfp)
+                      : createProfilePicture(newAccount.pfp) || ""
                   }
                   objectFit="cover"
                   layout="fill"
@@ -81,7 +77,7 @@ const Account: FunctionComponent<AccountProps> = ({
               />
             </label>
           </div>
-          <div className="relative w-full h-full flex items-start justify-between flex-row gap-3 text-black">
+          <div className="relative w-full h-fit flex items-start justify-start flex-row gap-3 text-black">
             <div className="relative w-full h-fit flex flex-col gap-1.5 items-start justify-start">
               <div className="relative w-fit h-fit flex">Username</div>
               <input
@@ -105,7 +101,7 @@ const Account: FunctionComponent<AccountProps> = ({
               />
             </div>
           </div>
-          <div className="relative w-full h-fit flex flex-col gap-1.5 items-start justify-start">
+          <div className="relative w-full h-full flex flex-col gap-1.5 items-start justify-start">
             <div className="relative w-fit h-fit flex">Bio</div>
             <textarea
               disabled={accountLoading}
@@ -115,13 +111,25 @@ const Account: FunctionComponent<AccountProps> = ({
                   bio: e.target.value,
                 })
               }
-              className="relative w-full bg-crema h-14 overflow-y-scroll border border-black focus:outline-none p-1"
+              className="relative w-full bg-crema h-full overflow-y-scroll border border-black focus:outline-none p-1"
               value={newAccount?.bio}
               style={{
                 resize: "none",
               }}
             ></textarea>
           </div>
+        </div>
+        <div
+          className={`"relative px-3 py-1 flex items-center justify-center bg-black text-white w-28 h-8 rounded-md ${
+            !accountLoading && "cursor-pointer active:scale-95"
+          }`}
+          onClick={() => !accountLoading && handleUpdateAccount()}
+        >
+          {accountLoading ? (
+            <AiOutlineLoading size={15} className={`black animate-spin`} />
+          ) : (
+            "Update"
+          )}
         </div>
       </div>
     </div>

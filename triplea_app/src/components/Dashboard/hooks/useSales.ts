@@ -3,8 +3,8 @@ import { Order } from "../types/dashboard.types";
 import { getSales } from "../../../../graphql/queries/getSales";
 import { getCollection } from "../../../../graphql/queries/getCollection";
 import { INFURA_GATEWAY } from "@/lib/constants";
-import fetchAccount from "../../../../graphql/lens/queries/account";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 
 const useSales = (
   address: `0x${string}` | undefined,
@@ -19,25 +19,12 @@ const useSales = (
     try {
       const data = await getSales(address);
 
+
       const sales: Order[] = await Promise.all(
-        data?.data?.collectionCreateds.map(async (sale: any) => {
-          const collData = await getCollection(sale?.collectionId);
-
-          let collection = collData?.data?.collectionCreateds?.[0];
-          if (!collData?.data?.collectionCreateds?.[0]?.metadata) {
-            const cadena = await fetch(
-              `${INFURA_GATEWAY}/ipfs/${
-                collData?.data?.collectionCreateds?.[0]?.uri.split(
-                  "ipfs://"
-                )?.[1]
-              }`
-            );
-            collection.metadata = await cadena.json();
-          }
-
-          const result = await fetchAccount(
+        data?.data?.orders?.map(async (sale: any) => {
+          const result = await fetchAccountsAvailable(
             {
-              address: evmAddress(collection?.artist),
+              managedBy: evmAddress(sale?.collection?.artist),
             },
             lensClient
           );
@@ -50,22 +37,23 @@ const useSales = (
             collectionId: sale?.collectionId,
             mintedTokenIds: sale?.mintedTokenIds,
             blockTimestamp: sale?.blockTimestamp,
+            transactionHash: sale?.transactionHash,
             collection: {
-              id: collection?.id,
-              image: collection?.metadata?.image,
-              title: collection?.metadata?.title,
-              description: collection?.metadata?.description,
-              blocktimestamp: collection?.blockTimestamp,
-              prices: collection?.prices,
-              tokens: collection?.tokens,
-              agents: collection?.agents,
-              artist: collection?.artist,
-              amountSold: collection?.amountSold,
-              tokenIds: collection?.tokenIds,
-              amount: collection?.amount,
+              id: sale?.collection?.id,
+              image: sale?.collection?.metadata?.image,
+              title: sale?.collection?.metadata?.title,
+              description: sale?.collection?.metadata?.description,
+              blocktimestamp: sale?.collection?.blockTimestamp,
+              prices: sale?.collection?.prices,
+              tokens: sale?.collection?.tokens,
+              agents: sale?.collection?.agents,
+              artist: sale?.collection?.artist,
+              amountSold: sale?.collection?.amountSold,
+              tokenIds: sale?.collection?.tokenIds,
+              amount: sale?.collection?.amount,
             },
             buyer: sale?.buyer,
-            profile: result,
+            profile: (result as any)?.[0]?.account,
           };
         })
       );

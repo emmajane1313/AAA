@@ -16,6 +16,7 @@ const SALES = gql`
           title
         }
         id
+        artist
       }
       buyer
       amount

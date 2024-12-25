@@ -53,7 +53,7 @@ const Mint: FunctionComponent<MintProps> = ({
                   key={index}
                   className="relative text-sm text-black w-fit h-fit px-2 py-1 border border-morado rounded-full"
                 >
-                  {agents?.find((ag) => Number(ag?.id) == Number(agent))?.name}
+                  {agents?.find((ag) => Number(ag?.id) == Number(agent))?.title}
                 </div>
               );
             })}

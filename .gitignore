@@ -61,40 +61,40 @@
 
 
 # Graph CLI generated artifacts
-/triplea/build/
-/triplea/generated/
+/triplea_subgraph/build/
+/triplea_subgraph/generated/
 
 # Dependency directories
-/triplea/node_modules/
-/triplea/jspm_packages/
+/triplea_subgraph/node_modules/
+/triplea_subgraph/jspm_packages/
 
 # Logs
-/triplea/logs
-/triplea/*.log
-/triplea/npm-debug.log*
-/triplea/yarn-debug.log*
-/triplea/yarn-error.log*
+/triplea_subgraph/logs
+/triplea_subgraph/*.log
+/triplea_subgraph/npm-debug.log*
+/triplea_subgraph/yarn-debug.log*
+/triplea_subgraph/yarn-error.log*
 
 # Optional npm cache directory
-/triplea/.npm
+/triplea_subgraph/.npm
 
 # Optional eslint cache
-/triplea/.eslintcache
+/triplea_subgraph/.eslintcache
 
 # dotenv environment variables file
-/triplea/.env
+/triplea_subgraph/.env
 
 # Testing
-/triplea/coverage
-/triplea/coverage.json
+/triplea_subgraph/coverage
+/triplea_subgraph/coverage.json
 
 # Typechain
-/triplea/typechain
-/triplea/typechain-types
+/triplea_subgraph/typechain
+/triplea_subgraph/typechain-types
 
 # Hardhat files
-/triplea/cache
-/triplea/package-lock.json
+/triplea_subgraph/cache
+/triplea_subgraph/package-lock.json
 
 zkout/
 

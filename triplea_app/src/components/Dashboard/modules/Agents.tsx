@@ -8,8 +8,13 @@ const Agents: FunctionComponent<AgentProps> = ({
   setSwitcher,
   agents,
   setAgents,
+  lensConnected,
 }): JSX.Element => {
-  const { agentsLoading } = useAgents(agents, setAgents);
+  const { agentsLoading } = useAgents(
+    agents,
+    setAgents,
+    lensConnected?.sessionClient!
+  );
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
       <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
@@ -53,19 +58,23 @@ const Agents: FunctionComponent<AgentProps> = ({
                     >
                       <div className="relative w-full h-full rounded-md flex">
                         <Image
-                          objectFit="cover"
+                          objectFit="contain"
                           layout="fill"
                           draggable={false}
-                          alt={agent?.name}
-                          src={`${INFURA_GATEWAY}/ipfs/${agent?.cover}`}
+                          alt={agent?.title}
+                          src={`${INFURA_GATEWAY}/ipfs/${
+                            agent?.cover?.includes("ipfs")
+                              ? agent?.cover?.split("ipfs://")?.[1]
+                              : agent?.cover
+                          }`}
                           className="rounded-md"
                         />
                       </div>
                       <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
                         <div className="relative w-fit h-fit flex text-lg">
-                          {agent.name}
+                          {agent.title}
                         </div>
-                        <div className="relative w-fit h-fit flex text-sm">
+                        <div className="relative w-fit overflow-y-scroll max-h-40 h-fit flex text-sm">
                           {agent.description}
                         </div>
                       </div>

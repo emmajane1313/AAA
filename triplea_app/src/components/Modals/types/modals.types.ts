@@ -13,4 +13,15 @@ export type CreateAccountProps = {
     | ((e: SetStateAction<LensConnected | undefined>) => void)
     | undefined;
   setCreateAccount: (e: SetStateAction<boolean>) => void;
+  setError: (e: SetStateAction<string | undefined>) => void;
+};
+
+export type ErrorsProps = {
+  error: string | undefined;
+  setError: (e: SetStateAction<string | undefined>) => void;
+};
+
+export type NotificationProps = {
+  notification: string | undefined;
+  setNotification: (e: SetStateAction<string | undefined>) => void;
 };

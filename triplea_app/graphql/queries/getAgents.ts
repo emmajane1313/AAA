@@ -5,7 +5,7 @@ const AGENTS = gql`
   query {
     agentCreateds {
       metadata {
-        name
+        title
         description
         cover
       }

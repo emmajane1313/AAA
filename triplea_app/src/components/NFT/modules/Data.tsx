@@ -13,12 +13,14 @@ const Data: FunctionComponent<DataProps> = ({
       {url && (
         <Image
           alt={id?.toString() || ""}
-          src={`${INFURA_GATEWAY}/ipfs/${url}`}
+          src={`${INFURA_GATEWAY}/ipfs/${url?.split("ipfs://")?.[1]}`}
           draggable={false}
           layout="fill"
           objectFit="contain"
           className="cursor-pointer"
-          onClick={() => setImageView(`${INFURA_GATEWAY}/ipfs/${url}`)}
+          onClick={() =>
+            setImageView(`${INFURA_GATEWAY}/ipfs/${url?.split("ipfs://")?.[1]}`)
+          }
         />
       )}
     </div>

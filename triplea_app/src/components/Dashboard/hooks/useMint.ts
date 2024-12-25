@@ -1,19 +1,24 @@
 import { SetStateAction, useEffect, useState } from "react";
-import { Agent, MintData } from "../types/dashboard.types";
+import { Agent, MintData, MintSwitcher } from "../types/dashboard.types";
 import { COLLECTION_MANAGER_CONTRACT, INFURA_GATEWAY } from "@/lib/constants";
 import CollectionManagerAbi from "@abis/CollectionManagerAbi.json";
-import { createWalletClient, custom, PublicClient } from "viem";
+import { createWalletClient, custom, decodeEventLog, PublicClient } from "viem";
 import { chains } from "@lens-network/sdk/viem";
 import { getAgents } from "../../../../graphql/queries/getAgents";
+import { evmAddress, SessionClient } from "@lens-protocol/client";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 
 const useMint = (
   agents: Agent[],
   setAgents: (e: SetStateAction<Agent[]>) => void,
   publicClient: PublicClient,
-  address: `0x${string}` | undefined
+  address: `0x${string}` | undefined,
+  setMintSwitcher: (e: SetStateAction<MintSwitcher>) => void,
+  lensClient: SessionClient
 ) => {
   const [mintLoading, setMintLoading] = useState<boolean>(false);
   const [agentsLoading, setAgentsLoading] = useState<boolean>(false);
+  const [id, setId] = useState<string | undefined>();
   const [mintData, setMintData] = useState<MintData>({
     agentIds: [],
     prices: [],
@@ -47,7 +52,7 @@ const useMint = (
 
       if (
         mintData?.dropCover &&
-        mintData?.dropId > 0 &&
+        mintData?.dropId == 0 &&
         mintData?.dropTitle?.trim() !== ""
       ) {
         const responseCover = await fetch("/api/ipfs", {
@@ -114,7 +119,7 @@ const useMint = (
         args: [
           {
             tokens: mintData?.tokens,
-            prices: mintData?.prices,
+            prices: mintData?.prices?.map((price) => Number(price) * 10 ** 18),
             agentIds: mintData?.agentIds,
             metadata: "ipfs://" + responseJSON?.cid,
             amount: Number(mintData?.amount),
@@ -126,7 +131,27 @@ const useMint = (
       });
 
       const res = await clientWallet.writeContract(request);
-      await publicClient.waitForTransactionReceipt({ hash: res });
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: res,
+      });
+      const logs = receipt.logs;
+
+      logs
+        .map((log) => {
+          try {
+            const event = decodeEventLog({
+              abi: CollectionManagerAbi,
+              data: log.data,
+              topics: log.topics,
+            });
+            if (event.eventName == "CollectionCreated") {
+              setId(Number((event.args as any)?.collectionId).toString());
+            }
+          } catch (err) {
+            return null;
+          }
+        })
+        .filter((event) => event !== null);
 
       setMintData({
         agentIds: [],
@@ -140,6 +165,7 @@ const useMint = (
         image: undefined,
         amount: 2,
       });
+      setMintSwitcher(MintSwitcher.Success);
     } catch (err: any) {
       console.error(err.message);
     }
@@ -151,7 +177,6 @@ const useMint = (
 
     try {
       const data = await getAgents();
-
       const allAgents: Agent[] = await Promise.all(
         data?.data?.agentCreateds.map(async (agent: any) => {
           if (!agent.metadata) {
@@ -161,13 +186,21 @@ const useMint = (
             agent.metadata = await cadena.json();
           }
 
+          const result = await fetchAccountsAvailable(
+            {
+              managedBy: evmAddress(agent?.wallet),
+            },
+            lensClient
+          );
+
           return {
             id: agent?.AAAAgents_id,
-            cover: agent?.metadata?.image,
-            name: agent?.metadata?.name,
+            cover: agent?.metadata?.cover,
+            title: agent?.metadata?.title,
             description: agent?.metadata?.description,
             wallet: agent?.wallet,
             balance: agent?.balances,
+            profile: (result as any)?.[0]?.account,
           };
         })
       );
@@ -191,6 +224,7 @@ const useMint = (
     mintData,
     setMintData,
     agentsLoading,
+    id,
   };
 };
 

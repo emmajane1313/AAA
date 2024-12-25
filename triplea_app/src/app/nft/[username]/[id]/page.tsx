@@ -10,7 +10,7 @@ import { useContext } from "react";
 export default function NFT() {
   const id = useParams();
   const context = useContext(ModalContext);
-  const { nft, nftLoading } = useNFT(id?.id as string);
+  const { nft, nftLoading, setNft } = useNFT(id?.id as string, context?.lensClient!);
 
   return (
     <div className="relative w-full h-full flex flex-row items-start justify-between gap-4 pb-10">
@@ -19,7 +19,12 @@ export default function NFT() {
         url={nft?.image!}
         setImageView={context?.setImageView!}
       />
-      <Purchase nft={nft!} nftLoading={nftLoading} />
+      <Purchase
+        nft={nft!}
+        nftLoading={nftLoading}
+        setNotification={context?.setNotification!}
+        setNft={setNft}
+      />
     </div>
   );
 }

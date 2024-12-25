@@ -15,6 +15,9 @@ export default {
         cielo: "#4888BC",
         oscuro: "#58789A",
       },
+      zIndex: {
+        200: "200",
+      },
     },
   },
   plugins: [],

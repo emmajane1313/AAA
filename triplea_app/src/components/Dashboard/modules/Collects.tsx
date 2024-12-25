@@ -6,10 +6,11 @@ import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
+import moment from "moment";
 
 const Collects: FunctionComponent<CollectsProps> = ({
   setSwitcher,
-  lensClient
+  lensClient,
 }): JSX.Element => {
   const { address } = useAccount();
   const { collectsLoading, allCollects } = useCollects(address, lensClient);
@@ -63,25 +64,50 @@ const Collects: FunctionComponent<CollectsProps> = ({
                   <div
                     key={key}
                     className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between p-2`}
-                    onClick={() =>
-                      router.push(
-                        `/nft/${collect?.collection?.profile?.username?.value}/${collect?.collection?.id}`
-                      )
-                    }
                   >
-                    <div className="relative w-full h-full rounded-md flex">
+                    <div
+                      className="relative w-full h-full rounded-md flex cursor-pointer"
+                      onClick={() =>
+                        router.push(
+                          `/nft/${
+                            collect?.collection?.profile?.username?.value?.split(
+                              "lens/"
+                            )?.[1]
+                          }/${collect?.collection?.id}`
+                        )
+                      }
+                    >
                       <Image
                         objectFit="cover"
                         layout="fill"
                         draggable={false}
                         alt={collect?.collection?.title}
-                        src={`${INFURA_GATEWAY}/ipfs/${collect?.collection?.image}`}
+                        src={`${INFURA_GATEWAY}/ipfs/${
+                          collect?.collection?.image?.split("ipfs://")?.[1]
+                        }`}
                         className="rounded-md"
                       />
                     </div>
                     <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
                       <div className="relative w-fit h-fit flex text-lg">
                         {collect?.collection?.title}
+                      </div>
+                      <div
+                        className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
+                        onClick={() =>
+                          window.open(
+                            `https://block-explorer.testnet.lens.dev/tx/${collect?.transactionHash}`
+                          )
+                        }
+                      >
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                          X {collect?.amount}
+                        </div>
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                          {moment
+                            .unix(Number(collect?.blockTimestamp))
+                            .fromNow()}
+                        </div>
                       </div>
                     </div>
                   </div>

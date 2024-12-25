@@ -10,6 +10,8 @@ export type DataProps = {
 export type PurchaseProps = {
   nft: NFTData;
   nftLoading: boolean
+  setNotification: (e: SetStateAction<string | undefined>) => void
+  setNft: (e: SetStateAction<NFTData | undefined>) => void
 };
 
 export interface CollectData {
