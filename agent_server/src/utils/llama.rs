@@ -3,13 +3,12 @@ use crate::{
     Collection,
 };
 
-use ethers::types::U256;
 use rand::{random, thread_rng, Rng};
 use reqwest::Client;
 use std::{env, error::Error, io, time::Duration};
 
 pub async fn call_llama(
-    profile_id: U256,
+    account_address: &str,
     collection: &Collection,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let llama_key = env::var("OLLAMA_KEY").expect("OLLAMA_KEY not configured in .env");
@@ -66,7 +65,7 @@ pub async fn call_llama(
             use_mlock: false,
             num_thread: 8
         },
-        "profile_id": profile_id,
+        "account_address": account_address,
     });
 
     let response = cliente

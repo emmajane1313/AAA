@@ -10,10 +10,7 @@ use crate::{
 };
 use ethers::{
     signers::{LocalWallet, Signer},
-    types::{
-        transaction::eip712::{EIP712Domain, Eip712DomainType, TypedData},
-        U256,
-    },
+    types::transaction::eip712::{EIP712Domain, Eip712DomainType, TypedData},
     utils::hex,
 };
 use reqwest::Client;
@@ -32,7 +29,7 @@ async fn refresh(
                 refresh(request: $request) {
                     accessToken
                     refreshToken
-                    identityToken
+                    idToken
                 }
             }
         "#,
@@ -53,7 +50,7 @@ async fn refresh(
 
     if response.status().is_success() {
         let json: serde_json::Value = response.json().await?;
-        if let Some(authentication) = json["data"]["authenticate"].as_object() {
+        if let Some(authentication) = json["data"]["refresh"].as_object() {
             Ok(LensTokens {
                 access_token: authentication
                     .get("accessToken")
@@ -65,8 +62,8 @@ async fn refresh(
                     .and_then(|v| v.as_str())
                     .unwrap_or_default()
                     .to_string(),
-                identity_token: authentication
-                    .get("identityToken")
+                id_token: authentication
+                    .get("idToken")
                     .and_then(|v| v.as_str())
                     .unwrap_or_default()
                     .to_string(),
@@ -79,24 +76,28 @@ async fn refresh(
     }
 }
 
-async fn authenticate(
+pub async fn authenticate(
     client: Arc<Client>,
     wallet: &LocalWallet,
-    profile_id: &str,
+    account_address: &str,
 ) -> Result<LensTokens, Box<dyn std::error::Error>> {
-    let query = json!({
+    let mutation = json!({
         "query": r#"
-            query Challenge($request: ChallengeRequest!) {
-                challenge(request: $request) {
-                    id
-                    text
-                }
+        mutation Challenge($request: ChallengeRequest!) {
+            challenge(request: $request) {
+                __typename
+                id
+                text
             }
-        "#,
+        }
+    "#,
         "variables": {
             "request": {
-                "signedBy": wallet.address(),
-                "for": profile_id.to_string(),
+                "accountOwner": {
+                    "app": "0xe5439696f4057aF073c0FB2dc6e5e755392922e1",
+                    "account": wallet.address(),
+                    "owner": account_address
+                }
             }
         }
     });
@@ -104,39 +105,46 @@ async fn authenticate(
     let response = client
         .post(LENS_API)
         .header("Content-Type", "application/json")
-        .json(&query)
+        .json(&mutation)
         .send()
         .await?;
 
     if response.status().is_success() {
-        let json: serde_json::Value = response.json().await?;
+        let json: Value = response.json().await?;
         if let Some(challenge) = json["data"]["challenge"].as_object() {
-            let signature = wallet
-                .sign_message(
-                    challenge
-                        .get("text")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or_default()
-                        .to_string(),
-                )
-                .await?;
+            let text = challenge
+                .get("text")
+                .and_then(|v| v.as_str())
+                .unwrap_or_default();
+            let signature = wallet.sign_message(text).await?;
 
-            let query = json!({
+            let authenticate_mutation = json!({
                 "query": r#"
-                        mutation Authenticate($request: SignedAuthChallenge!) {
-                            authenticate(request: $request) {
-                             accessToken
-                             identityToken
-                             refreshToken
-                            }
+                mutation Authenticate($request: SignedAuthChallenge!) {
+                    authenticate(request: $request) {
+                        ... on AuthenticationTokens {
+                            accessToken
+                            refreshToken
+                            idToken
                         }
-                    "#,
+                        ... on WrongSignerError {
+                            reason
+                        }
+                        ... on ExpiredChallengeError {
+                            reason
+                        }
+                        ... on ForbiddenError {
+                            reason
+                        }
+                    }
+                }
+            "#,
                 "variables": {
                     "request": {
-                        "id":challenge.get("id")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or_default()
-                        .to_string(),
+                        "id": challenge
+                            .get("id")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or_default(),
                         "signature": format!("0x{}", hex::encode(signature.to_vec())),
                     }
                 }
@@ -145,14 +153,14 @@ async fn authenticate(
             let response = client
                 .post(LENS_API)
                 .header("Content-Type", "application/json")
-                .json(&query)
+                .json(&authenticate_mutation)
                 .send()
                 .await?;
 
             if response.status().is_success() {
                 let json: Value = response.json().await?;
                 if let Some(authentication) = json["data"]["authenticate"].as_object() {
-                    Ok(LensTokens {
+                    return Ok(LensTokens {
                         access_token: authentication
                             .get("accessToken")
                             .and_then(|v| v.as_str())
@@ -163,20 +171,20 @@ async fn authenticate(
                             .and_then(|v| v.as_str())
                             .unwrap_or_default()
                             .to_string(),
-                        identity_token: authentication
-                            .get("identityToken")
+                        id_token: authentication
+                            .get("idToken")
                             .and_then(|v| v.as_str())
                             .unwrap_or_default()
                             .to_string(),
-                    })
+                    });
                 } else {
-                    return Err("Unexpected Structure.".into());
+                    return Err("Authentication failed.".into());
                 }
             } else {
                 return Err(format!("Error: {}", response.status()).into());
             }
         } else {
-            return Err("Unexpected Structure.".into());
+            return Err("Challenge response structure invalid.".into());
         }
     } else {
         return Err(format!("Error: {}", response.status()).into());
@@ -185,7 +193,7 @@ async fn authenticate(
 
 pub async fn handle_tokens(
     private_key: &str,
-    profile_id: U256,
+    account_address: &str,
     tokens: Option<SavedTokens>,
 ) -> Result<SavedTokens, Box<dyn std::error::Error>> {
     let client = initialize_api();
@@ -210,7 +218,7 @@ pub async fn handle_tokens(
             });
         }
     } else {
-        let new_tokens = authenticate(client, &wallet, &format!("0x0{:x}", profile_id)).await?;
+        let new_tokens = authenticate(client, &wallet, account_address).await?;
         return Ok(SavedTokens {
             expiry: (SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 30 * 60) as i64,
             tokens: new_tokens,
@@ -228,33 +236,23 @@ pub async fn make_publication(
 
     let query = json!({
         "query": r#"
-            mutation CreateOnchainPostTypedData($request: OnchainPostRequest!) {
-                createOnchainPostTypedData(request: $request) {
-      id
-      expiresAt
-      typedData {
-        types {
-          Post {
-            name
-            type
-          }
-        }
-        domain {
-          name
-          chainId
-          version
-          verifyingContract
-        }
-        value {
-          nonce
-          deadline
-          profileId
-          contentURI
-          actionModules
-          actionModulesInitDatas
-          referenceModule
-          referenceModuleInitData
-        }
+            mutation post($contentUri: String!) {
+                createOnchainPostTypedData({ contentUri: $contentUri }) {
+       ... on PostResponse {
+      hash
+    }
+
+      ... on SponsoredTransactionRequest {
+      ...SponsoredTransactionRequest
+    }
+
+    ... on SelfFundedTransactionRequest {
+      ...SelfFundedTransactionRequest
+    }
+
+    ... on TransactionWillFail {
+      reason
+    }
       }
     }
             }
@@ -262,13 +260,6 @@ pub async fn make_publication(
         "variables": {
             "request": {
                 "contentURI": content,
-                "openActionModules": [{
-                    "collectOpenAction": {
-                        "simpleCollectOpenAction": {
-                            "followerOnly": false
-                        }
-                    }
-                }]
             }
         }
     });
