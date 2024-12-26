@@ -9,6 +9,10 @@ import { chains } from "@lens-network/sdk/viem";
 import { Context, PublicClient, testnet } from "@lens-protocol/client";
 import { Agent } from "@/components/Dashboard/types/dashboard.types";
 import { LensConnected } from "@/components/Common/types/common.types";
+import {
+  StorageClient,
+  testnet as storageTestnet,
+} from "@lens-protocol/storage-node-client";
 
 export const config = getDefaultConfig({
   appName: "Triple A",
@@ -40,6 +44,7 @@ export const ModalContext = createContext<
       setCreateAccount: (e: SetStateAction<boolean>) => void;
       lensConnected: LensConnected | undefined;
       setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void;
+      storageClient: StorageClient;
     }
   | undefined
 >(undefined);
@@ -54,6 +59,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [createAccount, setCreateAccount] = useState<boolean>(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [lensClient, setLensClient] = useState<PublicClient | undefined>();
+  const storageClient = StorageClient.create(storageTestnet);
 
   useEffect(() => {
     if (!lensClient) {
@@ -84,6 +90,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               setError,
               notification,
               setNotification,
+              storageClient,
             }}
           >
             {children}

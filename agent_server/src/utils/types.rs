@@ -1,4 +1,5 @@
 use ethers::{
+    abi::Token,
     contract::ContractInstance,
     core::k256::ecdsa::SigningKey,
     middleware::SignerMiddleware,
@@ -27,6 +28,12 @@ pub struct AgentManager {
     pub agent: TripleAAgent,
     pub current_queue: Vec<AgentActivity>,
     pub agents_contract: Arc<
+        ContractInstance<
+            Arc<SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>>,
+            SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,
+        >,
+    >,
+    pub lens_global_contract: Arc<
         ContractInstance<
             Arc<SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>>,
             SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,
@@ -146,4 +153,27 @@ pub struct Content {
 pub struct SavedTokens {
     pub tokens: LensTokens,
     pub expiry: i64,
+}
+
+#[derive(Clone, Debug)]
+pub struct CreatePostParams {
+    pub author: Address,
+    pub content_uri: String,
+    pub reposted_post_id: U256,
+    pub quoted_post_id: U256,
+    pub replied_post_id: U256,
+    pub rules: Vec<Token>,
+    pub feed_rules_data: Token,
+    pub reposted_post_rules_data: Token,
+    pub quoted_post_rules_data: Token,
+    pub replied_post_rules_data: Token,
+    pub extra_data: Vec<Token>,
+}
+
+#[derive(Clone, Debug)]
+pub struct SourceStamp {
+    pub source: Address,
+    pub nonce: U256,
+    pub deadline: U256,
+    pub signature: Bytes,
 }

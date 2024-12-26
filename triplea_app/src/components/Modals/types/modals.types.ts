@@ -1,5 +1,6 @@
 import { LensConnected } from "@/components/Common/types/common.types";
 import { SetStateAction } from "react";
+import { StorageClient } from "@lens-protocol/storage-node-client";
 
 export type ImageViewerProps = {
   imageView: string;
@@ -14,6 +15,7 @@ export type CreateAccountProps = {
     | undefined;
   setCreateAccount: (e: SetStateAction<boolean>) => void;
   setError: (e: SetStateAction<string | undefined>) => void;
+  storageClient: StorageClient
 };
 
 export type ErrorsProps = {

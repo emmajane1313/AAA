@@ -97,8 +97,8 @@ pub async fn authenticate(
             "request": {
                 "accountOwner": {
                     "app": "0xe5439696f4057aF073c0FB2dc6e5e755392922e1",
-                    "account": account_address,
-                    "owner": wallet.address()
+                    "account": account_address.to_lowercase(),
+                    "owner": format!("{:?}", wallet.address()).to_lowercase()
                 }
             }
         }
@@ -112,8 +112,10 @@ pub async fn authenticate(
         .send()
         .await?;
 
+
     if response.status().is_success() {
         let json: Value = response.json().await?;
+    
         if let Some(challenge) = json["data"]["challenge"].as_object() {
             let text = challenge
                 .get("text")
@@ -281,6 +283,8 @@ pub async fn make_publication(
 
     let json: Value = response.json().await?;
 
+    println!("JSON: {:?}\n{}", json, private_key);
+
     if let Some(post_response) = json["data"]["post"].as_object() {
         if let Some(hash) = post_response.get("hash").and_then(|v| v.as_str()) {
             return poll(hash, auth_tokens).await;
@@ -344,7 +348,6 @@ pub async fn make_publication(
             let pending_tx = provider
                 .send_raw_transaction(Bytes::from(signed_tx_bytes))
                 .await?;
-
             return Ok(format!("Transaction sent: {}", pending_tx.tx_hash()));
         }
 

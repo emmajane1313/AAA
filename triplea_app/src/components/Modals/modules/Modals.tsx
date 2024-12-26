@@ -34,6 +34,7 @@ const Modals: FunctionComponent = (): JSX.Element => {
           lensConnected={context?.lensConnected}
           setCreateAccount={context?.setCreateAccount}
           setError={context?.setError}
+          storageClient={context?.storageClient!}
         />
       )}
     </>

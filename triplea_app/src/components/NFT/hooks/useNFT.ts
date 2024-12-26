@@ -74,13 +74,13 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
 
       const postsRes = await fetchPosts(
         {
-          pageSize: "TEN",
+          pageSize: "FIFTY",
           filter: {
-            // metadata: {
-            //   tags: {
-            //     all: ["tripleA", id],
-            //   },
-            // },
+            metadata: {
+              tags: {
+                all: ["tripleA", id],
+              },
+            },
             ...authors,
           },
         },

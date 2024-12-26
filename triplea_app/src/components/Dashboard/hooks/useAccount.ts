@@ -6,10 +6,12 @@ import pollResult from "@/lib/helpers/pollResult";
 import fetchAccount from "../../../../graphql/lens/queries/account";
 import updateAccount from "../../../../graphql/lens/mutations/updateAccount";
 import { v4 as uuidv4 } from "uuid";
+import { StorageClient } from "@lens-protocol/storage-node-client";
 
 const useAccount = (
   lensConnected: LensConnected | undefined,
-  setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void
+  setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void,
+  storageClient: StorageClient
 ) => {
   const [accountLoading, setAccountLoading] = useState<boolean>(false);
   const [newAccount, setNewAccount] = useState<{
@@ -47,9 +49,8 @@ const useAccount = (
         };
       }
 
-      const accountIPFSResponse = await fetch("/api/ipfs", {
-        method: "POST",
-        body: JSON.stringify({
+      const { uri } = await storageClient.uploadAsJson(
+        JSON.stringify({
           $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
           lens: {
             id: uuidv4(),
@@ -57,26 +58,17 @@ const useAccount = (
             bio: newAccount?.bio,
             ...picture,
           },
-        }),
-      });
-
-      if (!accountIPFSResponse.ok) {
-        const errorText = await accountIPFSResponse.text();
-        console.error("Error from API:", errorText);
-        setAccountLoading(false);
-        return;
-      }
-
-      const accountResponseJSON = await accountIPFSResponse.json();
-
-      console.log({ metadataUri: "lens://" + accountResponseJSON.cid });
+        })
+      );
 
       const accountResponse = await updateAccount(
         {
-          metadataUri: "lens://" + accountResponseJSON.cid,
+          metadataUri: uri,
         },
         lensConnected?.sessionClient
       );
+
+      console.log({ accountResponse });
 
       if ((accountResponse as any)?.hash) {
         if (

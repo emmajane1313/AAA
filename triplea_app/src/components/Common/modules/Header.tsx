@@ -30,6 +30,7 @@ const Header: FunctionComponent = (): JSX.Element => {
     handleSearch,
     setSearchItems,
     logout,
+    // handleSignless
   } = useHeader(
     address,
     context?.lensClient,

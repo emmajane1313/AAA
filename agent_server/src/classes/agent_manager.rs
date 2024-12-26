@@ -2,20 +2,22 @@ use crate::{
     utils::{
         constants::{AAA_URI, AGENTS, LENS_CHAIN_ID},
         contracts::{initialize_api, initialize_contracts},
-        ipfs::upload_ipfs,
+        ipfs::{upload_ipfs, upload_lens_storage},
         lens::{handle_tokens, make_publication},
         llama::call_llama,
         types::{AgentManager, Content, Publication, TripleAAgent},
     },
-    AgentActivity, Collection, Image, LlamaResponse, MetadataAttribute,
+    AgentActivity, Collection, CreatePostParams, Image, LlamaResponse, MetadataAttribute,
+    SourceStamp,
 };
 use chrono::{Timelike, Utc};
 use ethers::{
+    abi::Token,
     contract::{self, FunctionCall},
     middleware::{Middleware, SignerMiddleware},
     providers::{Http, Provider},
     signers::LocalWallet,
-    types::{Address, Eip1559TransactionRequest, NameOrAddress, H160, H256, U256},
+    types::{Address, Bytes, Eip1559TransactionRequest, NameOrAddress, H160, H256, U256},
 };
 use reqwest::{get, Client};
 use serde_json::{from_str, from_value, json, to_string, Value};
@@ -25,13 +27,14 @@ use uuid::Uuid;
 
 impl AgentManager {
     pub fn new(agent: &TripleAAgent) -> Self {
-        let agents_contract = initialize_contracts(&agent.name.to_string());
+        let (lens_global_contract, agents_contract) = initialize_contracts(&agent.name.to_string());
         initialize_api();
 
         return AgentManager {
             agent: agent.clone(),
             current_queue: Vec::new(),
             agents_contract,
+            lens_global_contract,
             tokens: None,
         };
     }
@@ -268,7 +271,6 @@ impl AgentManager {
 
         match collections_info {
             Ok(info) => {
-                println!("Info {:?}\n", info);
                 self.current_queue = info;
 
                 // match self.pay_rent().await {
@@ -401,7 +403,6 @@ impl AgentManager {
                             }
                         };
 
-                        println!("Transaction sent with hash: {:?}", tx_hash);
 
                         for collection in &rent_collection_ids {
                             self.current_queue
@@ -436,7 +437,6 @@ impl AgentManager {
         &self,
     ) -> Result<Vec<AgentActivity>, Box<dyn Error + Send + Sync>> {
         let client = Client::new();
-        println!("Agent Id {}\n", self.agent.id);
         let query = json!({
             "query": r#"
             query ($AAAAgents_id: Int!) {
@@ -478,7 +478,6 @@ impl AgentManager {
         match response {
             Ok(result) => match result {
                 Ok(result) => {
-                    println!("Result: {:?}\n", result);
                     let empty_vec = vec![];
                     let agent_createds = result["data"]["agentCreateds"]
                         .as_array()
@@ -552,7 +551,6 @@ impl AgentManager {
                         })
                         .collect();
 
-                    println!("Activities {:?}\n", activities);
 
                     Ok(activities)
                 }
@@ -588,10 +586,8 @@ impl AgentManager {
         } else {
             0
         };
-        println!("Agent Queue: {:?}\n", queue);
 
         for collection in queue {
-            println!("Processing collection ID: {:?}\n", collection.collection_id);
 
             let json_data = String::from("ipfs://Qme3c7DuUu99sjUXrJebbe5AfbkCGntW39PnDVqPWceozn");
 
@@ -607,7 +603,7 @@ impl AgentManager {
 
             match result {
                 Ok(Ok(_)) => {
-                    eprintln!("Success post: \n");
+                    eprintln!("Success post\n");
                 }
                 Ok(Err(err)) => {
                     eprintln!("Error with test post: {:?}", err);
@@ -622,7 +618,6 @@ impl AgentManager {
             }
         }
 
-        println!("All lens activity processed for agent: {}\n", self.agent.id);
     }
 
     async fn format_publication(
@@ -658,19 +653,20 @@ impl AgentManager {
 
         let publication_json = to_string(&publication)?;
 
-        let content = match upload_ipfs(publication_json).await {
-            Ok(con) => con.Hash,
+        let content = match upload_lens_storage(publication_json).await {
+            Ok(con) => con,
             Err(e) => {
-                eprintln!("Error uploading content to IPFS: {}", e);
+                eprintln!("Error uploading content to Lens Storage: {}", e);
                 return Err(Box::new(io::Error::new(
                     io::ErrorKind::Other,
-                    format!("Error uploading content to IPFS: {}", e),
+                    format!("Error uploading content to Lens Storage: {}", e),
                 )));
             }
         };
 
+
         let res = make_publication(
-            &(String::from("lens://") + &content),
+            &content,
             &self.agent.name,
             &self.tokens.as_ref().unwrap().tokens.access_token,
         )

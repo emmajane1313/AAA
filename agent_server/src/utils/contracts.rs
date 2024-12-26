@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex, Once};
 
-use crate::utils::constants::{AGENTS, LENS_CHAIN_ID, LENS_RPC_URL};
+use crate::utils::constants::{AGENTS, LENS_CHAIN_ID, LENS_GLOBAL_FEED, LENS_RPC_URL};
 use dotenv::{dotenv, var};
 use ethers::{
     abi::{Abi, Address},
@@ -15,6 +15,9 @@ use serde_json::from_str;
 
 static INIT_PROVIDER: Once = Once::new();
 static INIT_LENS: Once = Once::new();
+static LENS_GLOBAL_FEED_CONTRACT: Mutex<
+    Option<Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>>,
+> = Mutex::new(None);
 static AGENTS_CONTRACT: Mutex<
     Option<Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>>,
 > = Mutex::new(None);
@@ -71,12 +74,27 @@ pub fn initialize_wallet(private_key: &str) -> LocalWallet {
 
 pub fn initialize_contracts(
     private_key: &str,
-) -> Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>> {
+) -> (
+    Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
+    Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
+) {
     let provider = initialize_provider();
     dotenv().ok();
 
     let wallet = initialize_wallet(private_key);
     let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
+
+    let lens_global_feed_address = LENS_GLOBAL_FEED
+        .parse::<Address>()
+        .expect("Error in parsing LENS_GLOBAL_FEED");
+    let lens_global_feed_abi: Abi = from_str(include_str!("./../../abis/LensGlobalFeed.json"))
+        .expect("Error in loading LensGlobalFeed ABI");
+    let lens_global_feed_contract = Contract::new(
+        lens_global_feed_address,
+        lens_global_feed_abi,
+        client.clone(),
+    );
+    *LENS_GLOBAL_FEED_CONTRACT.lock().unwrap() = Some(Arc::new(lens_global_feed_contract));
 
     let agents_address = AGENTS.parse::<Address>().expect("Error in parsing AGENTS");
     let agents_abi: Abi =
@@ -84,9 +102,16 @@ pub fn initialize_contracts(
     let agents_contract = Contract::new(agents_address, agents_abi, client.clone());
     *AGENTS_CONTRACT.lock().unwrap() = Some(Arc::new(agents_contract));
 
-    AGENTS_CONTRACT
-        .lock()
-        .unwrap()
-        .clone()
-        .expect("AGENTS_CONTRACT not initialized")
+    (
+        LENS_GLOBAL_FEED_CONTRACT
+            .lock()
+            .unwrap()
+            .clone()
+            .expect("LENS_GLOBAL_FEED_CONTRACT not initialized"),
+        AGENTS_CONTRACT
+            .lock()
+            .unwrap()
+            .clone()
+            .expect("AGENTS_CONTRACT not initialized"),
+    )
 }

@@ -12,6 +12,7 @@ import pollResult from "@/lib/helpers/pollResult";
 import createAccount from "../../../../graphql/lens/mutations/createAccount";
 import switchAccount from "../../../../graphql/lens/mutations/switchAccount";
 import { v4 as uuidv4 } from "uuid";
+import { StorageClient } from "@lens-protocol/storage-node-client";
 
 const useCreateAccount = (
   address: `0x${string}` | undefined,
@@ -20,7 +21,8 @@ const useCreateAccount = (
     | ((e: SetStateAction<LensConnected | undefined>) => void)
     | undefined,
   setCreateAccount: (e: SetStateAction<boolean>) => void,
-  setError: (e: SetStateAction<string | undefined>) => void
+  setError: (e: SetStateAction<string | undefined>) => void,
+  storageClient: StorageClient
 ) => {
   const [account, setAccount] = useState<{
     localname: string;
@@ -66,9 +68,8 @@ const useCreateAccount = (
         };
       }
 
-      const accountIPFSResponse = await fetch("/api/ipfs", {
-        method: "POST",
-        body: JSON.stringify({
+      const { uri } = await storageClient.uploadAsJson(
+        JSON.stringify({
           $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
           lens: {
             id: uuidv4(),
@@ -76,25 +77,16 @@ const useCreateAccount = (
             bio: account?.bio,
             ...picture,
           },
-        }),
-      });
+        })
+      );
 
-      if (!accountIPFSResponse.ok) {
-        const errorText = await accountIPFSResponse.text();
-        console.error("Error from API:", errorText);
-        setAccountLoading(false);
-        setError?.("Error with IPFS API");
-        return;
-      }
-
-      const accountResponseJSON = await accountIPFSResponse.json();
       const accountResponse = await createAccount(
         {
           accountManager: [evmAddress(signer.account.address)],
           username: {
             localName: account?.username,
           },
-          metadataUri: "lens://" + accountResponseJSON.cid,
+          metadataUri: uri,
         },
         lensConnected?.sessionClient
       );

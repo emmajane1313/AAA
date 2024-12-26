@@ -1,5 +1,11 @@
 import { chains } from "@lens-network/sdk/viem";
-import { Context, evmAddress, PublicClient } from "@lens-protocol/client";
+import {
+  AccountManagersQuery,
+  Context,
+  evmAddress,
+  PublicClient,
+  UpdateAccountManagerMutation,
+} from "@lens-protocol/client";
 import { SetStateAction, useEffect, useState } from "react";
 import { createWalletClient, custom } from "viem";
 import { LensConnected, NFTData } from "../types/common.types";
@@ -7,7 +13,8 @@ import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAc
 import { getCollectionSearch } from "../../../../graphql/queries/getCollectionSearch";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import revoke from "../../../../graphql/lens/mutations/revoke";
-
+import { enableSignless } from "@lens-protocol/client/actions";
+import { ethers } from "ethers";
 const useHeader = (
   address: `0x${string}` | undefined,
   lensClient: PublicClient<Context> | undefined,
@@ -77,17 +84,19 @@ const useHeader = (
       const accounts = await fetchAccountsAvailable(
         {
           managedBy: evmAddress(signer.account.address),
+          includeOwned: true,
         },
         lensClient
       );
-
-      console.log((accounts as any)?.[0]?.account?.address)
+      console.log({ accounts });
+      console.log((accounts as any)?.[0]?.account?.address);
       if ((accounts as any)?.[0]?.account?.address) {
         const authenticated = await lensClient.login({
-          accountManager: {
+          accountOwner: {
             app: "0xe5439696f4057aF073c0FB2dc6e5e755392922e1",
             account: evmAddress((accounts as any)?.[0]?.account?.address),
-            manager: evmAddress(signer.account.address),
+            owner: signer.account.address?.toLowerCase(),
+            // manager: evmAddress(signer.account.address),
           },
           signMessage: (message) => signer.signMessage({ message }),
         });
@@ -137,13 +146,86 @@ const useHeader = (
     setLensLoading(false);
   };
 
+  // const handleSignless = async () => {
+  //   try {
+  //     const result = await fetchAccountsAvailable(
+  //       {
+  //         managedBy: evmAddress(address!),
+  //       },
+  //       lensClient!
+  //     );
+
+  //     const switchAcc = await lensConnected?.sessionClient?.switchAccount({
+  //       account: lensConnected?.profile?.address,
+  //     });
+  //     if (switchAcc?.isOk()) {
+  //       setLensConnected?.({
+  //         ...lensConnected,
+  //         sessionClient: switchAcc?.value,
+  //       });
+
+  //       const signer = createWalletClient({
+  //         chain: chains.testnet,
+  //         transport: custom(window.ethereum!),
+  //         account: address,
+  //       });
+
+  //       // console.log({ switchAcc });
+  //       console.log({
+  //         manager: await lensConnected?.sessionClient?.getAuthenticatedUser(),
+  //       });
+
+  //       // const mut = await lensConnected?.sessionClient?.mutation(
+  //       //   UpdateAccountManagerMutation,
+  //       //   {
+  //       //     request: {
+  //       //       permissions: {
+  //       //         canSetMetadataUri: true,
+  //       //         canTransferNative: true,
+  //       //         canTransferTokens: true,
+  //       //         canExecuteTransactions: true,
+  //       //       },
+  //       //       manager: evmAddress(signer.account?.address!),
+  //       //     },
+  //       //   }
+  //       // );
+
+  //       // if (mut?.isOk()) {
+  //       //   console.log(mut.value);
+  //       //   const provider = new ethers.BrowserProvider(window.ethereum);
+
+  //       //   const signer = await provider.getSigner();
+
+  //       //   const tx = {
+  //       //     chainId: mut.value?.raw?.chainId,
+  //       //     from: mut.value?.raw?.from,
+  //       //     to: mut.value?.raw?.to,
+  //       //     nonce: mut.value?.raw?.nonce,
+  //       //     gasLimit: mut.value?.raw?.gasLimit,
+  //       //     maxFeePerGas: mut.value?.raw?.maxFeePerGas,
+  //       //     maxPriorityFeePerGas: mut.value?.raw?.maxPriorityFeePerGas,
+  //       //     value: mut.value?.raw?.value,
+  //       //     // type: mut.value?.raw?.type,
+  //       //     data: mut.value?.raw?.data,
+  //       //   };
+  //       //   const txResponse = await signer.sendTransaction(tx);
+  //       //   const receipt = await txResponse.wait();
+  //       //   console.log("Transaction confirmed:", receipt);
+  //       //   // const signedTx = await signer.signTransaction(tx);
+  //       //   // const txResponse = await signer.sendTransaction(signedTx);
+  //       //   // console.log("Transaction sent:", txResponse);
+  //       // }
+  //     }
+  //   } catch (err: any) {
+  //     console.error(err.message);
+  //   }
+  // };
+
   const resumeLensSession = async () => {
     try {
       const resumed = await lensClient?.resumeSession();
 
       if (resumed?.isOk()) {
-
-      
         const accounts = await fetchAccountsAvailable(
           {
             managedBy: evmAddress(address!),
@@ -210,6 +292,7 @@ const useHeader = (
     handleSearch,
     setSearchItems,
     logout,
+    // handleSignless,
   };
 };
 

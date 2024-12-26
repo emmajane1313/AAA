@@ -1,6 +1,7 @@
 import { LensConnected, NFTData } from "@/components/Common/types/common.types";
 import { Account, PublicClient } from "@lens-protocol/client";
 import { SetStateAction } from "react";
+import { StorageClient } from "@lens-protocol/storage-node-client";
 
 export enum Switcher {
   Home,
@@ -88,6 +89,7 @@ export type AccountProps = {
   setSwitcher: (e: SetStateAction<Switcher>) => void;
   lensConnected: LensConnected | undefined;
   setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void;
+  storageClient: StorageClient;
 };
 
 export type MintData = {

@@ -9,9 +9,10 @@ const Account: FunctionComponent<AccountProps> = ({
   setSwitcher,
   lensConnected,
   setLensConnected,
+  storageClient,
 }): JSX.Element => {
   const { accountLoading, setNewAccount, newAccount, handleUpdateAccount } =
-    useAccount(lensConnected, setLensConnected);
+    useAccount(lensConnected, setLensConnected, storageClient);
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
       <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
