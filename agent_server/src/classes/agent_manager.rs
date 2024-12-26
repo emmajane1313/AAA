@@ -2,22 +2,20 @@ use crate::{
     utils::{
         constants::{AAA_URI, AGENTS, LENS_CHAIN_ID},
         contracts::{initialize_api, initialize_contracts},
-        ipfs::{upload_ipfs, upload_lens_storage},
+        ipfs::upload_lens_storage,
         lens::{handle_tokens, make_publication},
         llama::call_llama,
         types::{AgentManager, Content, Publication, TripleAAgent},
     },
-    AgentActivity, Collection, CreatePostParams, Image, LlamaResponse, MetadataAttribute,
-    SourceStamp,
+    AgentActivity, Collection, Image, LlamaResponse, MetadataAttribute,
 };
 use chrono::{Timelike, Utc};
 use ethers::{
-    abi::Token,
     contract::{self, FunctionCall},
     middleware::{Middleware, SignerMiddleware},
     providers::{Http, Provider},
     signers::LocalWallet,
-    types::{Address, Bytes, Eip1559TransactionRequest, NameOrAddress, H160, H256, U256},
+    types::{Address, Eip1559TransactionRequest, NameOrAddress, H160, H256, U256},
 };
 use reqwest::{get, Client};
 use serde_json::{from_str, from_value, json, to_string, Value};
@@ -403,7 +401,6 @@ impl AgentManager {
                             }
                         };
 
-
                         for collection in &rent_collection_ids {
                             self.current_queue
                                 .retain(|item| &item.collection_id == collection);
@@ -551,7 +548,6 @@ impl AgentManager {
                         })
                         .collect();
 
-
                     Ok(activities)
                 }
                 Err(err) => {
@@ -588,7 +584,6 @@ impl AgentManager {
         };
 
         for collection in queue {
-
             let json_data = String::from("ipfs://Qme3c7DuUu99sjUXrJebbe5AfbkCGntW39PnDVqPWceozn");
 
             let result = tokio::task::spawn_blocking({
@@ -617,7 +612,6 @@ impl AgentManager {
                 time::sleep(std::time::Duration::from_secs(interval as u64)).await;
             }
         }
-
     }
 
     async fn format_publication(
@@ -663,7 +657,6 @@ impl AgentManager {
                 )));
             }
         };
-
 
         let res = make_publication(
             &content,

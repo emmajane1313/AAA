@@ -112,10 +112,9 @@ pub async fn authenticate(
         .send()
         .await?;
 
-
     if response.status().is_success() {
         let json: Value = response.json().await?;
-    
+
         if let Some(challenge) = json["data"]["challenge"].as_object() {
             let text = challenge
                 .get("text")
@@ -241,8 +240,8 @@ pub async fn make_publication(
     let wallet = initialize_wallet(&private_key);
     let query = json!({
         "query": r#"
-            mutation post($request: PostRequest!) {
-                post(request: $request) {
+            mutation post($contentUri: String!) {
+                post(request: { contentUri: $contentUri }) {
                     ... on PostResponse {
                         hash
                     }
@@ -266,9 +265,7 @@ pub async fn make_publication(
             }
         "#,
         "variables": {
-            "request": {
                 "contentUri": content
-            }
         }
     });
 
