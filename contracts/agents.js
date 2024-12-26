@@ -4,6 +4,7 @@ const accessAbi = require("../abis/AccessControlsAbi.json");
 const treasuryAbi = require("../abis/DevTreasuryAbi.json");
 const marketAbi = require("../abis/MarketAbi.json");
 const collectionAbi = require("../abis/CollectionManagerAbi.json");
+const accountsAbi = require("../abis/AccountsAbi.json");
 require("dotenv").config();
 
 const provider = new ethers.JsonRpcProvider(
@@ -20,99 +21,124 @@ const collectionAddress = "0xC094c540e003cBC2b7A30D35C8148B5792568Af4";
 
 (async () => {
   const feeData = await provider.getFeeData();
-  const agentsContract = new ethers.Contract(agentsAddress, agentsAbi, wallet);
-  const accessContract = new ethers.Contract(accessAddress, accessAbi, wallet);
-  const marketContract = new ethers.Contract(marketAddress, marketAbi, wallet);
-  const treasuryContract = new ethers.Contract(
-    treasuryAddress,
-    treasuryAbi,
-    wallet
-  );
-  const collectionContract = new ethers.Contract(
-    collectionAddress,
-    collectionAbi,
-    wallet
-  );
+  // const agentsContract = new ethers.Contract(agentsAddress, agentsAbi, wallet);
+  // const accessContract = new ethers.Contract(accessAddress, accessAbi, wallet);
+  // const marketContract = new ethers.Contract(marketAddress, marketAbi, wallet);
+  // const treasuryContract = new ethers.Contract(
+  //   treasuryAddress,
+  //   treasuryAbi,
+  //   wallet
+  // );
+  // const collectionContract = new ethers.Contract(
+  //   collectionAddress,
+  //   collectionAbi,
+  //   wallet
+  // );
 
-  const errores = [
-    "NotAdmin()",
-    "AlreadyAdmin()",
-    "CannotRemoveSelf()",
-    "AgentDoesntExist()",
-    "AdminDoesntExist()",
-    "AdminAlreadyExists()",
-    "AgentAlreadyExists()",
-    "OnlyAgentContract()",
-    "TokenAlreadyExists()",
-    "TokenDoesntExist()",
-    "DropInvalid()",
-    "OnlyMarketContract()",
-    "ZeroAddress()",
-    "InvalidAmount()",
-    "NotArtist()",
-    "CantDeleteSoldCollection()",
-    "NotAvailable()",
-    "TokenNotAccepted()",
-    "PaymentFailed()",
-    "OnlyAgentsContract()",
-    "NotAgent()",
-    "InsufficientBalance()",
-  ];
+  // const errores = [
+  //   "NotAdmin()",
+  //   "AlreadyAdmin()",
+  //   "CannotRemoveSelf()",
+  //   "AgentDoesntExist()",
+  //   "AdminDoesntExist()",
+  //   "AdminAlreadyExists()",
+  //   "AgentAlreadyExists()",
+  //   "OnlyAgentContract()",
+  //   "TokenAlreadyExists()",
+  //   "TokenDoesntExist()",
+  //   "DropInvalid()",
+  //   "OnlyMarketContract()",
+  //   "ZeroAddress()",
+  //   "InvalidAmount()",
+  //   "NotArtist()",
+  //   "CantDeleteSoldCollection()",
+  //   "NotAvailable()",
+  //   "TokenNotAccepted()",
+  //   "PaymentFailed()",
+  //   "OnlyAgentsContract()",
+  //   "NotAgent()",
+  //   "InsufficientBalance()",
+  // ];
 
-  for (let i = 0; i < errores.length; i++) {
-    console.log(
-      errores[i],
-      " ",
-      keccak256(toUtf8Bytes(errores[i])).slice(0, 10),
-      "\n"
-    );
-  }
+  // for (let i = 0; i < errores.length; i++) {
+  //   console.log(
+  //     errores[i],
+  //     " ",
+  //     keccak256(toUtf8Bytes(errores[i])).slice(0, 10),
+  //     "\n"
+  //   );
+  // }
 
-  console.log("Base Fee actual:", feeData);
+  // console.log("Base Fee actual:", feeData);
 
-  const agents_access = await accessContract.agentsContract();
-  const agents_treasury = await treasuryContract.agents();
-  const agents_market = await marketContract.agents();
-  const balance1 = await agentsContract.getAgentActiveBalance(
-    GM_CONTRACT,
-    1,
-    1
-  );
-  const balance2 = await agentsContract.getAgentActiveBalance(
-    GM_CONTRACT,
-    2,
-    1
-  );
-  const balance3 = await agentsContract.getAgentActiveBalance(
-    GM_CONTRACT,
-    3,
-    1
-  );
-  const balance4 = await agentsContract.getAgentActiveBalance(
-    GM_CONTRACT,
-    4,
-    1
-  );
-  const meta1 = await agentsContract.getAgentMetadata(1);
-  const meta2 = await agentsContract.getAgentMetadata(2);
-  const meta3 = await agentsContract.getAgentMetadata(3);
-  const meta4 = await agentsContract.getAgentMetadata(4);
-  const agents = await collectionContract.getCollectionAgentIds(1);
-  console.log({
-    agents_access,
-    agents_treasury,
-    agents_market,
-    balance1,
-    balance2,
-    balance3,
-    balance4,
-    agents,
-    meta1,
-    meta2,
-    meta3,
-    meta4,
+  // const agents_access = await accessContract.agentsContract();
+  // const agents_treasury = await treasuryContract.agents();
+  // const agents_market = await marketContract.agents();
+  // const balance1 = await agentsContract.getAgentActiveBalance(
+  //   GM_CONTRACT,
+  //   1,
+  //   1
+  // );
+  // const balance2 = await agentsContract.getAgentActiveBalance(
+  //   GM_CONTRACT,
+  //   2,
+  //   1
+  // );
+  // const balance3 = await agentsContract.getAgentActiveBalance(
+  //   GM_CONTRACT,
+  //   3,
+  //   1
+  // );
+  // const balance4 = await agentsContract.getAgentActiveBalance(
+  //   GM_CONTRACT,
+  //   4,
+  //   1
+  // );
+  // const meta1 = await agentsContract.getAgentMetadata(1);
+  // const meta2 = await agentsContract.getAgentMetadata(2);
+  // const meta3 = await agentsContract.getAgentMetadata(3);
+  // const meta4 = await agentsContract.getAgentMetadata(4);
+  // const agents = await collectionContract.getCollectionAgentIds(1);
+  // console.log({
+  //   agents_access,
+  //   agents_treasury,
+  //   agents_market,
+  //   balance1,
+  //   balance2,
+  //   balance3,
+  //   balance4,
+  //   agents,
+  //   meta1,
+  //   meta2,
+  //   meta3,
+  //   meta4,
+  // });
+
+  const accountContract = new ethers.Contract("0xdd27e3e5BEF4dA722b1d4cfeAF3DD5EAc998035e", accountsAbi, wallet);
+
+  // const tx = await accountContract.updateAccountManagerPermissions(wallet.address, {
+  //   canExecuteTransactions: true,
+  //   canSetMetadataURI: true,
+  //   canTransferNative: true,
+  //   canTransferTokens: true,
+  // });
+  // const data = await accountContract.getAccountManagerPermissions(wallet.address);
+  const data_before = await accountContract.getAccountManagerPermissions("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053");
+  const acc1 = await accountContract.addAccountManager("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053", {
+    canExecuteTransactions: true,
+    canSetMetadataURI: true,
+    canTransferNative: true,
+    canTransferTokens: true,
   });
+  const data = await accountContract.getAccountManagerPermissions("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053");
+console.log({data_before, acc1, data})
+// const owner = await accountContract.owner();
 
+
+
+
+
+  // console.log({data, tx, owner, acc1})
   // const tx_set_1 = await accessContract.setAgentsContract(agentsAddress)
   // await tx_set_1.wait();
 

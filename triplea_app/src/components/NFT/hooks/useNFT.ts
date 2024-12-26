@@ -62,7 +62,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
 
       const filterAgents = agents
         ?.filter((ag) => collection?.agents?.includes(ag?.id))
-        .map((ag) => ag.wallet);
+        .map((ag) => ag.profile?.address);
 
       let authors = {};
 
@@ -78,7 +78,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
           filter: {
             metadata: {
               tags: {
-                all: ["tripleA", id],
+                oneOf: ["tripleA", id],
               },
             },
             ...authors,
@@ -86,8 +86,6 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
         },
         lensClient
       );
-
-      console.log({postsRes, authors})
 
       let posts: Post[] = [];
 
@@ -131,7 +129,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
     try {
       const filterAgents = agents
         ?.filter((ag) => nft?.agents?.includes(ag?.id))
-        .map((ag) => ag.wallet);
+        .map((ag) => ag.profile?.address);
 
       let authors = {};
 

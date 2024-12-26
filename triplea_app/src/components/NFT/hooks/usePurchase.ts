@@ -196,15 +196,6 @@ const usePurchase = (
       });
       checkAllowance();
     } catch (err: any) {
-      if (err instanceof BaseError) {
-        const revertError = err.walk(
-          (err) => err instanceof ContractFunctionRevertedError
-        );
-        if (revertError instanceof ContractFunctionRevertedError) {
-          console.log({ revertError });
-        }
-      }
-
       console.error(err);
     }
     setPurchaseLoading(false);

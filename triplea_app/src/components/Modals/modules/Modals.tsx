@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import CreateAccount from "./CreateAccount";
 import Errors from "./Errors";
 import Notification from "./Notification";
+import Signless from "./Signless";
 
 const Modals: FunctionComponent = (): JSX.Element => {
   const context = useContext(ModalContext);
@@ -35,6 +36,12 @@ const Modals: FunctionComponent = (): JSX.Element => {
           setCreateAccount={context?.setCreateAccount}
           setError={context?.setError}
           storageClient={context?.storageClient!}
+        />
+      )}
+      {context?.signless && (
+        <Signless
+          setSignless={context?.setSignless}
+          lensConnected={context?.lensConnected}
         />
       )}
     </>

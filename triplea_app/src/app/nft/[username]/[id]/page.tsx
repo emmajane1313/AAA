@@ -28,6 +28,9 @@ export default function NFT() {
         hasMore={hasMore}
         handleMoreActivity={handleMoreActivity}
         agentLoading={agentLoading}
+        lensConnected={context?.lensConnected}
+        setSignless={context?.setSignless!}
+        storageClient={context?.storageClient!}
       />
     </div>
   );

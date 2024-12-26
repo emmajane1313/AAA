@@ -15,7 +15,7 @@ export type CreateAccountProps = {
     | undefined;
   setCreateAccount: (e: SetStateAction<boolean>) => void;
   setError: (e: SetStateAction<string | undefined>) => void;
-  storageClient: StorageClient
+  storageClient: StorageClient;
 };
 
 export type ErrorsProps = {
@@ -26,4 +26,9 @@ export type ErrorsProps = {
 export type NotificationProps = {
   notification: string | undefined;
   setNotification: (e: SetStateAction<string | undefined>) => void;
+};
+
+export type SignlessProps = {
+  lensConnected: LensConnected | undefined;
+  setSignless: (e: SetStateAction<boolean>) => void;
 };

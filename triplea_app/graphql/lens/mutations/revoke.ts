@@ -11,7 +11,7 @@ const revoke = async (
   const result = await sessionClient.mutation(RevokeAuthenticationMutation, {
     request,
   });
-  console.log({result})
+
   if (result.isOk()) {
     return true;
   }

@@ -30,36 +30,24 @@ const useAccount = (
     setAccountLoading(true);
     try {
       let picture = {};
+
       if (newAccount?.pfp && newAccount.pfp instanceof Blob) {
-        const response = await fetch("/api/ipfs", {
-          method: "POST",
-          body: newAccount?.pfp as Blob,
-        });
+        const { uri } = await storageClient.uploadAsJson(newAccount?.pfp);
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error from API:", errorText);
-          setAccountLoading(false);
-          return;
-        }
-
-        const responseJSON = await response.json();
         picture = {
-          picture: "ipfs://" + responseJSON.cid,
+          picture: uri,
         };
       }
 
-      const { uri } = await storageClient.uploadAsJson(
-        JSON.stringify({
-          $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
-          lens: {
-            id: uuidv4(),
-            name: newAccount?.localname,
-            bio: newAccount?.bio,
-            ...picture,
-          },
-        })
-      );
+      const { uri } = await storageClient.uploadAsJson({
+        $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
+        lens: {
+          id: uuidv4(),
+          name: newAccount?.localname,
+          bio: newAccount?.bio,
+          ...picture,
+        },
+      });
 
       const accountResponse = await updateAccount(
         {
@@ -67,8 +55,6 @@ const useAccount = (
         },
         lensConnected?.sessionClient
       );
-
-      console.log({ accountResponse });
 
       if ((accountResponse as any)?.hash) {
         if (

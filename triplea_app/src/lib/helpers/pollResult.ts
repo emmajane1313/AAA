@@ -16,7 +16,6 @@ const pollResult = async (
         },
         client
       );
-      console.log({res})
 
       switch ((res as any).__typename) {
         case "FinishedTransactionStatus":

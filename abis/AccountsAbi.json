@@ -1,0 +1,178 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address", "name": "owner", "type": "address" },
+      { "internalType": "string", "name": "metadataURI", "type": "string" },
+      {
+        "internalType": "address[]",
+        "name": "accountManagers",
+        "type": "address[]"
+      },
+      {
+        "internalType": "tuple[]",
+        "name": "accountManagerPermissions",
+        "type": "tuple[]",
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "canExecuteTransactions",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canSetMetadataURI",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferNative",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferTokens",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "internalType": "tuple",
+        "name": "sourceStamp",
+        "type": "tuple",
+        "components": [
+          { "internalType": "address", "name": "source", "type": "address" },
+          { "internalType": "string", "name": "data", "type": "string" }
+        ]
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      { "internalType": "address", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "accountManager",
+        "type": "address"
+      },
+      
+      {
+        "internalType": "tuple",
+        "name": "accountManagerPermissions",
+        "type": "tuple",
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "canExecuteTransactions",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canSetMetadataURI",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferNative",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferTokens",
+            "type": "bool"
+          }
+        ]
+      }
+    ],
+    "name": "updateAccountManagerPermissions",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "accountManager",
+        "type": "address"
+      },
+      {
+        "internalType": "tuple",
+        "name": "accountManagerPermissions",
+        "type": "tuple",
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "canExecuteTransactions",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canSetMetadataURI",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferNative",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferTokens",
+            "type": "bool"
+          }
+        ]
+      }
+    ],
+    "name": "addAccountManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "accountManager", "type": "address" }
+    ],
+    "name": "getAccountManagerPermissions",
+    "outputs": [
+      {
+        "internalType": "tuple",
+        "name": "",
+        "type": "tuple",
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "canExecuteTransactions",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canSetMetadataURI",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferNative",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canTransferTokens",
+            "type": "bool"
+          }
+        ]
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

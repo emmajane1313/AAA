@@ -11,6 +11,9 @@ import Image from "next/legacy/image";
 import createProfilePicture from "@/lib/helpers/createProfilePicture";
 import moment from "moment";
 import InfiniteScroll from "react-infinite-scroll-component";
+import useInteractions from "../hooks/useInteractions";
+import Post from "./Post";
+import Comments from "./Comments";
 
 const Purchase: FunctionComponent<PurchaseProps> = ({
   nft,
@@ -19,7 +22,11 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
   setNotification,
   hasMore,
   handleMoreActivity,
-  agentLoading
+  agentLoading,
+  lensConnected,
+  setSignless,
+  storageClient,
+  
 }): JSX.Element => {
   const { isConnected, address } = useAccount();
   const publicClient = createPublicClient({
@@ -39,6 +46,25 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
     screen,
     setScreen,
   } = usePurchase(nft, setNft, address, publicClient, setNotification);
+  const {
+    handlePost,
+    postLoading,
+    interactionsLoading,
+    handleComment,
+    handleLike,
+    handleMirror,
+    handleQuote,
+    post,
+    setPost,
+    commentQuote,
+    setCommentQuote,
+  } = useInteractions(
+    nft?.agentActivity,
+    lensConnected?.sessionClient!,
+    setSignless,
+    storageClient,
+    String(nft?.id)
+  );
   const { openConnectModal } = useConnectModal();
   return (
     <div
@@ -123,7 +149,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
           <div className="py-4 h-fit max-h-40 overflow-y-scroll flex relative items-start justify-start text-left text-black text-sm">
             {nft?.description}
           </div>
-          <div className="relative w-full h-fit flex flex-col gap-3 items-center justify-center">
+          <div className="relative w-full h-full flex flex-col gap-3 items-center justify-center">
             <div className="relative w-full h-fit flex items-center justify-center gap-3 flex-col">
               <div className="relative w-full h-fit flex items-center justify-center gap-px flex-col">
                 <div className="h-px w-full flex bg-morado" />
@@ -181,75 +207,77 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
             </div>
 
             {screen == 1 ? (
-              <div className="relative w-full h-fit overflow-y-scroll flex flex-col items-start justify-start gap-3">
-                {nft?.collectors?.map((collector, key) => {
-                  return (
-                    <div
-                      key={key}
-                      className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
-                      onClick={() =>
-                        window.open(
-                          `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
-                        )
-                      }
-                    >
-                      {collector?.name ? (
-                        <div className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center">
-                          {collector?.pfp && (
-                            <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
-                              <Image
-                                src={
-                                  createProfilePicture(collector?.pfp as any) ||
-                                  ""
-                                }
-                                alt="pfp"
-                                draggable={false}
-                                className="rounded-full"
-                              />
-                            </div>
-                          )}
-                          <div className="relative w-fit h-fit flex text-black text-sm">
-                            @{collector?.name}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="relative w-fit h-fit flex">
-                          {collector?.address?.slice(0, 10) + " ..."}
-                        </div>
-                      )}
-
-                      <div className="relative w-fit h-fit flex items-center justify-center text-black">
-                        X {collector?.amount}
-                      </div>
-                      <div className="relative w-fit h-fit flex items-center justify-center text-black">
-                        {moment
-                          .unix(Number(collector?.blockTimestamp))
-                          .fromNow()}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <InfiniteScroll
-                dataLength={nft?.agentActivity?.length || 1}
-                next={handleMoreActivity}
-                hasMore={hasMore}
-                loader={<></>}
-              >
-                <div className="relative w-full h-fit overflow-y-scroll flex flex-col items-start justify-start gap-3">
-                  {nft?.agentActivity?.map((activity, key) => {
+              <div className="relative w-full h-full overflow-y-scroll flex items-start justify-start">
+                <div className="relative w-full h-fit flex flex-col items-start justify-start  gap-3">
+                  {nft?.collectors?.map((collector, key) => {
                     return (
                       <div
                         key={key}
-                        className="relative w-full h-fit flex"
+                        className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
+                        onClick={() =>
+                          window.open(
+                            `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
+                          )
+                        }
                       >
-                        
+                        {collector?.name ? (
+                          <div className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center">
+                            {collector?.pfp && (
+                              <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
+                                <Image
+                                  src={
+                                    createProfilePicture(
+                                      collector?.pfp as any
+                                    ) || ""
+                                  }
+                                  alt="pfp"
+                                  draggable={false}
+                                  className="rounded-full"
+                                />
+                              </div>
+                            )}
+                            <div className="relative w-fit h-fit flex text-black text-sm">
+                              @{collector?.name}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="relative w-fit h-fit flex">
+                            {collector?.address?.slice(0, 10) + " ..."}
+                          </div>
+                        )}
+
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                          X {collector?.amount}
+                        </div>
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                          {moment
+                            .unix(Number(collector?.blockTimestamp))
+                            .fromNow()}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-              </InfiniteScroll>
+              </div>
+            ) : (
+              <div className="relative w-full h-full flex items-start justify-between flex-col gap-3">
+                <InfiniteScroll
+                  dataLength={nft?.agentActivity?.length || 1}
+                  next={handleMoreActivity}
+                  hasMore={hasMore}
+                  loader={<></>}
+                >
+                  <Comments comments={nft?.agentActivity || []} />
+                </InfiniteScroll>
+                <Post
+                  handlePost={handlePost}
+                  postLoading={postLoading}
+                  setPost={setPost}
+                  post={post}
+                  commentQuote={commentQuote}
+                  setCommentQuote={setCommentQuote}
+                />
+              </div>
             )}
           </div>
         </>

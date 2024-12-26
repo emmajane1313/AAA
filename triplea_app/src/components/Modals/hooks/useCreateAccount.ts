@@ -49,36 +49,22 @@ const useCreateAccount = (
       let picture = {};
 
       if (account?.pfp) {
-        const response = await fetch("/api/ipfs", {
-          method: "POST",
-          body: account?.pfp,
-        });
+        const { uri } = await storageClient.uploadAsJson(account?.pfp);
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error from API:", errorText);
-          setAccountLoading(false);
-          setError?.("Error with IPFS");
-          return;
-        }
-
-        const responseJSON = await response.json();
         picture = {
-          picture: "ipfs://" + responseJSON.cid,
+          picture: uri,
         };
       }
 
-      const { uri } = await storageClient.uploadAsJson(
-        JSON.stringify({
-          $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
-          lens: {
-            id: uuidv4(),
-            name: account?.localname,
-            bio: account?.bio,
-            ...picture,
-          },
-        })
-      );
+      const { uri } = await storageClient.uploadAsJson({
+        $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
+        lens: {
+          id: uuidv4(),
+          name: account?.localname,
+          bio: account?.bio,
+          ...picture,
+        },
+      });
 
       const accountResponse = await createAccount(
         {
@@ -114,23 +100,31 @@ const useCreateAccount = (
               lensConnected?.sessionClient
             );
 
-            if ((authTokens as any)?.accessToken) {
-              setLensConnected?.({
-                ...lensConnected,
-                profile: newAcc as Account,
-                authTokens: authTokens as AuthenticationTokens,
+            const ownerSigner =
+              await lensConnected?.sessionClient?.switchAccount({
+                account: (newAcc as any)?.address,
               });
-              setCreateAccount(false);
-              setAccount({
-                localname: "",
-                bio: "",
-                username: "",
-              });
-            } else {
-              console.error(accountResponse);
-              setError?.("Error with Auth Tokens");
-              setAccountLoading(false);
-              return;
+
+            if (ownerSigner?.isOk()) {
+              if ((authTokens as any)?.accessToken) {
+                setLensConnected?.({
+                  ...lensConnected,
+                  profile: newAcc as Account,
+                  sessionClient: ownerSigner?.value,
+                  authTokens: authTokens as AuthenticationTokens,
+                });
+                setCreateAccount(false);
+                setAccount({
+                  localname: "",
+                  bio: "",
+                  username: "",
+                });
+              } else {
+                console.error(accountResponse);
+                setError?.("Error with Auth Tokens");
+                setAccountLoading(false);
+                return;
+              }
             }
           } else {
             console.error(accountResponse);

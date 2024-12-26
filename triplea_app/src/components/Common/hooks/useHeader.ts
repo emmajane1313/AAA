@@ -146,80 +146,81 @@ const useHeader = (
     setLensLoading(false);
   };
 
-  // const handleSignless = async () => {
-  //   try {
-  //     const result = await fetchAccountsAvailable(
-  //       {
-  //         managedBy: evmAddress(address!),
-  //       },
-  //       lensClient!
-  //     );
+  const handleSignless = async () => {
+    try {
+      const result = await fetchAccountsAvailable(
+        {
+          managedBy: evmAddress(address!),
+        },
+        lensClient!
+      );
 
-  //     const switchAcc = await lensConnected?.sessionClient?.switchAccount({
-  //       account: lensConnected?.profile?.address,
-  //     });
-  //     if (switchAcc?.isOk()) {
-  //       setLensConnected?.({
-  //         ...lensConnected,
-  //         sessionClient: switchAcc?.value,
-  //       });
+      const switchAcc = await lensConnected?.sessionClient?.switchAccount({
+        account: lensConnected?.profile?.address,
+      });
+      if (switchAcc?.isOk()) {
+        setLensConnected?.({
+          ...lensConnected,
+          sessionClient: switchAcc?.value,
+        });
 
-  //       const signer = createWalletClient({
-  //         chain: chains.testnet,
-  //         transport: custom(window.ethereum!),
-  //         account: address,
-  //       });
+        const signer = createWalletClient({
+          chain: chains.testnet,
+          transport: custom(window.ethereum!),
+          account: address,
+        });
 
-  //       // console.log({ switchAcc });
-  //       console.log({
-  //         manager: await lensConnected?.sessionClient?.getAuthenticatedUser(),
-  //       });
+        // console.log({ switchAcc });
+        console.log({
+          manager: await lensConnected?.sessionClient?.getAuthenticatedUser(),
+        });
 
-  //       // const mut = await lensConnected?.sessionClient?.mutation(
-  //       //   UpdateAccountManagerMutation,
-  //       //   {
-  //       //     request: {
-  //       //       permissions: {
-  //       //         canSetMetadataUri: true,
-  //       //         canTransferNative: true,
-  //       //         canTransferTokens: true,
-  //       //         canExecuteTransactions: true,
-  //       //       },
-  //       //       manager: evmAddress(signer.account?.address!),
-  //       //     },
-  //       //   }
-  //       // );
+   
+        // const mut = await lensConnected?.sessionClient?.mutation(
+        //   UpdateAccountManagerMutation,
+        //   {
+        //     request: {
+        //       permissions: {
+        //         canSetMetadataUri: true,
+        //         canTransferNative: true,
+        //         canTransferTokens: true,
+        //         canExecuteTransactions: true,
+        //       },
+        //       manager: evmAddress(signer.account?.address!),
+        //     },
+        //   }
+        // );
 
-  //       // if (mut?.isOk()) {
-  //       //   console.log(mut.value);
-  //       //   const provider = new ethers.BrowserProvider(window.ethereum);
+        // if (mut?.isOk()) {
+        //   console.log(mut.value);
+        //   const provider = new ethers.BrowserProvider(window.ethereum);
 
-  //       //   const signer = await provider.getSigner();
+        //   const signer = await provider.getSigner();
 
-  //       //   const tx = {
-  //       //     chainId: mut.value?.raw?.chainId,
-  //       //     from: mut.value?.raw?.from,
-  //       //     to: mut.value?.raw?.to,
-  //       //     nonce: mut.value?.raw?.nonce,
-  //       //     gasLimit: mut.value?.raw?.gasLimit,
-  //       //     maxFeePerGas: mut.value?.raw?.maxFeePerGas,
-  //       //     maxPriorityFeePerGas: mut.value?.raw?.maxPriorityFeePerGas,
-  //       //     value: mut.value?.raw?.value,
-  //       //     // type: mut.value?.raw?.type,
-  //       //     data: mut.value?.raw?.data,
-  //       //   };
-  //       //   const txResponse = await signer.sendTransaction(tx);
-  //       //   const receipt = await txResponse.wait();
-  //       //   console.log("Transaction confirmed:", receipt);
-  //       //   // const signedTx = await signer.signTransaction(tx);
-  //       //   // const txResponse = await signer.sendTransaction(signedTx);
-  //       //   // console.log("Transaction sent:", txResponse);
-  //       // }
-  //     }
-  //   } catch (err: any) {
-  //     console.error(err.message);
-  //   }
-  // };
+        //   const tx = {
+        //     chainId: mut.value?.raw?.chainId,
+        //     from: mut.value?.raw?.from,
+        //     to: mut.value?.raw?.to,
+        //     nonce: mut.value?.raw?.nonce,
+        //     gasLimit: mut.value?.raw?.gasLimit,
+        //     maxFeePerGas: mut.value?.raw?.maxFeePerGas,
+        //     maxPriorityFeePerGas: mut.value?.raw?.maxPriorityFeePerGas,
+        //     value: mut.value?.raw?.value,
+        //     // type: mut.value?.raw?.type,
+        //     data: mut.value?.raw?.data,
+        //   };
+        //   const txResponse = await signer.sendTransaction(tx);
+        //   const receipt = await txResponse.wait();
+        //   console.log("Transaction confirmed:", receipt);
+        //   // const signedTx = await signer.signTransaction(tx);
+        //   // const txResponse = await signer.sendTransaction(signedTx);
+        //   // console.log("Transaction sent:", txResponse);
+        // }
+      }
+    } catch (err: any) {
+      console.error(err.message);
+    }
+  };
 
   const resumeLensSession = async () => {
     try {
@@ -292,7 +293,7 @@ const useHeader = (
     handleSearch,
     setSearchItems,
     logout,
-    // handleSignless,
+    handleSignless,
   };
 };
 

@@ -30,7 +30,7 @@ const Header: FunctionComponent = (): JSX.Element => {
     handleSearch,
     setSearchItems,
     logout,
-    // handleSignless
+    handleSignless
   } = useHeader(
     address,
     context?.lensClient,
@@ -163,7 +163,11 @@ const Header: FunctionComponent = (): JSX.Element => {
                 className={`relative w-full h-fit flex items-center justify-start flex-row gap-1 ${
                   address && "cursor-pointer"
                 }`}
-                onClick={() => address && router.push("/dashboard")}
+                onClick={() => 
+                  // handleSignless()
+                  
+                  address && router.push("/dashboard")
+                }
               >
                 <div className="relative w-fit h-fit flex">
                   {context?.lensConnected?.profile?.username?.namespace
