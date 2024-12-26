@@ -1,16 +1,17 @@
 use std::{
-    collections::BTreeMap,
+    error::Error,
     sync::Arc,
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use crate::{
-    utils::contracts::{initialize_api, initialize_wallet},
+    utils::contracts::{initialize_api, initialize_provider, initialize_wallet},
     LensTokens, SavedTokens,
 };
 use ethers::{
+    middleware::Middleware,
     signers::{LocalWallet, Signer},
-    types::transaction::eip712::{EIP712Domain, Eip712DomainType, TypedData},
+    types::{transaction::eip2718::TypedTransaction, Bytes, Eip1559TransactionRequest},
     utils::hex,
 };
 use reqwest::Client;
@@ -22,7 +23,7 @@ async fn refresh(
     client: Arc<Client>,
     refresh_tokens: &str,
     auth_tokens: &str,
-) -> Result<LensTokens, Box<dyn std::error::Error>> {
+) -> Result<LensTokens, Box<dyn Error>> {
     let query = json!({
         "query": r#"
             mutation Refresh($request: RefreshRequest!) {
@@ -44,12 +45,13 @@ async fn refresh(
         .post(LENS_API)
         .header("Authorization", format!("Bearer {}", auth_tokens))
         .header("Content-Type", "application/json")
+        .header("Origin", "http://localhost:3000")
         .json(&query)
         .send()
         .await?;
 
     if response.status().is_success() {
-        let json: serde_json::Value = response.json().await?;
+        let json: Value = response.json().await?;
         if let Some(authentication) = json["data"]["refresh"].as_object() {
             Ok(LensTokens {
                 access_token: authentication
@@ -80,7 +82,7 @@ pub async fn authenticate(
     client: Arc<Client>,
     wallet: &LocalWallet,
     account_address: &str,
-) -> Result<LensTokens, Box<dyn std::error::Error>> {
+) -> Result<LensTokens, Box<dyn Error>> {
     let mutation = json!({
         "query": r#"
         mutation Challenge($request: ChallengeRequest!) {
@@ -95,8 +97,8 @@ pub async fn authenticate(
             "request": {
                 "accountOwner": {
                     "app": "0xe5439696f4057aF073c0FB2dc6e5e755392922e1",
-                    "account": wallet.address(),
-                    "owner": account_address
+                    "account": account_address,
+                    "owner": wallet.address()
                 }
             }
         }
@@ -105,6 +107,7 @@ pub async fn authenticate(
     let response = client
         .post(LENS_API)
         .header("Content-Type", "application/json")
+        .header("Origin", "http://localhost:3000")
         .json(&mutation)
         .send()
         .await?;
@@ -153,6 +156,7 @@ pub async fn authenticate(
             let response = client
                 .post(LENS_API)
                 .header("Content-Type", "application/json")
+                .header("Origin", "http://localhost:3000")
                 .json(&authenticate_mutation)
                 .send()
                 .await?;
@@ -195,7 +199,7 @@ pub async fn handle_tokens(
     private_key: &str,
     account_address: &str,
     tokens: Option<SavedTokens>,
-) -> Result<SavedTokens, Box<dyn std::error::Error>> {
+) -> Result<SavedTokens, Box<dyn Error>> {
     let client = initialize_api();
     let wallet = initialize_wallet(&private_key);
 
@@ -227,113 +231,41 @@ pub async fn handle_tokens(
 }
 
 pub async fn make_publication(
+    content: &str,
     private_key: &str,
-    content: String,
     auth_tokens: &str,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Box<dyn Error>> {
     let client = initialize_api();
     let wallet = initialize_wallet(&private_key);
-
     let query = json!({
         "query": r#"
-            mutation post($contentUri: String!) {
-                createOnchainPostTypedData({ contentUri: $contentUri }) {
-       ... on PostResponse {
-      hash
-    }
-
-      ... on SponsoredTransactionRequest {
-      ...SponsoredTransactionRequest
-    }
-
-    ... on SelfFundedTransactionRequest {
-      ...SelfFundedTransactionRequest
-    }
-
-    ... on TransactionWillFail {
-      reason
-    }
-      }
-    }
-            }
-        "#,
-        "variables": {
-            "request": {
-                "contentURI": content,
-            }
-        }
-    });
-
-    let respuesta = client
-        .post(LENS_API)
-        .header("Authorization", format!("Bearer {}", auth_tokens))
-        .header("Content-Type", "application/json")
-        .json(&query)
-        .send()
-        .await?;
-
-    if respuesta.status().is_success() {
-        let json: serde_json::Value = respuesta.json().await?;
-
-        if let Some(datos) = json["data"]["createOnchainPostTypedData"].as_object() {
-            let datos_escritos = datos.get("typedData").and_then(|v| v.as_object()).unwrap();
-
-            let domain = serde_json::from_value::<EIP712Domain>(
-                datos_escritos.get("domain").cloned().unwrap(),
-            )?;
-            let types = serde_json::from_value::<BTreeMap<String, Vec<Eip712DomainType>>>(
-                datos_escritos.get("types").cloned().unwrap(),
-            )?;
-            let value = serde_json::from_value::<BTreeMap<String, serde_json::Value>>(
-                datos_escritos.get("value").cloned().unwrap(),
-            )?;
-
-            let signature = wallet
-                .sign_typed_data(&TypedData {
-                    domain,
-                    types,
-                    primary_type: "Post".to_string(),
-                    message: value,
-                })
-                .await?;
-
-            return Ok(propagate(
-                datos.get("id").and_then(|v| v.as_str()).unwrap_or_default(),
-                &signature.to_string(),
-                auth_tokens,
-            )
-            .await?);
-        } else {
-            return Err("Estructura de respuesta inesperada Publicacion.".into());
-        }
-    } else {
-        return Err(format!("Error: {}", respuesta.status()).into());
-    }
-}
-
-async fn propagate(
-    id: &str,
-    signature: &str,
-    auth_tokens: &str,
-) -> Result<String, Box<dyn std::error::Error>> {
-    let client = initialize_api();
-    let query = json!({
-        "query": r#"
-            mutation BroadcastOnchain($request: BroadcastRequest!) {
-                broadcastOnchain(request: $request) {
-                    ... on RelaySuccess {
-        txId
-      }
-      ... on RelayError {
-        reason
-      }
+            mutation post($request: PostRequest!) {
+                post(request: $request) {
+                    ... on PostResponse {
+                        hash
+                    }
+                    ... on SponsoredTransactionRequest {
+                        raw {
+                            to
+                            from
+                            data
+                            gasLimit
+                            maxFeePerGas
+                            maxPriorityFeePerGas
+                            value
+                            chainId
+                        }
+                        reason
+                    }
+                    ... on TransactionWillFail {
+                        reason
+                    }
                 }
             }
         "#,
         "variables": {
             "request": {
-                    "id": id,
-                    "signature": signature
+                "contentUri": content
             }
         }
     });
@@ -342,18 +274,143 @@ async fn propagate(
         .post(LENS_API)
         .header("Authorization", format!("Bearer {}", auth_tokens))
         .header("Content-Type", "application/json")
+        .header("Origin", "http://localhost:3000")
+        .json(&query)
+        .send()
+        .await?;
+
+    let json: Value = response.json().await?;
+
+    if let Some(post_response) = json["data"]["post"].as_object() {
+        if let Some(hash) = post_response.get("hash").and_then(|v| v.as_str()) {
+            return poll(hash, auth_tokens).await;
+        }
+
+        if let Some(raw) = post_response.get("raw").and_then(|v| v.as_object()) {
+            let to = raw.get("to").and_then(|v| v.as_str()).unwrap_or_default();
+            let from = raw.get("from").and_then(|v| v.as_str()).unwrap_or_default();
+            let data = raw.get("data").and_then(|v| v.as_str()).unwrap_or_default();
+
+            if to.is_empty() || from.is_empty() || data.is_empty() {
+                return Err("Invalid transaction data: missing required fields.".into());
+            }
+
+            let gas_limit = raw
+                .get("gasLimit")
+                .and_then(|v| v.as_u64())
+                .ok_or("Invalid gasLimit")?;
+            let max_fee_per_gas = raw
+                .get("maxFeePerGas")
+                .and_then(|v| v.as_str())
+                .ok_or("Invalid maxFeePerGas")?
+                .parse::<u128>()?;
+            let max_priority_fee_per_gas = raw
+                .get("maxPriorityFeePerGas")
+                .and_then(|v| v.as_str())
+                .ok_or("Invalid maxPriorityFeePerGas")?
+                .parse::<u128>()?;
+            let value = raw
+                .get("value")
+                .and_then(|v| v.as_str())
+                .ok_or("Invalid value")?
+                .parse::<u128>()?;
+            let chain_id = raw
+                .get("chainId")
+                .and_then(|v| v.as_u64())
+                .ok_or("Invalid chainId")?;
+
+            let provider = initialize_provider();
+            let current_nonce = provider
+                .get_transaction_count(wallet.address(), None)
+                .await?;
+
+            let tx = Eip1559TransactionRequest {
+                to: Some(to.parse()?),
+                from: Some(from.parse()?),
+                gas: Some(gas_limit.into()),
+                max_fee_per_gas: Some(max_fee_per_gas.into()),
+                max_priority_fee_per_gas: Some(max_priority_fee_per_gas.into()),
+                value: Some(value.into()),
+                data: Some(data.parse()?),
+                chain_id: Some(chain_id.into()),
+                nonce: Some(current_nonce.into()),
+                access_list: vec![].into(),
+            };
+
+            let typed_tx = TypedTransaction::Eip1559(tx);
+            let signed_tx = wallet.sign_transaction(&typed_tx).await?;
+            let signed_tx_bytes = typed_tx.rlp_signed(&signed_tx);
+
+            let pending_tx = provider
+                .send_raw_transaction(Bytes::from(signed_tx_bytes))
+                .await?;
+
+            return Ok(format!("Transaction sent: {}", pending_tx.tx_hash()));
+        }
+
+        if let Some(reason) = post_response.get("reason").and_then(|v| v.as_str()) {
+            return Err(format!("Transaction failed: {}", reason).into());
+        }
+    }
+
+    Err("Unexpected response format.".into())
+}
+
+async fn poll(hash: &str, auth_tokens: &str) -> Result<String, Box<dyn Error>> {
+    let client = initialize_api();
+    let query = json!({
+        "query": r#"
+            query TransactionStatus($request: TransactionStatusRequest!) {
+                transactionStatus(request: $request) {
+                    ... on NotIndexedYetStatus {
+                        reason
+                        txHasMined
+                    }
+                    ... on PendingTransactionStatus {
+                        blockTimestamp
+                    }
+                    ... on FinishedTransactionStatus {
+                        blockTimestamp
+                    }
+                    ... on FailedTransactionStatus {
+                        reason
+                        blockTimestamp
+                    }
+                }
+            }
+        "#,
+        "variables": {
+            "request": {
+                "txHash": hash
+            }
+        }
+    });
+
+    let response = client
+        .post(LENS_API)
+        .header("Authorization", format!("Bearer {}", auth_tokens))
+        .header("Content-Type", "application/json")
+        .header("Origin", "http://localhost:3000")
         .json(&query)
         .send()
         .await?;
 
     if response.status().is_success() {
-        let json: serde_json::Value = response.json().await?;
-        if let Some(_) = json["data"]["broadcastOnchain"]["txId"].as_str() {
-            return Ok("RelaySuccess".to_string());
-        } else {
-            return Ok("RelayError".to_string());
+        let json: Value = response.json().await?;
+        if let Some(status) = json["data"]["transactionStatus"].as_object() {
+            if let Some(reason) = status.get("reason").and_then(|v| v.as_str()) {
+                return Ok(format!("Transaction failed: {}", reason));
+            } else if let Some(timestamp) = status.get("blockTimestamp").and_then(|v| v.as_str()) {
+                return Ok(format!("Transaction finished at: {}", timestamp));
+            } else if let Some(tx_mined) = status.get("txHasMined").and_then(|v| v.as_bool()) {
+                return Ok(format!(
+                    "Transaction not indexed yet. Has mined: {}",
+                    tx_mined
+                ));
+            }
         }
+        Err("Unknown transaction status".into())
     } else {
-        return Err(format!("Error: {}", response.status()).into());
+        Err(format!("Error: {}", response.status()).into())
     }
 }

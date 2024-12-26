@@ -25,8 +25,8 @@ contract AAAAccessControls {
         _;
     }
 
-    modifier onlyAgentContract() {
-        if (msg.sender != agentsContract) {
+    modifier onlyAgentContractOrAdmin() {
+        if (msg.sender != agentsContract && !_admins[msg.sender]) {
             revert AAAErrors.OnlyAgentContract();
         }
         _;
@@ -58,7 +58,7 @@ contract AAAAccessControls {
         emit AdminRemoved(admin);
     }
 
-    function addAgent(address agent) external onlyAgentContract {
+    function addAgent(address agent) external onlyAgentContractOrAdmin {
         if (_agents[agent]) {
             revert AAAErrors.AgentAlreadyExists();
         }
@@ -66,7 +66,7 @@ contract AAAAccessControls {
         emit AgentAdded(agent);
     }
 
-    function removeAgent(address agent) external onlyAgentContract {
+    function removeAgent(address agent) external onlyAgentContractOrAdmin {
         if (!_agents[agent]) {
             revert AAAErrors.AgentDoesntExist();
         }

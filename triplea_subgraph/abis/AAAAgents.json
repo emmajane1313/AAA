@@ -160,10 +160,14 @@
     "type": "function",
     "name": "payRent",
     "inputs": [
-      { "name": "token", "type": "address", "internalType": "address" },
-      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
-      { "name": "amount", "type": "uint256", "internalType": "uint256" },
-      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "tokens", "type": "address[]", "internalType": "address[]" },
+      {
+        "name": "collectionIds",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      },
+      { "name": "amounts", "type": "uint256[]", "internalType": "uint256[]" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -286,52 +290,27 @@
     "name": "BalanceWithdrawn",
     "inputs": [
       {
-        "name": "token",
-        "type": "address",
+        "name": "tokens",
+        "type": "address[]",
         "indexed": false,
-        "internalType": "address"
+        "internalType": "address[]"
+      },
+      {
+        "name": "collectionIds",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "amounts",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
       },
       {
         "name": "agentId",
         "type": "uint256",
         "indexed": false,
-        "internalType": "uint256"
-      },
-      {
-        "name": "amount",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      },
-      {
-        "name": "collectionId",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "CollectionI",
-    "inputs": [
-      {
-        "name": "wallet",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
-      },
-      {
-        "name": "creator",
-        "type": "address",
-        "indexed": false,
-        "internalType": "address"
-      },
-      {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
         "internalType": "uint256"
       }
     ],

@@ -3,7 +3,12 @@ import { FetchResult, gql } from "@apollo/client";
 
 const COLLECTION = gql`
   query ($collectionId: Int!) {
-    collectionCreateds(where: { collectionId: $collectionId }, first: 1) {
+    collectionCreateds(
+      where: { collectionId: $collectionId }
+      first: 1
+      orderDirection: desc
+      orderBy: blockTimestamp
+    ) {
       id
       artist
       collectionId

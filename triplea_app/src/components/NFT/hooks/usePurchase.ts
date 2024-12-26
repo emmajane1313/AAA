@@ -1,7 +1,13 @@
 import { NFTData } from "@/components/Common/types/common.types";
 import { chains } from "@lens-network/sdk/viem";
 import { SetStateAction, useEffect, useState } from "react";
-import { createWalletClient, custom, PublicClient } from "viem";
+import {
+  BaseError,
+  ContractFunctionRevertedError,
+  createWalletClient,
+  custom,
+  PublicClient,
+} from "viem";
 import MarketAbi from "@abis/MarketAbi.json";
 import { MARKET_CONTRACT, TOKENS, GRASS_CONTRACT } from "@/lib/constants";
 import { CollectData } from "../types/nft.types";
@@ -188,8 +194,18 @@ const usePurchase = (
         ...nft,
         amountSold: Number(nft?.amountSold) + Number(collectData?.amount),
       });
+      checkAllowance();
     } catch (err: any) {
-      console.error(err.message);
+      if (err instanceof BaseError) {
+        const revertError = err.walk(
+          (err) => err instanceof ContractFunctionRevertedError
+        );
+        if (revertError instanceof ContractFunctionRevertedError) {
+          console.log({ revertError });
+        }
+      }
+
+      console.error(err);
     }
     setPurchaseLoading(false);
   };

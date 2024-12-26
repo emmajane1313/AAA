@@ -6,6 +6,7 @@ import { LensConnected, NFTData } from "../types/common.types";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 import { getCollectionSearch } from "../../../../graphql/queries/getCollectionSearch";
 import { INFURA_GATEWAY } from "@/lib/constants";
+import revoke from "../../../../graphql/lens/mutations/revoke";
 
 const useHeader = (
   address: `0x${string}` | undefined,
@@ -14,7 +15,8 @@ const useHeader = (
   setCreateAccount: ((e: SetStateAction<boolean>) => void) | undefined,
   setLensConnected:
     | ((e: SetStateAction<LensConnected | undefined>) => void)
-    | undefined
+    | undefined,
+  lensConnected: LensConnected | undefined
 ) => {
   const [openAccount, setOpenAccount] = useState<boolean>(false);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
@@ -79,6 +81,7 @@ const useHeader = (
         lensClient
       );
 
+      console.log((accounts as any)?.[0]?.account?.address)
       if ((accounts as any)?.[0]?.account?.address) {
         const authenticated = await lensClient.login({
           accountManager: {
@@ -134,6 +137,67 @@ const useHeader = (
     setLensLoading(false);
   };
 
+  const resumeLensSession = async () => {
+    try {
+      const resumed = await lensClient?.resumeSession();
+
+      if (resumed?.isOk()) {
+
+      
+        const accounts = await fetchAccountsAvailable(
+          {
+            managedBy: evmAddress(address!),
+          },
+          lensClient!
+        );
+
+        setLensConnected?.({
+          ...lensConnected,
+          profile: (accounts as any)?.[0]?.account,
+          sessionClient: resumed?.value,
+        });
+      }
+    } catch (err) {
+      console.error("Error al reanudar la sesión:", err);
+      return null;
+    }
+  };
+
+  const logout = async () => {
+    setLensLoading(true);
+    try {
+      const auth = await lensConnected?.sessionClient?.getAuthenticatedUser();
+
+      if (auth?.isOk()) {
+        const res = await revoke(
+          {
+            authenticationId: auth.value?.authentication_id,
+          },
+          lensConnected?.sessionClient!
+        );
+
+        if (res) {
+          setLensConnected?.(undefined);
+        }
+      }
+    } catch (err: any) {
+      console.error(err.message);
+    }
+    setLensLoading(false);
+  };
+
+  useEffect(() => {
+    if (address && lensClient && !lensConnected?.profile) {
+      resumeLensSession();
+    }
+  }, [address, lensClient]);
+
+  useEffect(() => {
+    if (!address && lensConnected?.profile && lensClient) {
+      logout();
+    }
+  }, [address]);
+
   return {
     openAccount,
     setOpenAccount,
@@ -145,6 +209,7 @@ const useHeader = (
     setSearch,
     handleSearch,
     setSearchItems,
+    logout,
   };
 };
 

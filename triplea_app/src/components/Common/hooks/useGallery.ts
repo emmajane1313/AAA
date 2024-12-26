@@ -16,6 +16,7 @@ const useGallery = (lensClient: PublicClient) => {
     try {
       const data = await getCollections(page);
 
+
       const gallery: NFTData[] = await Promise.all(
         data?.data?.collectionCreateds.map(async (collection: any) => {
           if (!collection.metadata) {
@@ -69,10 +70,10 @@ const useGallery = (lensClient: PublicClient) => {
   };
 
   useEffect(() => {
-    if (nfts?.length < 1) {
+    if (nfts?.length < 1 && lensClient) {
       handleGallery();
     }
-  }, []);
+  }, [lensClient]);
 
   const handleMoreGallery = async () => {
     setGalleryLoading(true);

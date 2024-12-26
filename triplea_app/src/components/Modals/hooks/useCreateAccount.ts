@@ -12,7 +12,6 @@ import pollResult from "@/lib/helpers/pollResult";
 import createAccount from "../../../../graphql/lens/mutations/createAccount";
 import switchAccount from "../../../../graphql/lens/mutations/switchAccount";
 import { v4 as uuidv4 } from "uuid";
-import { profile } from "@lens-protocol/metadata";
 
 const useCreateAccount = (
   address: `0x${string}` | undefined,
@@ -67,17 +66,17 @@ const useCreateAccount = (
         };
       }
 
-      const prof = profile({
-        name: account?.localname,
-        bio: account?.bio,
-        ...picture,
-      });
-
-      console.log({prof})
-
       const accountIPFSResponse = await fetch("/api/ipfs", {
         method: "POST",
-        body: JSON.stringify(prof),
+        body: JSON.stringify({
+          $schema: "https://json-schemas.lens.dev/account/1.0.0.json",
+          lens: {
+            id: uuidv4(),
+            name: account?.localname,
+            bio: account?.bio,
+            ...picture,
+          },
+        }),
       });
 
       if (!accountIPFSResponse.ok) {

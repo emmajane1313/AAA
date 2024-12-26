@@ -213,10 +213,10 @@ const useMint = (
   };
 
   useEffect(() => {
-    if (!agents || agents?.length < 1) {
+    if (!agents || agents?.length < 1 && lensClient) {
       loadAgents();
     }
-  }, []);
+  }, [lensClient]);
 
   return {
     mintLoading,

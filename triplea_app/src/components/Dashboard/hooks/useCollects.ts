@@ -62,10 +62,10 @@ const useCollects = (
   };
 
   useEffect(() => {
-    if (allCollects?.length < 1) {
+    if (allCollects?.length < 1 && lensClient) {
       handleCollects();
     }
-  }, []);
+  }, [lensClient]);
 
   return {
     allCollects,

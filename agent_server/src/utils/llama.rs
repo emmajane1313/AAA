@@ -5,6 +5,7 @@ use crate::{
 
 use rand::{random, thread_rng, Rng};
 use reqwest::Client;
+use serde_json::json;
 use std::{env, error::Error, io, time::Duration};
 
 pub async fn call_llama(
@@ -29,7 +30,7 @@ pub async fn call_llama(
         .no_deflate()
         .no_proxy()
         .build()?;
-    let payload_inicial = serde_json::json!({
+    let payload_inicial = json!({
         "api_key": llama_key,
         "prompt": prompt.trim(),
         "collection": collection,

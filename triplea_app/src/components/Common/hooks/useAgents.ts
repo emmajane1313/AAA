@@ -1,14 +1,14 @@
 import { SetStateAction, useEffect, useState } from "react";
-import { Agent } from "../types/dashboard.types";
+import { Agent } from "../../Dashboard/types/dashboard.types";
 import { getAgents } from "../../../../graphql/queries/getAgents";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
-import { evmAddress, SessionClient } from "@lens-protocol/client";
+import { evmAddress, PublicClient, SessionClient } from "@lens-protocol/client";
 
 const useAgents = (
   agents: Agent[],
   setAgents: (e: SetStateAction<Agent[]>) => void,
-  lensClient: SessionClient
+  lensClient: SessionClient | PublicClient
 ) => {
   const [agentsLoading, setAgentsLoading] = useState<boolean>(false);
 
@@ -45,7 +45,6 @@ const useAgents = (
           };
         })
       );
-
       setAgents(allAgents);
     } catch (err: any) {
       console.error(err.message);
@@ -54,10 +53,10 @@ const useAgents = (
   };
 
   useEffect(() => {
-    if (!agents || agents?.length < 1) {
+    if (!agents || (agents?.length < 1 && lensClient)) {
       loadAgents();
     }
-  }, []);
+  }, [lensClient]);
 
   return {
     agentsLoading,

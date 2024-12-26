@@ -4,7 +4,7 @@ import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, http } from "wagmi";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { createContext, SetStateAction, useState } from "react";
+import { createContext, SetStateAction, useEffect, useState } from "react";
 import { chains } from "@lens-network/sdk/viem";
 import { Context, PublicClient, testnet } from "@lens-protocol/client";
 import { Agent } from "@/components/Dashboard/types/dashboard.types";
@@ -35,7 +35,7 @@ export const ModalContext = createContext<
       setNotification: (e: SetStateAction<string | undefined>) => void;
       agents: Agent[];
       setAgents: (e: SetStateAction<Agent[]>) => void;
-      lensClient: PublicClient<Context>;
+      lensClient: PublicClient<Context> | undefined;
       createAccount: boolean;
       setCreateAccount: (e: SetStateAction<boolean>) => void;
       lensConnected: LensConnected | undefined;
@@ -53,10 +53,18 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [notification, setNotification] = useState<string | undefined>();
   const [createAccount, setCreateAccount] = useState<boolean>(false);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const lensClient = PublicClient.create({
-    environment: testnet,
-  });
+  const [lensClient, setLensClient] = useState<PublicClient | undefined>();
 
+  useEffect(() => {
+    if (!lensClient) {
+      setLensClient(
+        PublicClient.create({
+          environment: testnet,
+          storage: window.localStorage,
+        })
+      );
+    }
+  }, []);
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>

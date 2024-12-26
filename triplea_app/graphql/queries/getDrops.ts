@@ -3,7 +3,11 @@ import { FetchResult, gql } from "@apollo/client";
 
 const DROPS = gql`
   query ($artist: String!) {
-    dropCreateds(where: { artist_contains: $artist }) {
+    dropCreateds(
+      where: { artist_contains: $artist }
+      orderDirection: desc
+      orderBy: blockTimestamp
+    ) {
       metadata {
         title
         cover

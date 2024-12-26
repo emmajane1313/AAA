@@ -91,12 +91,6 @@ contract AAADevTreasury {
         }
 
         for (uint256 i = 0; i < collectionIds.length; i++) {
-            IERC20(tokens[i]).transferFrom(
-                address(this),
-                msg.sender,
-                amounts[i]
-            );
-
             _balance[tokens[i]] -= amounts[i];
             _services[tokens[i]] += amounts[i];
             _allTimeServices[tokens[i]] += amounts[i];

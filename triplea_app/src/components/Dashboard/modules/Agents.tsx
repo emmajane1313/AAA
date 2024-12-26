@@ -2,7 +2,7 @@ import { FunctionComponent, JSX } from "react";
 import { AgentProps, Switcher } from "../types/dashboard.types";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
-import useAgents from "../hooks/useAgents";
+import useAgents from "../../Common/hooks/useAgents";
 
 const Agents: FunctionComponent<AgentProps> = ({
   setSwitcher,

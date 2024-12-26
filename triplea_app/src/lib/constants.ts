@@ -1,9 +1,9 @@
 export const INFURA_GATEWAY: string = "https://thedial.infura-ipfs.io";
 export const IPFS_REGEX: RegExp = /\b(Qm[1-9A-Za-z]{44}|ba[A-Za-z2-7]{57})\b/;
-export const AGENTS_CONTRACT: `0x${string}` = "0x4eD74d03D9d4F6f4DC2E50DC2f0C701326DF156a";
-export const MARKET_CONTRACT: `0x${string}` = "0x4B0f1be07f50D9C6Ef9d378268810ABFf55EBc1a";
+export const AGENTS_CONTRACT: `0x${string}` = "0xA36B994da5Bc7a666cbF3192d2c043193D300FE0";
+export const MARKET_CONTRACT: `0x${string}` = "0x2d1e70BF010318B6597154C159BFe1EC805495C7";
 export const GRASS_CONTRACT: `0x${string}` = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
-export const COLLECTION_MANAGER_CONTRACT: `0x${string}` = "0x839d0C63495BeA892e292Be6DE7410BB93948F2E";
+export const COLLECTION_MANAGER_CONTRACT: `0x${string}` = "0xC094c540e003cBC2b7A30D35C8148B5792568Af4";
 
 export const TOKENS: { symbol: string; contract: string; image: string }[] = [
   {

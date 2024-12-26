@@ -1,4 +1,4 @@
-import { Account, SessionClient } from "@lens-protocol/client";
+import { Account, Post, SessionClient } from "@lens-protocol/client";
 
 export interface NFTData {
   id: number;
@@ -15,6 +15,7 @@ export interface NFTData {
   amount: number;
   profile: Account;
   collectors?: Collector[];
+  agentActivity?: Post[]
 }
 
 export interface LensConnected {

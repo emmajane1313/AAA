@@ -3,7 +3,11 @@ import { FetchResult, gql } from "@apollo/client";
 
 const COLLECTORS = gql`
   query ($collectionId: Int!) {
-    orders(where: { collectionId: $collectionId }) {
+    orders(
+      where: { collectionId: $collectionId }
+      orderDirection: desc
+      orderBy: blockTimestamp
+    ) {
       transactionHash
       buyer
       amount

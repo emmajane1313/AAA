@@ -64,6 +64,7 @@ type Balance @entity(immutable: false) {
   activeBalance: BigInt!
   totalBalance: BigInt!
   collectionId: BigInt!
+  collection: CollectionCreated
 }
 
 type AgentDeleted @entity(immutable: false) {

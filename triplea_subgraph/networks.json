@@ -1,14 +1,14 @@
 {
   "lens-testnet": {
     "AAACollectionManager": {
-      "address": "0x839d0C63495BeA892e292Be6DE7410BB93948F2E",
+      "address": "0xC094c540e003cBC2b7A30D35C8148B5792568Af4",
       "startBlock": 81629
     },
     "AAAAgents": {
-      "address": "0x4eD74d03D9d4F6f4DC2E50DC2f0C701326DF156a"
+      "address": "0xA36B994da5Bc7a666cbF3192d2c043193D300FE0"
     },
     "AAAMarket": {
-      "address": "0x4B0f1be07f50D9C6Ef9d378268810ABFf55EBc1a"
+      "address": "0x2d1e70BF010318B6597154C159BFe1EC805495C7"
     }
   }
 }

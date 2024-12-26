@@ -78,7 +78,10 @@ contract AAAMarket {
             _perAgentShare =
                 _agentShare /
                 collectionManager.getCollectionAgentIds(collectionId).length;
-            _artistShare = _totalPrice - _agentShare;
+
+            if (_agentShare < _totalPrice) {
+                _artistShare = _totalPrice - _agentShare;
+            }
         }
 
         if (_agentShare > 0) {
@@ -98,13 +101,7 @@ contract AAAMarket {
 
             devTreasury.receiveFunds(msg.sender, paymentToken, _agentShare);
 
-            _manageAgents(
-            paymentToken,
-            _agentShare,
-            collectionId,
-            _perAgentShare,
-            amount
-        );
+            _manageAgents(paymentToken, collectionId, _perAgentShare, amount);
         }
 
         if (
@@ -143,7 +140,6 @@ contract AAAMarket {
 
     function _manageAgents(
         address paymentToken,
-        uint256 agentShare,
         uint256 collectionId,
         uint256 perAgentShare,
         uint256 amount
@@ -157,25 +153,18 @@ contract AAAMarket {
             soldOut = true;
         }
 
-        if (agentShare > 0) {
-            for (
-                uint256 i = 0;
-                i <
-                collectionManager.getCollectionAgentIds(collectionId).length;
-                i++
-            ) {
-                uint256 _agentId = collectionManager.getCollectionAgentIds(
-                    collectionId
-                )[i];
+        uint256[] memory _agentIds = collectionManager.getCollectionAgentIds(
+            collectionId
+        );
 
-                agents.addBalance(
-                    paymentToken,
-                    _agentId,
-                    perAgentShare,
-                    collectionId,
-                    soldOut
-                );
-            }
+        for (uint256 i = 0; i < _agentIds.length; i++) {
+            agents.addBalance(
+                paymentToken,
+                _agentIds[i],
+                perAgentShare,
+                collectionId,
+                soldOut
+            );
         }
     }
 

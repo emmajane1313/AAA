@@ -54,10 +54,10 @@ const useDrops = (
   };
 
   useEffect(() => {
-    if (allCollections?.length < 1 && drop) {
+    if (allCollections?.length < 1 && drop && lensClient) {
       handleCollections();
     }
-  }, []);
+  }, [lensClient]);
 
   return {
     allCollections,

@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Order } from "../types/dashboard.types";
 import { getSales } from "../../../../graphql/queries/getSales";
-import { getCollection } from "../../../../graphql/queries/getCollection";
-import { INFURA_GATEWAY } from "@/lib/constants";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 
@@ -66,10 +64,10 @@ const useSales = (
   };
 
   useEffect(() => {
-    if (allSales?.length < 1) {
+    if (allSales?.length < 1 && lensClient) {
       handleSales();
     }
-  }, []);
+  }, [lensClient]);
 
   return {
     allSales,

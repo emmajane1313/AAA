@@ -47,14 +47,6 @@ const useAccount = (
         };
       }
 
-      // const prof = profile({
-      //   name: newAccount?.localname,
-      //   bio: newAccount?.bio,
-      //   ...picture,
-      // });
-
-      // console.log({ prof });
-
       const accountIPFSResponse = await fetch("/api/ipfs", {
         method: "POST",
         body: JSON.stringify({
@@ -76,9 +68,9 @@ const useAccount = (
       }
 
       const accountResponseJSON = await accountIPFSResponse.json();
-      console.log({
-        metadataUri: "lens://" + accountResponseJSON.cid,
-      });
+
+      console.log({ metadataUri: "lens://" + accountResponseJSON.cid });
+
       const accountResponse = await updateAccount(
         {
           metadataUri: "lens://" + accountResponseJSON.cid,
@@ -99,7 +91,6 @@ const useAccount = (
             },
             lensConnected?.sessionClient
           );
-          console.log({ result });
 
           if ((result as any)?.__typename == "Account") {
             setLensConnected?.({

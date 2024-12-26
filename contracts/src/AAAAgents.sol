@@ -32,7 +32,6 @@ contract AAAAgents {
         uint256[] amounts,
         uint256 agentId
     );
-    event CollectionI(address wallet, address creator, uint256 indexed id);
 
     modifier onlyAdmin() {
         if (!accessControls.isAdmin(msg.sender)) {

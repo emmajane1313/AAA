@@ -10,12 +10,16 @@ import { TOKENS } from "@/lib/constants";
 import Image from "next/legacy/image";
 import createProfilePicture from "@/lib/helpers/createProfilePicture";
 import moment from "moment";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Purchase: FunctionComponent<PurchaseProps> = ({
   nft,
   setNft,
   nftLoading,
   setNotification,
+  hasMore,
+  handleMoreActivity,
+  agentLoading
 }): JSX.Element => {
   const { isConnected, address } = useAccount();
   const publicClient = createPublicClient({
@@ -175,63 +179,78 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                 <div className="h-px w-full flex bg-oscuro" />
               </div>
             </div>
-            <div className="relative w-full h-fit overflow-y-scroll flex flex-col items-start justify-start gap-3">
-              {screen == 1
-                ? nft?.collectors?.map((collector, key) => {
-                    return (
-                      <div
-                        key={key}
-                        className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
-                        onClick={() =>
-                          window.open(
-                            `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
-                          )
-                        }
-                      >
-                        {collector?.name ? (
-                          <div className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center">
-                            {collector?.pfp && (
-                              <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
-                                <Image
-                                  src={
-                                    createProfilePicture(
-                                      collector?.pfp as any
-                                    ) || ""
-                                  }
-                                  alt="pfp"
-                                  draggable={false}
-                                  className="rounded-full"
-                                />
-                              </div>
-                            )}
-                            <div className="relative w-fit h-fit flex text-black text-sm">
-                              @{collector?.name}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="relative w-fit h-fit flex">
-                            {collector?.address?.slice(0, 10) + " ..."}
-                          </div>
-                        )}
 
-                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
-                          X {collector?.amount}
+            {screen == 1 ? (
+              <div className="relative w-full h-fit overflow-y-scroll flex flex-col items-start justify-start gap-3">
+                {nft?.collectors?.map((collector, key) => {
+                  return (
+                    <div
+                      key={key}
+                      className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
+                      onClick={() =>
+                        window.open(
+                          `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
+                        )
+                      }
+                    >
+                      {collector?.name ? (
+                        <div className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center">
+                          {collector?.pfp && (
+                            <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
+                              <Image
+                                src={
+                                  createProfilePicture(collector?.pfp as any) ||
+                                  ""
+                                }
+                                alt="pfp"
+                                draggable={false}
+                                className="rounded-full"
+                              />
+                            </div>
+                          )}
+                          <div className="relative w-fit h-fit flex text-black text-sm">
+                            @{collector?.name}
+                          </div>
                         </div>
-                        <div className="relative w-fit h-fit flex items-center justify-center text-black">
-                          {moment.unix(Number(collector?.blockTimestamp)).fromNow()}
+                      ) : (
+                        <div className="relative w-fit h-fit flex">
+                          {collector?.address?.slice(0, 10) + " ..."}
                         </div>
+                      )}
+
+                      <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                        X {collector?.amount}
                       </div>
-                    );
-                  })
-                : nft?.agents?.map((agent, key) => {
+                      <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                        {moment
+                          .unix(Number(collector?.blockTimestamp))
+                          .fromNow()}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <InfiniteScroll
+                dataLength={nft?.agentActivity?.length || 1}
+                next={handleMoreActivity}
+                hasMore={hasMore}
+                loader={<></>}
+              >
+                <div className="relative w-full h-fit overflow-y-scroll flex flex-col items-start justify-start gap-3">
+                  {nft?.agentActivity?.map((activity, key) => {
                     return (
                       <div
                         key={key}
                         className="relative w-full h-fit flex"
-                      ></div>
+                      >
+                        
+                      </div>
                     );
                   })}
-            </div>
+                </div>
+              </InfiniteScroll>
+            )}
           </div>
         </>
       )}

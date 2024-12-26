@@ -1,4 +1,4 @@
-use chrono::{Timelike, Utc};
+use chrono::Utc;
 use dotenv::dotenv;
 use futures_util::StreamExt;
 use serde_json::{from_str, to_string, Value};
@@ -199,7 +199,14 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
                     agents_guard.get_mut(&id).cloned()
                 } {
                     spawn(async move {
-                        agent_manager.resolve_activity().await;
+                        {
+                            agent_manager
+                                .resolve_activity()
+                                .await
+                                .unwrap_or_else(|err| {
+                                    eprintln!("Error resolving activity: {:?}", err);
+                                });
+                        }
 
                         let agents_clone = agents_clone.clone();
                         spawn(async move {
@@ -213,12 +220,14 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
             });
         }
 
-        time::sleep(Duration::from_secs(60)).await;
+        time::sleep(Duration::from_secs(43200)).await;
     }
 }
 
 fn should_trigger(agent: &TripleAAgent) -> bool {
-    let now_seconds = Utc::now().num_seconds_from_midnight();
+    // let now_seconds = Utc::now().num_seconds_from_midnight();
+    // now_seconds >= agent.clock && (now_seconds - agent.last_active_time >= 60)
 
-    now_seconds >= agent.clock && (now_seconds - agent.last_active_time >= 60)
+    let now_seconds = Utc::now().timestamp();
+    now_seconds >= (agent.last_active_time as i64) + 43_200
 }

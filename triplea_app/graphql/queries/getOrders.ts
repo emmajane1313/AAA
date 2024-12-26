@@ -3,7 +3,11 @@ import { FetchResult, gql } from "@apollo/client";
 
 const ORDERS = gql`
   query ($buyer: String!) {
-    orders(where: { buyer_contains: $buyer }) {
+    orders(
+      where: { buyer_contains: $buyer }
+      orderDirection: desc
+      orderBy: blockTimestamp
+    ) {
       totalPrice
       token
       mintedTokenIds
@@ -31,9 +35,7 @@ const ORDERS = gql`
   }
 `;
 
-export const getOrders = async (
-  buyer: string
-): Promise<FetchResult | void> => {
+export const getOrders = async (buyer: string): Promise<FetchResult | void> => {
   let timeoutId: NodeJS.Timeout | undefined;
   const queryPromise = aaaClient.query({
     query: ORDERS,

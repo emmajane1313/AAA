@@ -10,6 +10,7 @@ import { useAccount } from "wagmi";
 import { AiOutlineLoading } from "react-icons/ai";
 import { ModalContext } from "@/app/providers";
 import createProfilePicture from "@/lib/helpers/createProfilePicture";
+import useAgents from "@/components/Common/hooks/useAgents";
 
 const Header: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
@@ -28,12 +29,20 @@ const Header: FunctionComponent = (): JSX.Element => {
     setSearch,
     handleSearch,
     setSearchItems,
+    logout,
   } = useHeader(
     address,
     context?.lensClient,
     context?.setError,
     context?.setCreateAccount,
-    context?.setLensConnected
+    context?.setLensConnected,
+    context?.lensConnected
+  );
+
+  const {} = useAgents(
+    context?.agents!,
+    context?.setAgents!,
+    context?.lensClient!
   );
 
   return (
@@ -81,7 +90,13 @@ const Header: FunctionComponent = (): JSX.Element => {
               }
             }}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+
+              if (e.target.value?.trim() == "") {
+                setSearchItems([]);
+              }
+            }}
           />
           {searchItems?.length > 0 && (
             <div className="absolute w-full h-fit max-h-60 rounded-md flex bg-crema right-0 top-10 flex-col gap-3 shadow-lg p-2 overflow-y-scroll">
@@ -164,6 +179,21 @@ const Header: FunctionComponent = (): JSX.Element => {
                         className="rounded-full"
                       />
                     </div>
+                  ) : context?.lensConnected?.profile ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6 stroke-morado"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                      />
+                    </svg>
                   ) : (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -214,7 +244,7 @@ const Header: FunctionComponent = (): JSX.Element => {
                   onClick={() =>
                     !context?.lensConnected?.profile
                       ? handleLensConnect()
-                      : context?.setLensConnected(undefined)
+                      : logout()
                   }
                 >
                   {lensLoading ? (
@@ -223,7 +253,7 @@ const Header: FunctionComponent = (): JSX.Element => {
                       color="black"
                       size={15}
                     />
-                  ) : context?.lensConnected?.profile ? (
+                  ) : context?.lensConnected?.profile && address ? (
                     "Log Out Lens"
                   ) : (
                     "Lens Sign In"

@@ -4,7 +4,7 @@ use ethers::{
     middleware::SignerMiddleware,
     providers::{Http, Provider},
     signers::Wallet,
-    types::U256,
+    types::{Address, Bytes, U256},
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -39,7 +39,7 @@ pub struct AgentManager {
 pub struct Collection {
     pub image: String,
     pub title: String,
-    pub prompt: String,
+    pub description: String,
     pub artist: String,
     pub collection_id: U256,
     pub prices: Vec<U256>,
@@ -50,7 +50,9 @@ pub struct Collection {
 pub struct AgentActivity {
     pub collection: Collection,
     pub token: String,
-    pub amount: U256,
+    pub active_balance: U256,
+    pub total_balance: U256,
+    pub collection_id: U256,
 }
 
 #[derive(Debug, Clone, Serialize)]

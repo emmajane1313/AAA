@@ -15,7 +15,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
   return (
     <div className="relative w-full h-full overflow-y-scroll pb-10">
       <InfiniteScroll
-        dataLength={nfts.length}
+        dataLength={nfts?.length}
         next={handleMoreGallery}
         hasMore={hasMore}
         loader={<></>}
