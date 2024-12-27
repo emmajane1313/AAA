@@ -46,4 +46,9 @@ contract AAALibrary {
         uint256 totalPrice;
         uint256 id;
     }
+
+    struct OrderRent {
+        address buyer;
+        uint256 blockTimestamp;
+    }
 }

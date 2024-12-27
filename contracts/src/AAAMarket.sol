@@ -19,6 +19,7 @@ contract AAAMarket {
 
     mapping(address => uint256[]) private _buyerToOrderIds;
     mapping(uint256 => AAALibrary.Order) private _orders;
+    mapping(uint256 => address[]) private _allCollectorsByCollectionIds;
 
     event CollectionPurchased(
         uint256 indexed orderId,
@@ -121,6 +122,7 @@ contract AAAMarket {
         );
 
         collectionManager.updateData(_mintedTokenIds, collectionId, amount);
+        _allCollectorsByCollectionIds[collectionId].push(msg.sender);
 
         _createOrder(
             _mintedTokenIds,
@@ -268,4 +270,11 @@ contract AAAMarket {
     function getOrderCounter() public view returns (uint256) {
         return _orderCounter;
     }
+
+    function getAllCollectorsByCollectionId(
+        uint256 collectionId
+    ) public view returns (address[] memory) {
+        return _allCollectorsByCollectionIds[collectionId];
+    }
+
 }

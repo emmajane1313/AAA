@@ -4,14 +4,16 @@ pragma solidity 0.8.24;
 import "./AAAErrors.sol";
 import "./AAAAccessControls.sol";
 import "./AAAAgents.sol";
+import "./AAAMarket.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract AAADevTreasury {
     AAAAccessControls public accessControls;
     AAAAgents public agents;
-    address public market;
+    AAAMarket public market;
     mapping(address => uint256) private _balance;
     mapping(address => uint256) private _services;
+    mapping(uint256 => mapping(address => uint256)) private _collectorPayment;
     mapping(address => uint256) private _allTimeBalance;
     mapping(address => uint256) private _allTimeServices;
 
@@ -33,6 +35,7 @@ contract AAADevTreasury {
         uint256[] amounts,
         address indexed agent
     );
+    event OrderPayment(address indexed recipient, uint256 amount);
 
     constructor(address _accessControls) payable {
         accessControls = AAAAccessControls(_accessControls);
@@ -43,7 +46,7 @@ contract AAADevTreasury {
         address paymentToken,
         uint256 amount
     ) external {
-        if (msg.sender != market) {
+        if (msg.sender != address(market)) {
             revert AAAErrors.OnlyMarketContract();
         }
         _balance[paymentToken] += amount;
@@ -92,8 +95,36 @@ contract AAADevTreasury {
 
         for (uint256 i = 0; i < collectionIds.length; i++) {
             _balance[tokens[i]] -= amounts[i];
-            _services[tokens[i]] += amounts[i];
-            _allTimeServices[tokens[i]] += amounts[i];
+
+            uint256 _serviceAmount = amounts[i] / 2;
+            uint256 _distributionAmount = amounts[i] / 2;
+
+            _services[tokens[i]] += _serviceAmount;
+            _allTimeServices[tokens[i]] += _serviceAmount;
+
+            address[] memory _collectors = market
+                .getAllCollectorsByCollectionId(collectionIds[i]);
+
+            uint256 totalWeight = 0;
+            for (uint256 j = 1; j <= _collectors.length; j++) {
+                totalWeight += 1e18 / j;
+            }
+
+            for (uint256 j = 0; j < _collectors.length; j++) {
+                if (_collectors[j] != address(0)) {
+                    uint256 weight = 1e18 / (j + 1);
+                    uint256 payment = (_distributionAmount * weight) /
+                        totalWeight;
+
+                    _collectorPayment[collectionIds[i]][
+                        _collectors[j]
+                    ] = payment;
+
+                    if (IERC20(tokens[i]).transfer(_collectors[j], payment)) {
+                        emit OrderPayment(_collectors[j], payment);
+                    }
+                }
+            }
         }
 
         emit AgentFundsWithdrawn(
@@ -132,6 +163,6 @@ contract AAADevTreasury {
     }
 
     function setMarket(address _market) external onlyAdmin {
-        market = _market;
+        market = AAAMarket(_market);
     }
 }
