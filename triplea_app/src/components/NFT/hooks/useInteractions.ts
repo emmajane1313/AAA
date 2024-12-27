@@ -53,8 +53,6 @@ const useInteractions = (
         sessionClient!
       );
 
-      console.log({ res });
-
       if (
         (res as any)?.reason?.includes(
           "Signless experience is unavailable for this operation. You can continue by signing the sponsored request."
@@ -95,9 +93,6 @@ const useInteractions = (
         },
         sessionClient!
       );
-
-      console.log({ res });
-
       if (
         (res as any)?.reason?.includes(
           "Signless experience is unavailable for this operation. You can continue by signing the sponsored request."
@@ -130,8 +125,6 @@ const useInteractions = (
         },
         sessionClient!
       );
-
-      console.log({ res });
 
       if (
         (res as any)?.reason?.includes(
@@ -171,8 +164,6 @@ const useInteractions = (
         },
         sessionClient!
       );
-
-      console.log({ res });
 
       if (
         (res as any)?.reason?.includes(
@@ -221,8 +212,6 @@ const useInteractions = (
         },
         sessionClient!
       );
-
-      console.log({ res });
 
       if (
         (res as any)?.reason?.includes(

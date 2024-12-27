@@ -31,6 +31,7 @@ export default function NFT() {
         lensConnected={context?.lensConnected}
         setSignless={context?.setSignless!}
         storageClient={context?.storageClient!}
+        setImageView={context?.setImageView!}
       />
     </div>
   );

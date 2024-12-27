@@ -1,7 +1,8 @@
 import { LensConnected, NFTData } from "@/components/Common/types/common.types";
-import { Post } from "@lens-protocol/client";
+import { ImageMetadata, Post, TextOnlyMetadata } from "@lens-protocol/client";
 import { SetStateAction } from "react";
 import { StorageClient } from "@lens-protocol/storage-node-client";
+import { ImageMetadataV3, TextOnlyMetadataV3 } from "../../../../generated";
 
 export type DataProps = {
   url: string;
@@ -20,6 +21,7 @@ export type PurchaseProps = {
   lensConnected: LensConnected | undefined;
   setSignless: (e: SetStateAction<boolean>) => void;
   storageClient: StorageClient;
+  setImageView: (e: SetStateAction<string | undefined>) => void;
 };
 
 export interface CollectData {
@@ -29,6 +31,30 @@ export interface CollectData {
 
 export type CommentsProps = {
   comments: Post[];
+  setImageView: (e: SetStateAction<string | undefined>) => void;
+  postLoading: boolean;
+  interactionsLoading: {
+    mirror: boolean;
+    like: boolean;
+    id: string;
+  }[];
+  handleLike: (id: string, reaction: string) => Promise<void>;
+  handleMirror: (id: string) => Promise<void>;
+  setCommentQuote: (
+    e: SetStateAction<
+      | {
+          type: "Comment" | "Quote";
+          id: string;
+        }
+      | undefined
+    >
+  ) => void;
+  commentQuote:
+    | {
+        type: "Comment" | "Quote";
+        id: string;
+      }
+    | undefined;
 };
 
 export type PostProps = {
@@ -51,4 +77,10 @@ export type PostProps = {
       | undefined
     >
   ) => void;
+};
+
+export type MetadataProps = {
+  metadata: string;
+  data: TextOnlyMetadata | ImageMetadata;
+  setImageView: (e: SetStateAction<string | undefined>) => void;
 };
