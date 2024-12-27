@@ -9,7 +9,7 @@ const ImageViewer: FunctionComponent<ImageViewerProps> = ({
   return (
     <div className="inset-0 justify-center fixed z-200 bg-opacity-50 backdrop-blur-sm overflow-y-hidden grid grid-flow-col auto-cols-auto w-full h-auto">
       <div
-        className="relative w-screen h-full col-start-1 justify-self-center grid grid-flow-col auto-cols-auto self-start cursor-pointer"
+        className="relative w-screen h-full col-start-1 justify-self-center grid grid-flow-col auto-cols-auto self-start cursor-pixel"
         onClick={() => setImageView(undefined)}
       >
         <div className="relative w-full h-full flex py-8 flex items-center justify-center">

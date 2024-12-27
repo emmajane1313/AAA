@@ -17,25 +17,23 @@ const Agents: FunctionComponent<AgentProps> = ({
   );
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
-      <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
+      <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
-            className="relative flex w-fit h-fit cursor-pointer hover:opacity-70"
+            className="relative flex w-fit h-fit cursor-pixel hover:opacity-70"
             onClick={() => setSwitcher(Switcher.Home)}
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
               className="size-6"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
             >
+              {" "}
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
+                d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                fill="currentColor"
+              />{" "}
             </svg>
           </div>
         </div>
@@ -46,7 +44,7 @@ const Agents: FunctionComponent<AgentProps> = ({
                   return (
                     <div
                       key={key}
-                      className="relative w-60 h-full bg-morado rounded-md animate-pulse"
+                      className="relative w-60 h-full bg-morado pixel-border-4 animate-pulse rounded-xl"
                     ></div>
                   );
                 })
@@ -54,7 +52,7 @@ const Agents: FunctionComponent<AgentProps> = ({
                   return (
                     <div
                       key={key}
-                      className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between p-2`}
+                      className={`relative w-60 h-full bg-morado rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2`}
                     >
                       <div className="relative w-full h-full rounded-md flex">
                         <Image
@@ -67,14 +65,13 @@ const Agents: FunctionComponent<AgentProps> = ({
                               ? agent?.cover?.split("ipfs://")?.[1]
                               : agent?.cover
                           }`}
-                          className="rounded-md"
                         />
                       </div>
-                      <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
-                        <div className="relative w-fit h-fit flex text-lg">
+                      <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 pt-4">
+                        <div className="relative w-fit h-fit flex text-lg font-start uppercase">
                           {agent.title}
                         </div>
-                        <div className="relative w-fit overflow-y-scroll max-h-40 h-fit flex text-sm">
+                        <div className="relative w-fit overflow-y-scroll font-jackey2 max-h-40 h-fit flex text-sm">
                           {agent.description}
                         </div>
                       </div>

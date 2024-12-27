@@ -29,7 +29,14 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
     ),
   });
   const { handleMint, mintLoading, mintData, setMintData, agentsLoading, id } =
-    useMint(agents, setAgents, publicClient, address, setMintSwitcher, lensConnected?.sessionClient!);
+    useMint(
+      agents,
+      setAgents,
+      publicClient,
+      address,
+      setMintSwitcher,
+      lensConnected?.sessionClient!
+    );
   switch (mintSwitcher) {
     case MintSwitcher.Agent:
       return (
@@ -66,13 +73,13 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
 
     case MintSwitcher.Success:
       return (
-        <div className="relative w-full h-full flex flex-col gap-6 items-center justify-center">
-          <div className="relative flex w-fit h-10 text-center text-black bg-gray-200 text-3xl">
+        <div className="relative w-full h-full flex flex-col gap-6 items-center justify-center font-jacey">
+          <div className="relative flex w-fit h-10 text-center text-black font-start uppercase text-3xl">
             Minted!
           </div>
           <div className="relative w-full h-fit flex items-center justify-center">
             <div
-              className={`relative w-fit px-6 py-1 h-12 bg-black text-white cursor-pointer hover:opacity-70 text-base rounded-md flex items-center justify-center`}
+              className={`relative w-fit px-6 py-1 h-12 bg-black text-white cursor-pixel hover:opacity-70 text-base rounded-md flex items-center justify-center font-jack`}
               onClick={() =>
                 router.push(
                   `/nft/${lensConnected?.profile?.username?.localName}/${id}`
@@ -87,9 +94,9 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
 
     default:
       return (
-        <div className="relative w-full h-full flex flex-row gap-6 items-center justify-center">
+        <div className="relative font-jackey2 w-full h-full flex flex-row gap-6 items-center justify-center">
           <label
-            className="relative w-full h-full flex items-center justify-center cursor-pointer"
+            className="relative w-full h-full flex items-center justify-center cursor-pixel"
             onClick={(e) => {
               e.stopPropagation();
             }}
@@ -103,18 +110,16 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
               />
             ) : (
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
                 className="size-6"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
               >
+                {" "}
                 <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
+                  d="M3 3h18v18H3V3zm16 16V5H5v14h14zm-6-8h4v2h-4v4h-2v-4H7v-2h4V7h2v4z"
+                  fill="currentColor"
+                />{" "}
               </svg>
             )}
             <input
@@ -139,7 +144,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
           <div className="relative w-full h-full flex flex-col gap-5 items-start justify-start">
             <div className="relative w-full h-full flex flex-col justify-start items-start gap-5">
               <input
-                className="relative flex w-full h-10 text-left text-black bg-gray-200 focus:outline-none text-3xl"
+                className="relative flex w-full h-10 text-left text-black pixel-border-2 focus:outline-none text-3xl p-1.5"
                 placeholder="Title"
                 onChange={(e) =>
                   setMintData({
@@ -157,7 +162,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 placeholder="1"
                 value={mintData.amount}
                 step={1}
-                className="relative flex w-14 px-1 h-10 text-gray-600 bg-gray-200 focus:outline-none text-xl text-left"
+                className="relative flex w-14 px-1 h-12 pixel-border-2 focus:outline-none text-xl text-left"
                 onChange={(e) =>
                   setMintData({
                     ...mintData,
@@ -166,7 +171,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 }
               />
               <textarea
-                className="relative flex w-full h-1/2 overflow-y-scroll text-left text-black bg-gray-200 focus:outline-none text-lg"
+                className="relative flex w-full h-1/2 overflow-y-scroll text-left text-black pixel-border-2 p-1.5 focus:outline-none text-lg"
                 placeholder="Description"
                 onChange={(e) =>
                   setMintData({
@@ -176,12 +181,14 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 }
                 value={mintData.description}
                 disabled={mintLoading}
+                style={{
+                  resize: "none"
+                }}
               ></textarea>
             </div>
-            <div className="relative w-full h-fit flex items-center justify-center gap-px flex-col">
-              <div className="h-px w-full flex bg-morado" />
-              <div className="h-px w-full flex bg-cielo" />
-              <div className="h-px w-full flex bg-oscuro" />
+            <div className="relative w-full h-fit flex items-center justify-center gap-1 flex-col">
+              <div className="h-1 w-full flex bg-black" />
+              <div className="h-1 w-full flex bg-black" />
             </div>
             <div className="relative w-full h-full flex items-start justify-start flex-col gap-2">
               <div className="relative w-fit h-fit flex items-start justify-start text-gray-600">
@@ -195,7 +202,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                       className="relative w-full h-fit flex flex-row gap-3 items-center justify-center"
                     >
                       <div
-                        className={`relative w-10 h-10 rounded-full cursor-pointer ${
+                        className={`relative w-10 h-10 rounded-full cursor-pixel ${
                           !mintData.tokens?.includes(token.contract) &&
                           "opacity-60"
                         }`}
@@ -245,7 +252,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                         type="number"
                         min={1}
                         step={1}
-                        className="relative flex w-full h-10 text-gray-600 bg-gray-200 focus:outline-none text-xl text-right"
+                        className="relative flex w-full h-10 pixel-border-2 p-1.5 focus:outline-none text-xl text-right"
                         onChange={(e) =>
                           setMintData((prev) => {
                             const newMintData = {

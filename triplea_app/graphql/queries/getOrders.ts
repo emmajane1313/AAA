@@ -4,7 +4,7 @@ import { FetchResult, gql } from "@apollo/client";
 const ORDERS = gql`
   query ($buyer: String!) {
     orders(
-      where: { buyer_contains: $buyer }
+      where: { buyer_contains_nocase: $buyer }
       orderDirection: desc
       orderBy: blockTimestamp
     ) {

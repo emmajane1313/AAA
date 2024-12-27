@@ -16,7 +16,6 @@ const useGallery = (lensClient: PublicClient) => {
     try {
       const data = await getCollections(page);
 
-
       const gallery: NFTData[] = await Promise.all(
         data?.data?.collectionCreateds.map(async (collection: any) => {
           if (!collection.metadata) {
@@ -47,6 +46,7 @@ const useGallery = (lensClient: PublicClient) => {
             tokenIds: collection?.tokenIds,
             amount: collection?.amount,
             profile: (result as any)?.[0]?.account,
+            size: getRandomSize(),
           };
         })
       );
@@ -89,6 +89,13 @@ const useGallery = (lensClient: PublicClient) => {
             collection.metadata = await cadena.json();
           }
 
+          const result = await fetchAccountsAvailable(
+            {
+              managedBy: evmAddress(collection?.artist),
+            },
+            lensClient
+          );
+
           return {
             id: collection?.id,
             image: collection?.metadata?.image,
@@ -102,6 +109,8 @@ const useGallery = (lensClient: PublicClient) => {
             amountSold: collection?.amountSold,
             tokenIds: collection?.tokenIds,
             amount: collection?.amount,
+            profile: (result as any)?.[0]?.account,
+            size: getRandomSize(),
           };
         })
       );
@@ -118,7 +127,6 @@ const useGallery = (lensClient: PublicClient) => {
   return {
     handleMoreGallery,
     nfts,
-    getRandomSize,
     hasMore,
     galleryLoading,
   };

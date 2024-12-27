@@ -4,11 +4,9 @@ import { FetchResult, gql } from "@apollo/client";
 const SALES = gql`
   query ($artist: String!) {
     orders(
-      where: {
-        collection_: { artist_contains: $artist }
-        orderDirection: desc
-        orderBy: blockTimestamp
-      }
+      where: { collection_: { artist_contains_nocase: $artist } }
+      orderDirection: desc
+      orderBy: blockTimestamp
     ) {
       id
       totalPrice

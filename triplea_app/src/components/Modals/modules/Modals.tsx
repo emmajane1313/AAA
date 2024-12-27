@@ -4,7 +4,7 @@ import { FunctionComponent, JSX, useContext } from "react";
 import ImageViewer from "./ImageViewer";
 import { useAccount } from "wagmi";
 import CreateAccount from "./CreateAccount";
-import Errors from "./Errors";
+import Indexer from "./Indexer";
 import Notification from "./Notification";
 import Signless from "./Signless";
 
@@ -13,8 +13,8 @@ const Modals: FunctionComponent = (): JSX.Element => {
   const { address } = useAccount();
   return (
     <>
-      {context?.error && (
-        <Errors error={context?.error} setError={context?.setError} />
+      {context?.indexer && (
+        <Indexer indexer={context?.indexer} setIndexer={context?.setIndexer} />
       )}
       {context?.imageView && (
         <ImageViewer
@@ -34,7 +34,7 @@ const Modals: FunctionComponent = (): JSX.Element => {
           setLensConnected={context?.setLensConnected}
           lensConnected={context?.lensConnected}
           setCreateAccount={context?.setCreateAccount}
-          setError={context?.setError}
+          setIndexer={context?.setIndexer}
           storageClient={context?.storageClient!}
         />
       )}

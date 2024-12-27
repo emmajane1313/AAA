@@ -10,24 +10,25 @@ const Drop: FunctionComponent<DropProps> = ({
   allDrops,
   setMintSwitcher,
 }): JSX.Element => {
-
   return (
-    <div className="relative w-full h-full flex flex-row gap-6 items-center justify-center">
+    <div className="relative w-full h-full flex flex-row gap-6 items-center justify-center font-jackey2">
       <div className="relative flex w-full h-full items-start justify-between flex-col gap-3">
-        <input
-          className="relative flex w-full h-10 text-center text-black bg-gray-200 focus:outline-none text-3xl"
-          placeholder="Drop Title"
-          onChange={(e) =>
-            setMintData({
-              ...mintData,
-              dropTitle: e.target.value,
-            })
-          }
-          value={mintData.dropTitle}
-          disabled={mintLoading}
-        />
+        <div className="relative w-full h-fit flex items-center justify-center">
+          <input
+            className="relative flex w-1/2 h-10 text-center text-black p-1.5 focus:outline-none text-3xl pixel-border-2"
+            placeholder="Drop Title"
+            onChange={(e) =>
+              setMintData({
+                ...mintData,
+                dropTitle: e.target.value,
+              })
+            }
+            value={mintData.dropTitle}
+            disabled={mintLoading}
+          />
+        </div>
         <label
-          className="relative w-full h-full flex items-center justify-center cursor-pointer"
+          className="relative w-full h-full flex items-center justify-center cursor-pixel"
           onClick={(e) => {
             e.stopPropagation();
           }}
@@ -41,18 +42,16 @@ const Drop: FunctionComponent<DropProps> = ({
             />
           ) : (
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
               className="size-6"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
             >
+              {" "}
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
+                d="M3 3h18v18H3V3zm16 16V5H5v14h14zm-6-8h4v2h-4v4h-2v-4H7v-2h4V7h2v4z"
+                fill="currentColor"
+              />{" "}
             </svg>
           )}
           <input
@@ -79,7 +78,7 @@ const Drop: FunctionComponent<DropProps> = ({
             className={`relative w-1/2 h-12 bg-black text-white rounded-md flex items-center justify-center ${
               mintData.dropCover &&
               mintData.dropTitle?.trim() !== "" &&
-              "cursor-pointer active:scale-95"
+              "cursor-pixel active:scale-95"
             }`}
             onClick={() => {
               setMintData({
@@ -104,7 +103,7 @@ const Drop: FunctionComponent<DropProps> = ({
             return (
               <div
                 key={key}
-                className={`relative w-full h-40 rounded-md flex cursor-pointer ${
+                className={`relative w-full h-40 rounded-md flex cursor-pixel pixel-border-4 ${
                   mintData.dropId == Number(drop.id) && "opacity-80"
                 }`}
                 onClick={() => {
@@ -116,7 +115,9 @@ const Drop: FunctionComponent<DropProps> = ({
               >
                 <Image
                   className="rounded-md"
-                  src={`${INFURA_GATEWAY}/ipfs/${drop.cover?.split("ipfs://")?.[1]}`}
+                  src={`${INFURA_GATEWAY}/ipfs/${
+                    drop.cover?.split("ipfs://")?.[1]
+                  }`}
                   layout="fill"
                   draggable={false}
                   objectFit="cover"

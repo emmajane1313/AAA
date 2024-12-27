@@ -27,6 +27,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
   setSignless,
   setImageView,
   storageClient,
+  setIndexer,
 }): JSX.Element => {
   const { isConnected, address } = useAccount();
   const publicClient = createPublicClient({
@@ -58,49 +59,51 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
     setPost,
     commentQuote,
     setCommentQuote,
+    success,
   } = useInteractions(
     nft?.agentActivity,
     lensConnected?.sessionClient!,
     setSignless,
     storageClient,
-    String(nft?.id)
+    String(nft?.id),
+    setIndexer,
+    setNotification,
+    setNft,
+    nft
   );
   const { openConnectModal } = useConnectModal();
   return (
     <div
-      className={`relative w-[38rem] h-[40rem] flex flex-col gap-4 items-start justify-start text-left bg-gray-200 p-3 shadow-lg rounded-md ${
+      className={`relative w-[38rem] h-[40rem] flex flex-col gap-4 items-start justify-start text-left p-3 pixel-border-2 bg-white ${
         (nftLoading || nft?.amount == 0) && "animate-pulse"
       }`}
     >
       {!nftLoading && nft?.amount > 0 && (
         <>
           <div className="relative w-full h-fit flex items-center justify-center gap-3 flex-col">
-            <div className="relative w-full h-fit flex items-center justify-center gap-px flex-col">
-              <div className="h-px w-full flex bg-morado" />
-              <div className="h-px w-full flex bg-cielo" />
-              <div className="h-px w-full flex bg-oscuro" />
+            <div className="relative w-full h-fit flex items-center justify-center gap-1 flex-col">
+              <div className="h-1 w-full flex bg-black" />
+              <div className="h-1 w-full flex bg-black" />
             </div>
             <div className="relative w-full h-fit flex flex-row justify-between items-center">
               <div
-                className="relative w-fit h-fit flex items-center justiy-center cursor-pointer"
+                className="relative w-fit h-fit flex items-center justiy-center cursor-pixel"
                 onClick={() => setScreen(screen > 0 ? screen - 1 : 2)}
               >
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
                   className="size-6"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
                 >
+                  {" "}
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.75 19.5 8.25 12l7.5-7.5"
-                  />
+                    d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                    fill="currentColor"
+                  />{" "}
                 </svg>
               </div>
-              <div className="text-black text-lg relative flex w-fit h-fit text-center text-black">
+              <div className="text-black font-start text-sm relative flex w-fit h-fit text-center text-black">
                 {screen < 1
                   ? "Collect"
                   : screen == 1
@@ -108,40 +111,33 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   : "Collectors"}
               </div>
               <div
-                className="relative w-fit h-fit flex items-center justiy-center cursor-pointer"
+                className="relative w-fit h-fit flex items-center justiy-center cursor-pixel"
                 onClick={() => setScreen(screen < 2 ? screen + 1 : 0)}
               >
                 <svg
-                  xmlns="http://www.w3.org/2000/svg"
                   fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
                   className="size-6"
                 >
+                  {" "}
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                  />
+                    d="M4 11v2h12v2h2v-2h2v-2h-2V9h-2v2H4zm10-4h2v2h-2V7zm0 0h-2V5h2v2zm0 10h2v-2h-2v2zm0 0h-2v2h2v-2z"
+                    fill="currentColor"
+                  />{" "}
                 </svg>
               </div>
-            </div>
-            <div className="relative w-full h-fit flex items-center justify-center gap-px flex-col">
-              <div className="h-px w-full flex bg-morado" />
-              <div className="h-px w-full flex bg-cielo" />
-              <div className="h-px w-full flex bg-oscuro" />
             </div>
           </div>
           {screen < 1 ? (
             <>
-              <div className="relative text-2xl text-black flex">
+              <div className="relative text-xl break-all text-black flex font-start">
                 {nft?.title}
               </div>
-              <div className="relative text-sm text-black flex">
+              <div className="relative text-sm text-black flex font-jackey2">
                 Edition — {nft?.amountSold} / {nft?.amount}
               </div>
-              <div className="relative w-full h-fit flex items-center justify-between flex-row gap-3">
+              <div className="relative w-full h-fit flex items-center justify-between flex-row gap-3 font-jackey2">
                 <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
                   <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado"></div>
                   <div className="relative flex w-fit h-fit text-xs text-black">
@@ -152,7 +148,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   {nft?.blocktimestamp}
                 </div>
               </div>
-              <div className="relative w-full justify-between items-center flex flex-row text-2xl">
+              <div className="relative w-full font-start justify-between items-center flex flex-row">
                 <input
                   disabled={purchaseLoading}
                   type="number"
@@ -162,7 +158,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   placeholder={"1"}
                   value={collectData.amount}
                   step={1}
-                  className="relative flex w-14 px-1 h-10 text-gray-600 bg-gray-200 focus:outline-none text-xl text-left"
+                  className="relative flex w-20 px-1 h-10 text-black focus:outline-none text-xl text-left text-lg"
                   onChange={(e) =>
                     setCollectData({
                       ...collectData,
@@ -170,7 +166,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                     })
                   }
                 />
-                <div className="relative w-fit h-fit justify-end flex">
+                <div className="relative w-fit h-fit justify-end flex text-sm">
                   {(Number(nft?.prices?.[0]) / 10 ** 18) * collectData?.amount}{" "}
                   {
                     TOKENS?.find(
@@ -183,8 +179,8 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
               </div>
               <div className="relative w-full h-fit flex">
                 <div
-                  className={`relative w-full h-14 bg-black text-white rounded-md flex items-center justify-center ${
-                    !purchaseLoading ? "cursor-pointer" : "opacity-70"
+                  className={`relative w-full h-14 pixel-border-2 text-black flex items-center justify-center font-start ${
+                    !purchaseLoading ? "cursor-pixel" : "opacity-70"
                   }`}
                   onClick={() => {
                     if (!purchaseLoading) {
@@ -199,10 +195,17 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   }}
                 >
                   {purchaseLoading ? (
-                    <AiOutlineLoading
-                      color={"white"}
-                      className="animate-spin h-8 w-8"
-                    />
+                    <svg
+                      fill="none"
+                      className="size-4 animate-spin"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                        fill="currentColor"
+                      />{" "}
+                    </svg>
                   ) : approved || !isConnected ? (
                     "Collect"
                   ) : (
@@ -210,8 +213,8 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   )}
                 </div>
               </div>
-              <div className="relative w-full h-fit flex py-4">
-                <div className="py-3 h-full max-h-full overflow-y-scroll flex relative items-start justify-start text-left text-black text-sm">
+              <div className="relative w-full h-fit flex py-4 overflow-y-scroll">
+                <div className="py-3 h-full max-h-full overflow-y-scroll flex relative items-start justify-start text-left text-black text-sm font-jack">
                   {nft?.description}
                 </div>
               </div>
@@ -223,7 +226,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   return (
                     <div
                       key={key}
-                      className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
+                      className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
                       onClick={() =>
                         window.open(
                           `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
@@ -245,20 +248,23 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                               />
                             </div>
                           )}
-                          <div className="relative w-fit h-fit flex text-black text-sm">
-                            @{collector?.name}
+                          <div className="relative w-fit h-fit flex text-black text-sm font-start">
+                            @
+                            {collector?.name?.length > 10
+                              ? collector?.name?.slice(0, 10) + " ..."
+                              : collector?.name}
                           </div>
                         </div>
                       ) : (
-                        <div className="relative w-fit h-fit flex">
+                        <div className="relative w-fit h-fit flex font-start">
                           {collector?.address?.slice(0, 10) + " ..."}
                         </div>
                       )}
 
-                      <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                      <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2">
                         X {collector?.amount}
                       </div>
-                      <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                      <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2 text-xs">
                         {moment
                           .unix(Number(collector?.blockTimestamp))
                           .fromNow()}
@@ -301,6 +307,9 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                 post={post}
                 commentQuote={commentQuote}
                 setCommentQuote={setCommentQuote}
+                handleComment={handleComment}
+                handleQuote={handleQuote}
+                success={success}
               />
             </div>
           )}

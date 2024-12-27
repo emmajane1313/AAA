@@ -114,7 +114,7 @@ const collectionAddress = "0xC094c540e003cBC2b7A30D35C8148B5792568Af4";
   //   meta4,
   // });
 
-  const accountContract = new ethers.Contract("0xdd27e3e5BEF4dA722b1d4cfeAF3DD5EAc998035e", accountsAbi, wallet);
+  const accountContract = new ethers.Contract("0xd7aB6216A46e6Ec8A311ee3bdEf78Fff4227AAb5", accountsAbi, wallet);
 
   // const tx = await accountContract.updateAccountManagerPermissions(wallet.address, {
   //   canExecuteTransactions: true,
@@ -123,15 +123,15 @@ const collectionAddress = "0xC094c540e003cBC2b7A30D35C8148B5792568Af4";
   //   canTransferTokens: true,
   // });
   // const data = await accountContract.getAccountManagerPermissions(wallet.address);
-  const data_before = await accountContract.getAccountManagerPermissions("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053");
-  const acc1 = await accountContract.addAccountManager("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053", {
-    canExecuteTransactions: true,
-    canSetMetadataURI: true,
-    canTransferNative: true,
-    canTransferTokens: true,
-  });
-  const data = await accountContract.getAccountManagerPermissions("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053");
-console.log({data_before, acc1, data})
+  const data_before = await accountContract.getAccountManagerPermissions("0x6391a36492904dff87d6bFd47C96D5dD920AFA7a");
+  // const acc1 = await accountContract.addAccountManager("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053", {
+  //   canExecuteTransactions: true,
+  //   canSetMetadataURI: true,
+  //   canTransferNative: true,
+  //   canTransferTokens: true,
+  // });
+  // const data = await accountContract.getAccountManagerPermissions("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053");
+console.log({data_before,})
 // const owner = await accountContract.owner();
 
 

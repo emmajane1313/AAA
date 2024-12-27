@@ -3,10 +3,10 @@ import { SetStateAction, useState } from "react";
 import { Maybe, ProfilePicture } from "../../../../generated";
 import { Account } from "@lens-protocol/client";
 import pollResult from "@/lib/helpers/pollResult";
-import fetchAccount from "../../../../graphql/lens/queries/account";
 import updateAccount from "../../../../graphql/lens/mutations/updateAccount";
 import { v4 as uuidv4 } from "uuid";
 import { StorageClient } from "@lens-protocol/storage-node-client";
+import fetchAccount from "../../../../graphql/lens/queries/account";
 
 const useAccount = (
   lensConnected: LensConnected | undefined,
@@ -19,7 +19,8 @@ const useAccount = (
     bio: string;
     pfp?: Blob | Maybe<ProfilePicture>;
   }>({
-    pfp: lensConnected?.profile?.username?.namespace?.metadata?.picture,
+    pfp: (lensConnected?.profile?.username?.namespace?.metadata as any)
+      ?.picture,
     localname: lensConnected?.profile?.username?.localName || "",
     bio:
       lensConnected?.profile?.username?.namespace?.metadata?.description || "",
@@ -63,6 +64,7 @@ const useAccount = (
             lensConnected?.sessionClient
           )
         ) {
+          
           const result = await fetchAccount(
             {
               address: lensConnected?.profile?.address,

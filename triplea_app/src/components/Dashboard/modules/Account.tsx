@@ -15,32 +15,30 @@ const Account: FunctionComponent<AccountProps> = ({
     useAccount(lensConnected, setLensConnected, storageClient);
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
-      <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
+      <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
-            className="relative flex w-fit h-fit cursor-pointer hover:opacity-70"
+            className="relative flex w-fit h-fit cursor-pixel hover:opacity-70"
             onClick={() => setSwitcher(Switcher.Home)}
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
               className="size-6"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
             >
+              {" "}
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
+                d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                fill="currentColor"
+              />{" "}
             </svg>
           </div>
         </div>
-        <div className="relative w-full h-full flex flex-col gap-3 items-center justify-center">
+        <div className="relative w-full h-full flex flex-col gap-3 items-center justify-center font-jackey2">
           <div className="relative items-center justify-center flex w-fit h-fit">
             <label
-              className="relative w-20 rounded-full h-20 flex items-center justify-center border border-black cursor-pointer bg-crema"
+              className="relative w-20 rounded-full h-20 flex items-center justify-center border border-black cursor-pixel"
               onClick={(e) => {
                 e.stopPropagation();
               }}
@@ -83,7 +81,7 @@ const Account: FunctionComponent<AccountProps> = ({
               <div className="relative w-fit h-fit flex">Username</div>
               <input
                 disabled={true}
-                className="relative w-full bg-crema h-8 border border-black focus:outline-none p-1"
+                className="relative w-full h-8 border border-black focus:outline-none p-1"
                 value={lensConnected?.profile?.username?.localName}
               />
             </div>
@@ -97,7 +95,7 @@ const Account: FunctionComponent<AccountProps> = ({
                     localname: e.target.value,
                   })
                 }
-                className="relative w-full bg-crema h-8 border border-black focus:outline-none p-1"
+                className="relative w-full h-8 border border-black focus:outline-none p-1"
                 value={newAccount?.localname}
               />
             </div>
@@ -112,7 +110,7 @@ const Account: FunctionComponent<AccountProps> = ({
                   bio: e.target.value,
                 })
               }
-              className="relative w-full bg-crema h-full overflow-y-scroll border border-black focus:outline-none p-1"
+              className="relative w-full h-full overflow-y-scroll border border-black focus:outline-none p-1"
               value={newAccount?.bio}
               style={{
                 resize: "none",
@@ -121,13 +119,23 @@ const Account: FunctionComponent<AccountProps> = ({
           </div>
         </div>
         <div
-          className={`"relative px-3 py-1 flex items-center justify-center bg-black text-white w-28 h-8 rounded-md ${
-            !accountLoading && "cursor-pointer active:scale-95"
+          className={`relative px-3 py-1 flex items-center justify-center font-jackey2 pixel-border-3 text-black w-28 h-8 ${
+            !accountLoading && "cursor-pixel active:scale-95"
           }`}
           onClick={() => !accountLoading && handleUpdateAccount()}
         >
           {accountLoading ? (
-            <AiOutlineLoading size={15} className={`black animate-spin`} />
+            <svg
+              fill="none"
+              className="size-4 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                fill="currentColor"
+              />{" "}
+            </svg>
           ) : (
             "Update"
           )}

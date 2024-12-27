@@ -28,7 +28,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
             key={key}
             className="relative w-full h-fit gap-3 flex-col flex flex shadow-md item-start justify-start p-2"
           >
-            <div className="relative w-full h-fit px-1.5 py-1 flex items-start justify-between flex-row gap-2">
+            <div className="relative w-full h-fit px-1.5 py-1 flex items-start justify-between flex-row gap-2 font-jackey2">
               <div className="relative w-fit h-fit flex flex-row gap-1  items-center justify-center">
                 <div className="relative w-fit h-fit flex items-center justify-center">
                   <div className="w-6 h-6 flex relative flex items-center justify-center rounded-full border border-morado bg-morado">
@@ -36,7 +36,10 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       layout="fill"
                       objectFit="cover"
                       draggable={false}
-                      src={`${INFURA_GATEWAY}/ipfs/${activity?.author?.username?.namespace?.metadata?.picture}`}
+                      src={`${INFURA_GATEWAY}/ipfs/${
+                        (activity?.author?.username?.namespace?.metadata as any)
+                          ?.picture
+                      }`}
                     />
                   </div>
                 </div>
@@ -53,7 +56,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
               metadata={activity?.metadata?.__typename!}
               setImageView={setImageView}
             />
-            <div className="relative w-full h-fit p-1 border border-morado rounded-md justify-between flex flex-row gap-3">
+            <div className="relative w-full h-fit p-1 pixel-border-3 font-jackey2 justify-between flex flex-row gap-3 items-center">
               {[
                 {
                   name: "Like",
@@ -63,8 +66,34 @@ const Comments: FunctionComponent<CommentsProps> = ({
 
                       activity?.operations?.hasUpvoted ? "DOWNVOTE" : "UPVOTE"
                     ),
-                  svgFull: <FaHeart color="#D076E6" size={15} />,
-                  svgEmpty: <CiHeart color="black" size={15} />,
+                  svgFull: (
+                    <svg
+                      className="size-4"
+                      fill="#5aacfa"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      {" "}
+                      <path
+                        d="M9 2H5v2H3v2H1v6h2v2h2v2h2v2h2v2h2v2h2v-2h2v-2h2v-2h2v-2h2v-2h2V6h-2V4h-2V2h-4v2h-2v2h-2V4H9V2zm0 2v2h2v2h2V6h2V4h4v2h2v6h-2v2h-2v2h-2v2h-2v2h-2v-2H9v-2H7v-2H5v-2H3V6h2V4h4z"
+                        fill="#5aacfa"
+                      />{" "}
+                    </svg>
+                  ),
+                  svgEmpty: (
+                    <svg
+                      className="size-4"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      {" "}
+                      <path
+                        d="M9 2H5v2H3v2H1v6h2v2h2v2h2v2h2v2h2v2h2v-2h2v-2h2v-2h2v-2h2v-2h2V6h-2V4h-2V2h-4v2h-2v2h-2V4H9V2zm0 2v2h2v2h2V6h2V4h4v2h2v6h-2v2h-2v2h-2v2h-2v2h-2v-2H9v-2H7v-2H5v-2H3V6h2V4h4z"
+                        fill="currentColor"
+                      />{" "}
+                    </svg>
+                  ),
                   stats: (activity as any)?.stats?.upvotes,
                   loader: interactionsLoading?.find(
                     (int) => int.id == activity?.id
@@ -73,8 +102,34 @@ const Comments: FunctionComponent<CommentsProps> = ({
                 {
                   name: "Mirror",
                   function: () => handleMirror(activity?.id),
-                  svgFull: <AiOutlineRetweet color="#D076E6" size={15} />,
-                  svgEmpty: <AiOutlineRetweet color="black" size={15} />,
+                  svgFull: (
+                    <svg
+                      className="size-4"
+                      fill="#5aacfa"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      {" "}
+                      <path
+                        d="M11 2H9v2H7v2H5v2H1v8h4v2h2v2h2v2h2V2zM7 18v-2H5v-2H3v-4h2V8h2V6h2v12H7zm6-8h2v4h-2v-4zm8-6h-2V2h-6v2h6v2h2v12h-2v2h-6v2h6v-2h2v-2h2V6h-2V4zm-2 4h-2V6h-4v2h4v8h-4v2h4v-2h2V8z"
+                        fill="#5aacfa"
+                      />{" "}
+                    </svg>
+                  ),
+                  svgEmpty: (
+                    <svg
+                      className="size-4"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      {" "}
+                      <path
+                        d="M11 2H9v2H7v2H5v2H1v8h4v2h2v2h2v2h2V2zM7 18v-2H5v-2H3v-4h2V8h2V6h2v12H7zm6-8h2v4h-2v-4zm8-6h-2V2h-6v2h6v2h2v12h-2v2h-6v2h6v-2h2v-2h2V6h-2V4zm-2 4h-2V6h-4v2h4v8h-4v2h4v-2h2V8z"
+                        fill="currentColor"
+                      />{" "}
+                    </svg>
+                  ),
                   stats: (activity as any)?.stats?.reposts,
                   loader: interactionsLoading?.find(
                     (int) => int.id == activity?.id
@@ -87,8 +142,34 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       type: "Comment",
                       id: activity?.id,
                     }),
-                  svgFull: <GoCommentDiscussion color="#D076E6" size={15} />,
-                  svgEmpty: <GoCommentDiscussion color="black" size={15} />,
+                  svgFull: (
+                    <svg
+                      className="size-4"
+                      fill="#5aacfa"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      {" "}
+                      <path
+                        d="M22 2H2v14h2V4h16v12h-8v2h-2v2H8v-4H2v2h4v4h4v-2h2v-2h10V2z"
+                        fill="#5aacfa"
+                      />{" "}
+                    </svg>
+                  ),
+                  svgEmpty: (
+                    <svg
+                      className="size-4"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      {" "}
+                      <path
+                        d="M22 2H2v14h2V4h16v12h-8v2h-2v2H8v-4H2v2h4v4h4v-2h2v-2h10V2z"
+                        fill="currentColor"
+                      />{" "}
+                    </svg>
+                  ),
                   stats: (activity as any)?.stats?.reposts,
                   loader: postLoading && commentQuote?.type == "Comment",
                 },
@@ -99,8 +180,31 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       type: "Quote",
                       id: activity?.id,
                     }),
-                  svgFull: <BsChatSquareQuote color="#D076E6" size={15} />,
-                  svgEmpty: <BsChatSquareQuote color="black" size={15} />,
+                  svgFull: (
+                    <svg
+                      className="size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="#5aacfa"
+                    >
+                      <path
+                        d="M4 2h18v16H6v2H4v-2h2v-2h14V4H4v18H2V2h2zm5 7H7v2h2V9zm2 0h2v2h-2V9zm6 0h-2v2h2V9z"
+                        fill="#5aacfa"
+                      />
+                    </svg>
+                  ),
+                  svgEmpty: (
+                    <svg
+                      className="size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M4 2h18v16H6v2H4v-2h2v-2h14V4H4v18H2V2h2zm5 7H7v2h2V9zm2 0h2v2h-2V9zm6 0h-2v2h2V9z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  ),
                   stats: (activity as any)?.stats?.quotes,
                   loader: postLoading && commentQuote?.type == "Quote",
                 },
@@ -109,15 +213,26 @@ const Comments: FunctionComponent<CommentsProps> = ({
                   <div
                     key={key}
                     className="relative w-fit h-fit flex items-center justify-center flex-row gap-1"
+                    title={item.name}
                   >
                     <div
                       className={`relative w-fit h-fit flex ${
-                        item?.loader ? "animate-spin" : "cursor-pointer"
+                        item?.loader ? "animate-spin" : "cursor-pixel"
                       }`}
                       onClick={() => !item?.loader && item.function()}
                     >
                       {item?.loader ? (
-                        <AiOutlineLoading color="black" size={15} />
+                        <svg
+                          fill="none"
+                          className="size-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                            fill="currentColor"
+                          />{" "}
+                        </svg>
                       ) : item?.stats > 0 ? (
                         item?.svgFull
                       ) : (

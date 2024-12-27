@@ -17,7 +17,6 @@ const useSales = (
     try {
       const data = await getSales(address);
 
-
       const sales: Order[] = await Promise.all(
         data?.data?.orders?.map(async (sale: any) => {
           const result = await fetchAccountsAvailable(
@@ -64,10 +63,10 @@ const useSales = (
   };
 
   useEffect(() => {
-    if (allSales?.length < 1 && lensClient) {
+    if (allSales?.length < 1 && lensClient && address) {
       handleSales();
     }
-  }, [lensClient]);
+  }, [lensClient, address]);
 
   return {
     allSales,

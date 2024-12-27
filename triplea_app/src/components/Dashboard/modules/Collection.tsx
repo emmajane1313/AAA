@@ -18,25 +18,23 @@ const Collection: FunctionComponent<CollectionProps> = ({
       <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
-            className="relative flex w-fit h-fit cursor-pointer hover:opacity-70"
+            className="relative flex w-fit h-fit cursor-pixel hover:opacity-70"
             onClick={() => {
               setDropSwitcher(DropSwitcher.Drops);
               setDrop(undefined);
             }}
           >
             <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
               className="size-6"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
             >
+              {" "}
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
+                d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                fill="currentColor"
+              />{" "}
             </svg>
           </div>
         </div>
@@ -47,7 +45,7 @@ const Collection: FunctionComponent<CollectionProps> = ({
                   return (
                     <div
                       key={key}
-                      className="relative w-60 h-full bg-morado rounded-md animate-pulse"
+                      className="relative w-60 h-full bg-morado pixel-border-4 animate-pulse rounded-xl"
                     ></div>
                   );
                 })
@@ -55,7 +53,7 @@ const Collection: FunctionComponent<CollectionProps> = ({
                   return (
                     <div
                       key={key}
-                      className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between p-2 cursor-pointer`}
+                      className={`relative w-60 h-full bg-morado pixel-border-4 rounded-lg flex flex-col items-center justify-between cursor-pixel p-2`}
                       onClick={() =>
                         router.push(
                           `/nft/${
@@ -66,21 +64,23 @@ const Collection: FunctionComponent<CollectionProps> = ({
                         )
                       }
                     >
-                      <div className="relative w-full h-full rounded-md flex">
-                        <Image
+                    <div className="relative w-full h-full rounded-md flex pixel-border-4">
+                    <Image
                           objectFit="cover"
                           layout="fill"
                           draggable={false}
                           alt={collection?.title}
-                          src={`${INFURA_GATEWAY}/ipfs/${collection?.image?.split("ipfs://")?.[1]}`}
+                          src={`${INFURA_GATEWAY}/ipfs/${
+                            collection?.image?.split("ipfs://")?.[1]
+                          }`}
                           className="rounded-md"
                         />
                       </div>
-                      <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 text-white">
-                        <div className="relative w-fit h-fit flex text-lg">
+                      <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 text-black pt-4">
+                        <div className="relative w-fit h-fit flex text-sm font-start uppercase">
                           {collection.title}
                         </div>
-                        <div className="relative w-fit h-fit flex text-sm">
+                        <div className="relative w-fit overflow-y-scroll font-jackey2 max-h-40 h-fit flex text-sm">
                           {collection.description}
                         </div>
                       </div>

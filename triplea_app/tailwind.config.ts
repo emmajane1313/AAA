@@ -9,14 +9,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        morado: "#D076E6",
+        morado: "#FD91C6",
         crema: "#E8E8E8",
         ligero: "#E3DADA",
         cielo: "#4888BC",
         oscuro: "#58789A",
+        mochi: "#73B6DF",
+        costa: "#015783",
+        mar: "#4BA1D1",
       },
       zIndex: {
         200: "200",
+      },
+      fontFamily: {
+        jackey: "Jackey",
+        jack: "Jack",
+        start: "Start",
+        jackey2: "Jackey2",
+      },
+      fontSize: {
+        xxs: "0.6rem",
+      },
+      cursor: {
+        pixel: "url('https://thedial.infura-ipfs.io/ipfs/QmTw119xZnNe978MWYJpdZsMvZvCHe99uLpiQzsQiomnNr'), pointer",
       },
     },
   },

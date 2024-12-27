@@ -30,60 +30,60 @@ const Header: FunctionComponent = (): JSX.Element => {
     handleSearch,
     setSearchItems,
     logout,
-    handleSignless
   } = useHeader(
     address,
     context?.lensClient,
-    context?.setError,
+    context?.setIndexer,
     context?.setCreateAccount,
     context?.setLensConnected,
     context?.lensConnected
   );
 
-  const {} = useAgents(
+  const { agentsLoading } = useAgents(
     context?.agents!,
     context?.setAgents!,
     context?.lensClient!
   );
 
   return (
-    <div className="relative w-full h-fit py-2 px-2 flex flex-col gap-4 sm:flex-row justify-between items-center z-50">
+    <div className="relative w-full h-16 flex flex-col gap-4 sm:flex-row justify-between items-center z-50">
       <div
-        className="relative cursor-pointer active:scale-95 flex items-center justify-center w-fit h-fit"
+        className="relative flex items-center justify-center w-fit h-fit cursor-pixel"
         onClick={() => router.push("/")}
       >
-        <div className="w-10 h-10 flex relative">
-          <Image
-            src={`${INFURA_GATEWAY}/ipfs/QmRP1tuiSVjS85zNB6SrFc1Ykrr58LTF5j2kQfwYgbVgwh`}
-            layout="fill"
-            objectFit="cover"
-            alt="Triple A"
-            draggable={false}
-          />
+        <div className="w-fit h-fit text-xl font-jackey text-black flex relative">
+          Triple A
         </div>
       </div>
       <div className="relative flex flex-row gap-2 items-center justify-center w-full sm:w-fit h-fit">
-        <label className="relative w-full sm:w-60 h-10 rounded-xl flex border border-ligero bg-gray-200 px-1.5 py-1 flex-row gap-2 items-center justify-between">
+        <label className="relative w-full sm:w-60 h-10 rounded-xl flex pixel-border-3 px-1.5 py-1 flex-row gap-2 items-center justify-between">
           {searchLoading ? (
-            <AiOutlineLoading className="h-6 h-6 animate-spin" color="black" />
+            <svg
+              fill="none"
+              className="size-4 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                fill="currentColor"
+              />{" "}
+            </svg>
           ) : (
             <svg
-              xmlns="http://www.w3.org/2000/svg"
               fill="none"
+              xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
               className="size-6"
             >
               <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                d="M6 2h8v2H6V2zM4 6V4h2v2H4zm0 8H2V6h2v8zm2 2H4v-2h2v2zm8 0v2H6v-2h8zm2-2h-2v2h2v2h2v2h2v2h2v-2h-2v-2h-2v-2h-2v-2zm0-8h2v8h-2V6zm0 0V4h-2v2h2z"
+                fill="currentColor"
               />
             </svg>
           )}
           <input
-            className="relative flex w-full h-full text-left text-black bg-gray-200 focus:outline-none"
+            className="relative flex w-full h-full text-left text-black font-jack focus:outline-none"
             placeholder="Search"
             onKeyDown={(e) => {
               if (e.key == "Enter") {
@@ -100,12 +100,12 @@ const Header: FunctionComponent = (): JSX.Element => {
             }}
           />
           {searchItems?.length > 0 && (
-            <div className="absolute w-full h-fit max-h-60 rounded-md flex bg-crema right-0 top-10 flex-col gap-3 shadow-lg p-2 overflow-y-scroll">
+            <div className="absolute w-full h-fit max-h-60 border-2 border-black flex bg-white right-0 top-10 flex-col gap-3 p-2 overflow-y-scroll">
               {searchItems?.map((item, key) => {
                 return (
                   <div
                     key={key}
-                    className="cursor-pointer relative w-full h-fit flex flex-row gap-2 items-center justify-between hover:opacity-70"
+                    className="cursor-pixel relative w-full h-fit flex flex-row gap-2 items-center justify-between hover:opacity-70 cursor-pixel"
                     onClick={() => {
                       router.push(
                         `/nft/${item?.profile?.username?.localName}/${item?.id}`
@@ -128,7 +128,7 @@ const Header: FunctionComponent = (): JSX.Element => {
                         />
                       </div>
                     </div>
-                    <div className="text-sm text-black flex w-fit h-fit">
+                    <div className="text-sm text-black flex w-fit h-fit font-jack">
                       {item?.title?.slice(0, 20)}
                     </div>
                   </div>
@@ -139,45 +139,71 @@ const Header: FunctionComponent = (): JSX.Element => {
         </label>
         <div className="relative flex items-center justify-center w-fit h-fit">
           <div
-            className="relative w-10 h-10 flex items-center justify-center cursor-pointer active:scale-95"
+            className="relative w-10 h-10 flex items-center justify-center cursor-pixel active:scale-95 cursor-pixel"
             onClick={() => setOpenAccount(!openAccount)}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6 stroke-morado"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-              />
-            </svg>
+            {(
+              context?.lensConnected?.profile?.username?.namespace
+                ?.metadata as any
+            )?.picture ? (
+              <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
+                <Image
+                  src={
+                    createProfilePicture(
+                      (
+                        context?.lensConnected?.profile?.username?.namespace
+                          ?.metadata as any
+                      )?.picture
+                    ) || ""
+                  }
+                  draggable={false}
+                  className="rounded-full"
+                />
+              </div>
+            ) : context?.lensConnected?.profile ? (
+              <svg
+                className="size-6"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15 2H9v2H7v6h2V4h6V2zm0 8H9v2h6v-2zm0-6h2v6h-2V4zM4 16h2v-2h12v2H6v4h12v-4h2v6H4v-6z"
+                  fill="currentColor"
+                />
+              </svg>
+            ) : (
+              <svg
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="size-6"
+              >
+                <path
+                  d="M18 2h-6v2h-2v6h2V4h6V2zm0 8h-6v2h6v-2zm0-6h2v6h-2V4zM7 16h2v-2h12v2H9v4h12v-4h2v6H7v-6zM3 8h2v2h2v2H5v2H3v-2H1v-2h2V8z"
+                  fill="currentColor"
+                />
+              </svg>
+            )}
           </div>
           {openAccount && (
-            <div className="absolute w-40 h-fit rounded-md flex bg-crema right-0 top-10 flex-col gap-5 shadow-lg p-2">
+            <div className="absolute w-40 h-fit rounded-md flex right-0 top-12 flex-col gap-5 shadow-lg p-2 text-xxs font-jackey pixel-border-3">
               <div
-                className={`relative w-full h-fit flex items-center justify-start flex-row gap-1 ${
-                  address && "cursor-pointer"
-                }`}
-                onClick={() => 
-                  // handleSignless()
-                  
-                  address && router.push("/dashboard")
-                }
+                className={`relative w-full h-fit flex items-center justify-start flex-row gap-1`}
               >
                 <div className="relative w-fit h-fit flex">
-                  {context?.lensConnected?.profile?.username?.namespace
-                    ?.metadata?.picture ? (
+                  {(
+                    context?.lensConnected?.profile?.username?.namespace
+                      ?.metadata as any
+                  )?.picture ? (
                     <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
                       <Image
                         src={
                           createProfilePicture(
-                            context?.lensConnected?.profile?.username?.namespace
-                              ?.metadata?.picture
+                            (
+                              context?.lensConnected?.profile?.username
+                                ?.namespace?.metadata as any
+                            )?.picture
                           ) || ""
                         }
                         draggable={false}
@@ -186,32 +212,26 @@ const Header: FunctionComponent = (): JSX.Element => {
                     </div>
                   ) : context?.lensConnected?.profile ? (
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
+                      className="size-6"
                       fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-6 stroke-morado"
                     >
                       <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                        d="M15 2H9v2H7v6h2V4h6V2zm0 8H9v2h6v-2zm0-6h2v6h-2V4zM4 16h2v-2h12v2H6v4h12v-4h2v6H4v-6z"
+                        fill="currentColor"
                       />
                     </svg>
                   ) : (
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
                       fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="size-6 flex items-center justify-center"
+                      className="size-6"
                     >
                       <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
+                        d="M18 2h-6v2h-2v6h2V4h6V2zm0 8h-6v2h6v-2zm0-6h2v6h-2V4zM7 16h2v-2h12v2H9v4h12v-4h2v6H7v-6zM3 8h2v2h2v2H5v2H3v-2H1v-2h2V8z"
+                        fill="currentColor"
                       />
                     </svg>
                   )}
@@ -220,20 +240,28 @@ const Header: FunctionComponent = (): JSX.Element => {
                   <div className="relative w-full h-fit flex items-center justify-center text-left">
                     {context?.lensConnected?.profile?.username?.localName?.slice(
                       0,
-                      10
+                      4
                     ) + " ..."}
                   </div>
                 ) : (
                   address && (
                     <div className="relative w-full h-fit flex items-center justify-center text-left">
-                      {address?.slice(0, 10) + "..."}
+                      {address?.slice(0, 4) + "..."}
                     </div>
                   )
                 )}
               </div>
-              <div className="relative w-full h-fit flex flex-col gap-2">
+              <div className="relative w-full h-fit flex flex-col gap-2 font-jack">
+                {context?.lensConnected?.profile && (
+                  <div
+                    className="relative flex w-full h-10 rounded-xl bg-[#FD91C6] active:scale-95 items-center justify-center text-center text-sm text-black hover:opacity-80 cursor-pixel pixel-border-4"
+                    onClick={() => address && router.push("/dashboard")}
+                  >
+                    Dashboard
+                  </div>
+                )}
                 <div
-                  className="relative flex w-full h-10 rounded-md bg-black active:scale-95 cursor-pointer items-center justify-center text-center text-sm text-white hover:opacity-80"
+                  className="relative flex w-full h-10 rounded-xl bg-black active:scale-95 items-center justify-center text-center text-sm text-white hover:opacity-80 cursor-pixel pixel-border-4"
                   onClick={() =>
                     isConnected ? openAccountModal?.() : openConnectModal?.()
                   }
@@ -241,10 +269,8 @@ const Header: FunctionComponent = (): JSX.Element => {
                   {isConnected ? "Disconnect" : "Connect"}
                 </div>
                 <div
-                  className={`relative flex w-full h-10 rounded-md border border-black items-center justify-center text-center text-sm hover:opacity-80 ${
-                    !isConnected
-                      ? "opacity-60"
-                      : "active:scale-95 cursor-pointer"
+                  className={`relative flex w-full h-10  pixel-border-3 items-center justify-center text-center text-sm hover:opacity-80 ${
+                    !isConnected ? "opacity-60" : "active:scale-95 cursor-pixel"
                   }`}
                   onClick={() =>
                     !context?.lensConnected?.profile
@@ -253,11 +279,17 @@ const Header: FunctionComponent = (): JSX.Element => {
                   }
                 >
                   {lensLoading ? (
-                    <AiOutlineLoading
-                      className="animate-spin"
-                      color="black"
-                      size={15}
-                    />
+                    <svg
+                      fill="none"
+                      className="size-4 animate-spin"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                        fill="currentColor"
+                      />{" "}
+                    </svg>
                   ) : context?.lensConnected?.profile && address ? (
                     "Log Out Lens"
                   ) : (

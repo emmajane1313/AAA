@@ -33,8 +33,8 @@ export const ModalContext = createContext<
   | {
       imageView: string | undefined;
       setImageView: (e: SetStateAction<string | undefined>) => void;
-      error: string | undefined;
-      setError: (e: SetStateAction<string | undefined>) => void;
+      indexer: string | undefined;
+      setIndexer: (e: SetStateAction<string | undefined>) => void;
       notification: string | undefined;
       setNotification: (e: SetStateAction<string | undefined>) => void;
       agents: Agent[];
@@ -55,7 +55,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [lensConnected, setLensConnected] = useState<
     LensConnected | undefined
   >();
-  const [error, setError] = useState<string | undefined>();
+  const [indexer, setIndexer] = useState<string | undefined>();
   const [imageView, setImageView] = useState<string | undefined>();
   const [notification, setNotification] = useState<string | undefined>();
   const [signless, setSignless] = useState<boolean>(false);
@@ -89,8 +89,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               setCreateAccount,
               lensConnected,
               setLensConnected,
-              error,
-              setError,
+              indexer,
+              setIndexer,
               notification,
               setNotification,
               storageClient,

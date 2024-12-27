@@ -14,13 +14,13 @@ export type CreateAccountProps = {
     | ((e: SetStateAction<LensConnected | undefined>) => void)
     | undefined;
   setCreateAccount: (e: SetStateAction<boolean>) => void;
-  setError: (e: SetStateAction<string | undefined>) => void;
+  setIndexer: (e: SetStateAction<string | undefined>) => void;
   storageClient: StorageClient;
 };
 
-export type ErrorsProps = {
-  error: string | undefined;
-  setError: (e: SetStateAction<string | undefined>) => void;
+export type IndexerProps = {
+  indexer: string | undefined;
+  setIndexer: (e: SetStateAction<string | undefined>) => void;
 };
 
 export type NotificationProps = {

@@ -2,20 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Jackey";
+  src: url("/fonts/Jackey.otf");
+}
+
+@font-face {
+  font-family: "Jackey2";
+  src: url("/fonts/Jackey2.ttf");
+}
+
+@font-face {
+  font-family: "Start";
+  src: url("/fonts/PrStart.ttf");
+}
+
+@font-face {
+  font-family: "Jack";
+  src: url("/fonts/Jack.ttf");
+}
+
 ::-webkit-scrollbar {
   display: none;
 }
 
 * {
-  scrollbar-width: none; 
-  -ms-overflow-style: none; 
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 html {
-  background-color: #e8e8e8;
+  background-color: white;
 }
 
-/* .infinite-scroll-component__outerdiv {
-  width: 100%;
-  display: flex;
-}  */
+.pixel-border-2 {
+  background-color: #fff;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 4px;
+  border-color: #000;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 2h2v2H2zM4 0h2v2H4zM10 4h2v2h-2zM0 4h2v2H0zM6 0h2v2H6zM8 2h2v2H8zM8 8h2v2H8zM6 10h2v2H6zM0 6h2v2H0zM10 6h2v2h-2zM4 10h2v2H4zM2 8h2v2H2z' fill='%23000'/%3E%3C/svg%3E");
+  border-image-slice: 4;
+  border-image-width: 2;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+}
+
+.pixel-border-3 {
+  background-color: #fff;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #000;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 2h2v2H2zM4 0h2v2H4zM10 4h2v2h-2zM0 4h2v2H0zM6 0h2v2H6zM8 2h2v2H8zM8 8h2v2H8zM6 10h2v2H6zM0 6h2v2H0zM10 6h2v2h-2zM4 10h2v2H4zM2 8h2v2H2z' fill='%23000'/%3E%3C/svg%3E");
+  border-image-slice: 4;
+  border-image-width: 2;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+}
+
+.pixel-border-4 {
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #000;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath d='M2 2h2v2H2zM4 0h2v2H4zM10 4h2v2h-2zM0 4h2v2H0zM6 0h2v2H6zM8 2h2v2H8zM8 8h2v2H8zM6 10h2v2H6zM0 6h2v2H0zM10 6h2v2h-2zM4 10h2v2H4zM2 8h2v2H2z' fill='%23000'/%3E%3C/svg%3E");
+  border-image-slice: 4;
+  border-image-width: 2;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+}

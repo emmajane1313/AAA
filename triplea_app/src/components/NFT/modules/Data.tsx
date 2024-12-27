@@ -17,7 +17,7 @@ const Data: FunctionComponent<DataProps> = ({
           draggable={false}
           layout="fill"
           objectFit="contain"
-          className="cursor-pointer"
+          className="cursor-pixel"
           onClick={() =>
             setImageView(`${INFURA_GATEWAY}/ipfs/${url?.split("ipfs://")?.[1]}`)
           }

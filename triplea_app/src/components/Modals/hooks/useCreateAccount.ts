@@ -21,7 +21,7 @@ const useCreateAccount = (
     | ((e: SetStateAction<LensConnected | undefined>) => void)
     | undefined,
   setCreateAccount: (e: SetStateAction<boolean>) => void,
-  setError: (e: SetStateAction<string | undefined>) => void,
+  setIndexer: (e: SetStateAction<string | undefined>) => void,
   storageClient: StorageClient
 ) => {
   const [account, setAccount] = useState<{
@@ -121,26 +121,26 @@ const useCreateAccount = (
                 });
               } else {
                 console.error(accountResponse);
-                setError?.("Error with Auth Tokens");
+                setIndexer?.("Error with Auth Tokens");
                 setAccountLoading(false);
                 return;
               }
             }
           } else {
             console.error(accountResponse);
-            setError?.("Error with Fetching New Account");
+            setIndexer?.("Error with Fetching New Account");
             setAccountLoading(false);
             return;
           }
         } else {
           console.error(accountResponse);
-          setError?.("Error with Account Creation");
+          setIndexer?.("Error with Account Creation");
           setAccountLoading(false);
           return;
         }
       } else {
         console.error(accountResponse);
-        setError?.("Error with Account Creation");
+        setIndexer?.("Error with Account Creation");
         setAccountLoading(false);
         return;
       }

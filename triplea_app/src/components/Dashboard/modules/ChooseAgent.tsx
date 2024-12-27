@@ -17,7 +17,7 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
               return (
                 <div
                   key={key}
-                  className="relative w-60 h-full bg-morado rounded-md animate-pulse"
+                  className="relative w-60 pixel-border-4 h-full bg-morado rounded-xl animate-pulse"
                 ></div>
               );
             })
@@ -25,7 +25,7 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
               return (
                 <div
                   key={key}
-                  className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between cursor-pointer p-2 ${
+                  className={`relative w-60 pixel-border-4 h-full bg-morado rounded-xl flex flex-col items-center justify-between cursor-pixel p-2 ${
                     mintData.agentIds.includes(agent.id) &&
                     "border border-black opacity-70"
                   }`}
@@ -64,11 +64,11 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                       className="rounded-md"
                     />
                   </div>
-                  <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
-                    <div className="relative w-fit h-fit flex text-lg">
+                  <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 pt-4">
+                    <div className="relative w-fit h-fit flex text-lg font-start uppercase">
                       {agent.title}
                     </div>
-                    <div className="relative w-fit overflow-y-scroll max-h-40 h-fit flex text-sm">
+                    <div className="relative w-fit overflow-y-scroll font-jackey2 max-h-40 h-fit flex text-sm">
                       {agent.description}
                     </div>
                   </div>

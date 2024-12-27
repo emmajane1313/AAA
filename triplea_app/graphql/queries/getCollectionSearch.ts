@@ -6,8 +6,8 @@ const COLLECTIONS_SEARCH = gql`
     collectionCreateds(
       where: {
         or: [
-          { metadata_: { description_contains: $target } }
-          { metadata_: { title_contains: $target } }
+          { metadata_: { description_contains_nocase: $target } }
+          { metadata_: { title_contains_nocase: $target } }
         ]
       }
     ) {

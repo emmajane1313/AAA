@@ -16,6 +16,7 @@ export interface NFTData {
   profile: Account;
   collectors?: Collector[];
   agentActivity?: Post[]
+  size?: string;
 }
 
 export interface LensConnected {

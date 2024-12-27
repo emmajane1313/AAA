@@ -14,6 +14,7 @@ export type PurchaseProps = {
   nft: NFTData;
   nftLoading: boolean;
   setNotification: (e: SetStateAction<string | undefined>) => void;
+  setIndexer: (e: SetStateAction<string | undefined>) => void;
   setNft: (e: SetStateAction<NFTData | undefined>) => void;
   hasMore: boolean;
   handleMoreActivity: () => Promise<void>;
@@ -59,7 +60,10 @@ export type CommentsProps = {
 
 export type PostProps = {
   handlePost: () => Promise<void>;
+  handleComment: () => Promise<void>;
+  handleQuote: () => Promise<void>;
   postLoading: boolean;
+  success: boolean
   setPost: (e: SetStateAction<string>) => void;
   post: string;
   commentQuote:

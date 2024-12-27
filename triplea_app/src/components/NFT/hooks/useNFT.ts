@@ -2,7 +2,13 @@ import { Collector, NFTData } from "@/components/Common/types/common.types";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useEffect, useState } from "react";
 import { getCollection } from "../../../../graphql/queries/getCollection";
-import { evmAddress, Post, PublicClient } from "@lens-protocol/client";
+import {
+  evmAddress,
+  MainContentFocus,
+  Post,
+  PostType,
+  PublicClient,
+} from "@lens-protocol/client";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 import { getCollectors } from "../../../../graphql/queries/getCollectors";
 import fetchPosts from "../../../../graphql/lens/queries/posts";
@@ -60,18 +66,6 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
         });
       }
 
-      const filterAgents = agents
-        ?.filter((ag) => collection?.agents?.includes(ag?.id))
-        .map((ag) => ag.profile?.address);
-
-      let authors = {};
-
-      if (filterAgents?.length > 0) {
-        authors = {
-          authors: filterAgents,
-        };
-      }
-
       const postsRes = await fetchPosts(
         {
           pageSize: "FIFTY",
@@ -81,12 +75,10 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
                 oneOf: ["tripleA", id],
               },
             },
-            ...authors,
           },
         },
         lensClient
       );
-
       let posts: Post[] = [];
 
       if ((postsRes as any)?.items?.length > 0) {
@@ -127,28 +119,15 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
     if (!hasMore || !activityCursor) return;
     setAgentLoading(true);
     try {
-      const filterAgents = agents
-        ?.filter((ag) => nft?.agents?.includes(ag?.id))
-        .map((ag) => ag.profile?.address);
-
-      let authors = {};
-
-      if (filterAgents?.length > 0) {
-        authors = {
-          authors: filterAgents,
-        };
-      }
-
       const postsRes = await fetchPosts(
         {
           pageSize: "TEN",
           filter: {
             metadata: {
               tags: {
-                all: ["tripleA", id],
+                oneOf: ["tripleA", id],
               },
             },
-            ...authors,
           },
         },
         lensClient

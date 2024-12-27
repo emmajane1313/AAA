@@ -15,23 +15,21 @@ const Drops: FunctionComponent<DropsProps> = ({
       <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
-            className="relative flex w-fit h-fit cursor-pointer hover:opacity-70"
+            className="relative flex w-fit h-fit cursor-pixel hover:opacity-70"
             onClick={() => setSwitcher(Switcher.Home)}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
-            </svg>
+             <svg
+                  className="size-6"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  {" "}
+                  <path
+                    d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                    fill="currentColor"
+                  />{" "}
+                </svg>
           </div>
         </div>
         <div className="flex relative w-full h-full items-center justify-start overflow-x-scroll">
@@ -44,13 +42,13 @@ const Drops: FunctionComponent<DropsProps> = ({
               Array.from({ length: 10 }).map((_, key) => {
                 return (
                   <div
-                    key={key}
-                    className="relative w-60 h-full bg-morado rounded-md animate-pulse"
-                  ></div>
+                  key={key}
+                  className="relative w-60 h-full bg-morado pixel-border-4 animate-pulse rounded-xl"
+                ></div>
                 );
               })
             ) : allDrops?.length < 1 ? (
-              <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600">
+              <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600 font-jack">
                 No Drops Yet.
               </div>
             ) : (
@@ -58,13 +56,13 @@ const Drops: FunctionComponent<DropsProps> = ({
                 return (
                   <div
                     key={key}
-                    className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between cursor-pointer p-2`}
+                    className={`relative w-60 h-full bg-morado pixel-border-4 rounded-lg flex flex-col items-center justify-between cursor-pixel p-2`}
                     onClick={() => {
                       setDrop(drop);
                       setDropSwitcher(DropSwitcher.Collection);
                     }}
                   >
-                    <div className="relative w-full h-full rounded-md flex">
+                    <div className="relative w-full h-full rounded-md flex pixel-border-4">
                       <Image
                         objectFit="cover"
                         layout="fill"
@@ -77,7 +75,7 @@ const Drops: FunctionComponent<DropsProps> = ({
                       />
                     </div>
                     <div className="relative w-full h-fit flex flex-col items-center justify-center gap-3">
-                      <div className="relative w-fit h-fit flex text-lg text-white py-4">
+                      <div className="relative w-fit h-fit flex text-sm uppercase text-black py-4 font-start">
                         {drop.title}
                       </div>
                     </div>

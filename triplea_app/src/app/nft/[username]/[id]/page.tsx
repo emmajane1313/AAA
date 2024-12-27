@@ -22,6 +22,7 @@ export default function NFT() {
       />
       <Purchase
         nft={nft!}
+        setIndexer={context?.setIndexer!}
         nftLoading={nftLoading}
         setNotification={context?.setNotification!}
         setNft={setNft}

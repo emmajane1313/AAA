@@ -16,26 +16,24 @@ const Sales: FunctionComponent<SalesProps> = ({
   const router = useRouter();
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
-      <div className="relative w-full h-full bg-gray-200 p-3 shadow-lg rounded-md flex flex-col items-center justify-between gap-6">
+      <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
-            className="relative flex w-fit h-fit cursor-pointer hover:opacity-70"
+            className="relative flex w-fit h-fit cursor-pixel hover:opacity-70"
             onClick={() => setSwitcher(Switcher.Home)}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
-            </svg>
+           <svg
+                  className="size-6"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  {" "}
+                  <path
+                    d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                    fill="currentColor"
+                  />{" "}
+                </svg>
           </div>
         </div>
         <div className="flex relative w-full h-full items-center justify-start overflow-x-scroll">
@@ -49,12 +47,12 @@ const Sales: FunctionComponent<SalesProps> = ({
                 return (
                   <div
                     key={key}
-                    className="relative w-60 h-full bg-morado rounded-md animate-pulse"
+                    className="relative w-60 h-full bg-morado pixel-border-4 animate-pulse rounded-xl"
                   ></div>
                 );
               })
             ) : allSales?.length < 1 ? (
-              <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600">
+              <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600 font-jack">
                 No Sales Yet.
               </div>
             ) : (
@@ -62,10 +60,10 @@ const Sales: FunctionComponent<SalesProps> = ({
                 return (
                   <div
                     key={key}
-                    className={`relative w-60 h-full bg-morado rounded-md flex flex-col items-center justify-between p-2`}
+                    className={`relative w-60 h-full bg-morado rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2`}
                   >
                     <div
-                      className="relative w-full h-full rounded-md flex cursor-pointer"
+                      className="relative w-full h-full rounded-2xl flex cursor-pixel pixel-border-2"
                       onClick={() =>
                         router.push(
                           `/nft/${
@@ -84,15 +82,15 @@ const Sales: FunctionComponent<SalesProps> = ({
                         src={`${INFURA_GATEWAY}/ipfs/${
                           sale?.collection?.image?.split("ipfs://")?.[1]
                         }`}
-                        className="rounded-md"
+                        className="rounded-2xl"
                       />
                     </div>
-                    <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3">
-                      <div className="relative w-fit h-fit flex text-lg">
+                    <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 pt-4">
+                    <div className="relative w-fit h-fit flex text-xs font-start">
                         {sale?.collection?.title}
                       </div>
                       <div
-                        className="relative w-full h-fit flex cursor-pointer justify-between items-center flex-row gap-2"
+                        className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2 font-jack text-sm"
                         onClick={() =>
                           window.open(
                             `https://block-explorer.testnet.lens.dev/tx/${sale?.transactionHash}`
