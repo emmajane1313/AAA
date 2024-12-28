@@ -29,4 +29,7 @@ contract AAAErrors {
 
     error NotAgent();
     error InsufficientBalance();
+    error NotAgentOwner();
+    error AgentStillActive();
+    error BadUserInput();
 }

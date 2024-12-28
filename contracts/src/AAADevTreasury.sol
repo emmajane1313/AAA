@@ -35,7 +35,8 @@ contract AAADevTreasury {
         uint256[] amounts,
         address indexed agent
     );
-    event OrderPayment(address indexed recipient, uint256 amount);
+    event OrderPayment(address token, address recipient, uint256 amount);
+    event AgentOwnerPaid(address token, address owner, uint256 amount);
 
     constructor(address _accessControls) payable {
         accessControls = AAAAccessControls(_accessControls);
@@ -93,11 +94,14 @@ contract AAADevTreasury {
             revert AAAErrors.OnlyAgentsContract();
         }
 
+        address _owner = agents.getAgentOwner(agentId);
+
         for (uint256 i = 0; i < collectionIds.length; i++) {
             _balance[tokens[i]] -= amounts[i];
 
-            uint256 _serviceAmount = amounts[i] / 2;
-            uint256 _distributionAmount = amounts[i] / 2;
+            uint256 _ownerAmount = (amounts[i] * 20) / 100;
+            uint256 _serviceAmount = (amounts[i] * 40) / 100;
+            uint256 _distributionAmount = (amounts[i] * 40) / 100;
 
             _services[tokens[i]] += _serviceAmount;
             _allTimeServices[tokens[i]] += _serviceAmount;
@@ -121,9 +125,13 @@ contract AAADevTreasury {
                     ] = payment;
 
                     if (IERC20(tokens[i]).transfer(_collectors[j], payment)) {
-                        emit OrderPayment(_collectors[j], payment);
+                        emit OrderPayment(tokens[i], _collectors[j], payment);
                     }
                 }
+            }
+
+            if (IERC20(tokens[i]).transfer(_owner, _ownerAmount)) {
+                emit AgentOwnerPaid(tokens[i], _owner, _ownerAmount);
             }
         }
 

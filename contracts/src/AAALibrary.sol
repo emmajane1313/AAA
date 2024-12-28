@@ -23,6 +23,7 @@ contract AAALibrary {
     }
 
     struct CollectionInput {
+        string[] customInstructions;
         address[] tokens;
         uint256[] prices;
         uint256[] agentIds;
@@ -35,6 +36,7 @@ contract AAALibrary {
         uint256[] activeCollectionIds;
         string metadata;
         address wallet;
+        address owner;
         uint256 id;
     }
 

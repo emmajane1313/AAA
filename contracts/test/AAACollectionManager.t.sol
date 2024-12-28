@@ -44,6 +44,7 @@ contract AAACollectionManagerTest is Test {
                 tokens: new address[](2),
                 prices: new uint256[](2),
                 agentIds: new uint256[](3),
+                customInstructions: new string[](3),
                 metadata: "Metadata 1",
                 amount: 1
             });
@@ -54,6 +55,9 @@ contract AAACollectionManagerTest is Test {
         inputs_1.agentIds[0] = 1;
         inputs_1.agentIds[1] = 3;
         inputs_1.agentIds[2] = 5;
+        inputs_1.customInstructions[0] = "custom1";
+        inputs_1.customInstructions[1] = "custom2";
+        inputs_1.customInstructions[2] = "custom3";
 
         AAALibrary.CollectionInput memory inputs_2 = AAALibrary
             .CollectionInput({
@@ -61,12 +65,14 @@ contract AAACollectionManagerTest is Test {
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
                 metadata: "Metadata 2",
+                customInstructions: new string[](1),
                 amount: 10
             });
 
         inputs_2.tokens[0] = address(token2);
         inputs_2.prices[0] = 13200000000000000000;
         inputs_2.agentIds[0] = 3;
+        inputs_2.customInstructions[0] = "another custom";
 
         collectionManager.create(inputs_1, "some drop URI", 0);
         collectionManager.create(inputs_2, "", 1);
@@ -136,6 +142,35 @@ contract AAACollectionManagerTest is Test {
         );
         assertEq(collectionManager.getCollectionAmount(collectionIds[1]), 10);
 
+        assertEq(
+            collectionManager.getAgentCollectionCustomInstructions(
+                collectionIds[0],
+                1
+            ),
+            "custom1"
+        );
+        assertEq(
+            collectionManager.getAgentCollectionCustomInstructions(
+                collectionIds[0],
+                3
+            ),
+            "custom2"
+        );
+        assertEq(
+            collectionManager.getAgentCollectionCustomInstructions(
+                collectionIds[0],
+                5
+            ),
+            "custom5"
+        );
+          assertEq(
+            collectionManager.getAgentCollectionCustomInstructions(
+                collectionIds[1],
+                1
+            ),
+            "anothercustom"
+        );
+
         vm.stopPrank();
     }
 
@@ -148,6 +183,7 @@ contract AAACollectionManagerTest is Test {
                 tokens: new address[](2),
                 prices: new uint256[](2),
                 agentIds: new uint256[](3),
+                customInstructions: new string[](3),
                 metadata: "Metadata 2",
                 amount: 1
             });
@@ -158,12 +194,16 @@ contract AAACollectionManagerTest is Test {
         inputs_1.agentIds[0] = 1;
         inputs_1.agentIds[1] = 3;
         inputs_1.agentIds[2] = 5;
+        inputs_1.customInstructions[0] = "custom1";
+        inputs_1.customInstructions[1] = "custom2";
+        inputs_1.customInstructions[2] = "custom3";
 
         AAALibrary.CollectionInput memory inputs_2 = AAALibrary
             .CollectionInput({
                 tokens: new address[](1),
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
+                customInstructions: new string[](1),
                 metadata: "Metadata 3",
                 amount: 10
             });
@@ -171,7 +211,7 @@ contract AAACollectionManagerTest is Test {
         inputs_2.tokens[0] = address(token2);
         inputs_2.prices[0] = 13200000000000000000;
         inputs_2.agentIds[0] = 3;
-
+        inputs_2.customInstructions[1] = "another custom";
         collectionManager.create(inputs_1, "", 1);
         collectionManager.create(inputs_2, "", 1);
 

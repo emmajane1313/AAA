@@ -76,6 +76,7 @@ contract AAAMarketTest is Test {
                 tokens: new address[](1),
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
+                customInstructions: new string[](1),
                 metadata: "Metadata 1",
                 amount: 5
             });
@@ -83,6 +84,7 @@ contract AAAMarketTest is Test {
         inputs_1.tokens[0] = address(token1);
         inputs_1.prices[0] = 10 ether;
         inputs_1.agentIds[0] = 1;
+        inputs_1.customInstructions[0] = "custom";
 
         collectionManager.create(inputs_1, "some drop uri", 0);
         vm.stopPrank();
@@ -117,6 +119,7 @@ contract AAAMarketTest is Test {
                 tokens: new address[](1),
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
+                customInstructions: new string[](1),
                 metadata: "Metadata 2",
                 amount: 5
             });
@@ -124,7 +127,7 @@ contract AAAMarketTest is Test {
         inputs_1.tokens[0] = address(token1);
         inputs_1.prices[0] = 10 ether;
         inputs_1.agentIds[0] = 1;
-
+        inputs_1.customInstructions[0] = "custom";
         collectionManager.create(inputs_1, "some 2 drop", 0);
         vm.stopPrank();
 
@@ -157,6 +160,7 @@ contract AAAMarketTest is Test {
                 tokens: new address[](1),
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
+                customInstructions: new string[](1),
                 metadata: "Metadata Over Threshold",
                 amount: 10
             });
@@ -164,6 +168,7 @@ contract AAAMarketTest is Test {
         inputs_1.tokens[0] = address(token1);
         inputs_1.prices[0] = 70 ether;
         inputs_1.agentIds[0] = 1;
+        inputs_1.customInstructions[0] = "custom";
 
         collectionManager.create(inputs_1, "some 3 drop", 0);
         vm.stopPrank();

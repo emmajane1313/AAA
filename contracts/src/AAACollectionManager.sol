@@ -9,6 +9,8 @@ contract AAACollectionManager {
     mapping(address => uint256[]) private _dropIdsByArtist;
     mapping(uint256 => AAALibrary.Collection) private _collections;
     mapping(uint256 => AAALibrary.Drop) private _drops;
+    mapping(uint256 => mapping(uint256 => string))
+        private _agentCustomInstructions;
 
     uint256 private _collectionCounter;
     uint256 private _dropCounter;
@@ -23,6 +25,10 @@ contract AAACollectionManager {
     event DropCreated(address artist, uint256 indexed dropId);
     event DropDeleted(address artist, uint256 indexed dropId);
     event CollectionDeleted(address artist, uint256 indexed collectionId);
+    event CustomInstructionsUpdated(
+        string[] customInstructions,
+        uint256 collectionId
+    );
 
     modifier onlyMarket() {
         if (market != msg.sender) {
@@ -48,6 +54,13 @@ contract AAACollectionManager {
         uint256 dropId
     ) external {
         uint256 _dropValue = dropId;
+
+        if (
+            collectionInput.agentIds.length !=
+            collectionInput.customInstructions.length
+        ) {
+            revert AAAErrors.BadUserInput();
+        }
 
         if (_dropValue == 0) {
             _dropCounter++;
@@ -82,13 +95,51 @@ contract AAACollectionManager {
             amountSold: 0
         });
 
+        for (uint256 i = 0; i < collectionInput.agentIds.length; i++) {
+            _agentCustomInstructions[_collectionCounter][
+                collectionInput.agentIds[i]
+            ] = collectionInput.customInstructions[i];
+        }
+
         _drops[_dropValue].collectionIds.push(_collectionCounter);
         emit CollectionCreated(msg.sender, _collectionCounter, _dropValue);
+    }
+
+    function updateCustomInstructions(
+        string[] memory customInstructions,
+        uint256 collectionId
+    ) external {
+        if (_collections[collectionId].artist != msg.sender) {
+            revert AAAErrors.NotArtist();
+        }
+
+        uint256[] memory _agents = _collections[collectionId].agentIds;
+
+        if (_agents.length != customInstructions.length) {
+            revert AAAErrors.BadUserInput();
+        }
+        for (uint256 i = 0; i < _agents.length; i++) {
+            _agentCustomInstructions[collectionId][
+                _agents[i]
+            ] = customInstructions[i];
+        }
+
+        emit CustomInstructionsUpdated(customInstructions, collectionId);
     }
 
     function deleteCollection(uint256 collectionId) external {
         if (_collections[collectionId].artist != msg.sender) {
             revert AAAErrors.NotArtist();
+        }
+
+        for (
+            uint256 i = 0;
+            i < _collections[collectionId].agentIds.length;
+            i++
+        ) {
+            delete _agentCustomInstructions[collectionId][
+                _collections[collectionId].agentIds[i]
+            ];
         }
 
         if (_collections[collectionId].amountSold > 0) {
@@ -192,57 +243,64 @@ contract AAACollectionManager {
     }
 
     function getCollectionERC20Tokens(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (address[] memory) {
-        return _collections[_collectionId].erc20Tokens;
+        return _collections[collectionId].erc20Tokens;
     }
 
     function getCollectionPrices(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (uint256[] memory) {
-        return _collections[_collectionId].prices;
+        return _collections[collectionId].prices;
     }
 
     function getCollectionTokenIds(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (uint256[] memory) {
-        return _collections[_collectionId].tokenIds;
+        return _collections[collectionId].tokenIds;
     }
 
     function getCollectionAgentIds(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (uint256[] memory) {
-        return _collections[_collectionId].agentIds;
+        return _collections[collectionId].agentIds;
     }
 
     function getCollectionMetadata(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (string memory) {
-        return _collections[_collectionId].metadata;
+        return _collections[collectionId].metadata;
     }
 
     function getCollectionArtist(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (address) {
-        return _collections[_collectionId].artist;
+        return _collections[collectionId].artist;
     }
 
     function getCollectionDropId(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (uint256) {
-        return _collections[_collectionId].dropId;
+        return _collections[collectionId].dropId;
     }
 
     function getCollectionAmount(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (uint256) {
-        return _collections[_collectionId].amount;
+        return _collections[collectionId].amount;
     }
 
     function getCollectionAmountSold(
-        uint256 _collectionId
+        uint256 collectionId
     ) public view returns (uint256) {
-        return _collections[_collectionId].amountSold;
+        return _collections[collectionId].amountSold;
+    }
+
+    function getAgentCollectionCustomInstructions(
+        uint256 collectionId,
+        uint256 agentId
+    ) public view returns (string memory) {
+        return _agentCustomInstructions[collectionId][agentId];
     }
 
     function setMarket(address _market) external onlyAdmin {

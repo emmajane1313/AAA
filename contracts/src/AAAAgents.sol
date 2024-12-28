@@ -40,6 +40,13 @@ contract AAAAgents {
         _;
     }
 
+    modifier onlyAgentOwner(uint256 agentId) {
+        if (_agents[agentId].owner != msg.sender) {
+            revert AAAErrors.NotAgentOwner();
+        }
+        _;
+    }
+
     modifier onlyMarket() {
         if (market != msg.sender) {
             revert AAAErrors.OnlyMarketContract();
@@ -52,16 +59,14 @@ contract AAAAgents {
         devTreasury = AAADevTreasury(_devTreasury);
     }
 
-    function createAgent(
-        string memory metadata,
-        address wallet
-    ) external onlyAdmin {
+    function createAgent(string memory metadata, address wallet) external {
         _agentCounter++;
 
         _agents[_agentCounter] = AAALibrary.Agent({
             id: _agentCounter,
             metadata: metadata,
             wallet: wallet,
+            owner: msg.sender,
             collectionIdsHistory: new uint256[](0),
             activeCollectionIds: new uint256[](0)
         });
@@ -75,11 +80,12 @@ contract AAAAgents {
         string memory metadata,
         address wallet,
         uint256 agentId
-    ) external onlyAdmin {
+    ) external onlyAgentOwner(agentId) {
         _agents[agentId] = AAALibrary.Agent({
             id: agentId,
             metadata: metadata,
             wallet: wallet,
+            owner: msg.sender,
             collectionIdsHistory: _agents[agentId].collectionIdsHistory,
             activeCollectionIds: _agents[agentId].activeCollectionIds
         });
@@ -87,7 +93,11 @@ contract AAAAgents {
         emit AgentEdited(_agentCounter);
     }
 
-    function deleteAgent(uint256 agentId) external onlyAdmin {
+    function deleteAgent(uint256 agentId) external onlyAgentOwner(agentId) {
+        if (_agents[agentId].activeCollectionIds.length > 0) {
+            revert AAAErrors.AgentStillActive();
+        }
+
         accessControls.removeAgent(_agents[agentId].wallet);
         delete _agents[agentId];
 
@@ -118,6 +128,16 @@ contract AAAAgents {
 
         if (!isCollectionActive && !soldOut) {
             activeCollections.push(collectionId);
+        } else if (soldOut) {
+            for (uint256 i = 0; i < activeCollections.length; i++) {
+                if (activeCollections[i] == collectionId) {
+                    activeCollections[i] = activeCollections[
+                        activeCollections.length - 1
+                    ];
+                    activeCollections.pop();
+                    break;
+                }
+            }
         }
 
         emit BalanceAdded(token, agentId, amount, collectionId);
@@ -184,6 +204,10 @@ contract AAAAgents {
         uint256 agentId
     ) public view returns (uint256[] memory) {
         return _agents[agentId].collectionIdsHistory;
+    }
+
+    function getAgentOwner(uint256 agentId) public view returns (address) {
+        return _agents[agentId].owner;
     }
 
     function getAgentActiveCollectionIds(
