@@ -4,7 +4,7 @@ import { FetchResult, gql } from "@apollo/client";
 const DROPS = gql`
   query ($artist: String!) {
     dropCreateds(
-      where: { artist_contains_nocase: $artist }
+      where: { artist_contains: $artist }
       orderDirection: desc
       orderBy: blockTimestamp
     ) {

@@ -1,7 +1,7 @@
 import { SetStateAction, useEffect, useState } from "react";
 import { Agent } from "../../Dashboard/types/dashboard.types";
 import { getAgents } from "../../../../graphql/queries/getAgents";
-import { INFURA_GATEWAY } from "@/lib/constants";
+import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 import { evmAddress, PublicClient, SessionClient } from "@lens-protocol/client";
 
@@ -33,6 +33,17 @@ const useAgents = (
             },
             lensClient
           );
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${
+              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            }`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
 
           return {
             id: agent?.AAAAgents_id,
@@ -41,7 +52,13 @@ const useAgents = (
             description: agent?.metadata?.description,
             wallet: agent?.wallet,
             balance: agent?.balances,
-            profile: (result as any)?.[0]?.account,
+            profile: {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            },
           };
         })
       );

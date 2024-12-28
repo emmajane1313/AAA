@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NFTData } from "@/components/Common/types/common.types";
 import { DropInterface } from "../types/dashboard.types";
-import { INFURA_GATEWAY } from "@/lib/constants";
+import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import { getDrop } from "../../../../graphql/queries/getDrop";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
@@ -36,12 +36,30 @@ const useDrops = (
             lensClient
           );
 
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${
+              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            }`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
+
           return {
             id: collection?.collectionId,
             image: collection?.metadata?.image,
             title: collection?.metadata?.title,
             description: collection?.metadata?.description,
-            profile: (result as any)?.[0]?.account,
+            profile: {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            },
           };
         })
       );

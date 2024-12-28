@@ -1,0 +1,182 @@
+import { LensConnected } from "@/components/Common/types/common.types";
+import { Agent } from "@/components/Dashboard/types/dashboard.types";
+import { evmAddress, Post, PublicClient } from "@lens-protocol/client";
+import { useEffect, useState } from "react";
+import fetchPosts from "../../../../graphql/lens/queries/posts";
+import { getAgent } from "../../../../graphql/queries/getAgent";
+import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
+
+const useAgent = (
+  id: string | undefined,
+  lensClient: PublicClient,
+  lensConnected: LensConnected | undefined
+) => {
+  const [screen, setScreen] = useState<number>(0);
+  const [agent, setAgent] = useState<Agent | undefined>();
+  const [agentLoading, setAgentLoading] = useState<boolean>(false);
+  const [activityCursor, setActivityCursor] = useState<string | undefined>();
+  const [hasMore, setHasMore] = useState<boolean>(true);
+
+  const handleAgent = async () => {
+    if (!id) return;
+
+    setAgentLoading(true);
+    try {
+      const res = await getAgent(Number(id));
+      let metadata: any = res?.data?.agentCreateds?.[0]?.metadata;
+
+      if (!res?.data?.agentCreateds?.[0]?.metadata) {
+        const cadena = await fetch(
+          `${INFURA_GATEWAY}/ipfs/${
+            res?.data?.agentCreateds?.[0]?.uri?.includes("ipfs://")
+              ? res?.data?.agentCreateds?.[0]?.uri?.split("ipfs://")?.[1]
+              : res?.data?.agentCreateds?.[0]?.uri
+          }`
+        );
+        metadata = await cadena.json();
+      }
+
+      const result = await fetchAccountsAvailable(
+        {
+          managedBy: evmAddress(res?.data?.agentCreateds?.[0]?.wallet),
+        },
+        lensClient
+      );
+      let picture = "";
+      let profile: any;
+
+      if (result) {
+        const cadena = await fetch(
+          `${STORAGE_NODE}/${
+            (result as any)?.[0]?.account?.metadata?.picture?.split(
+              "lens://"
+            )?.[1]
+          }`
+        );
+
+        if (cadena) {
+          const json = await cadena.json();
+          picture = json.item;
+        }
+
+        profile = {
+          ...(result as any)?.[0]?.account,
+          metadata: {
+            ...(result as any)?.[0]?.account?.metadata,
+            picture,
+          },
+        };
+      }
+      const postsRes = await fetchPosts(
+        {
+          pageSize: "TEN",
+          filter: {
+            metadata: {
+              tags: {
+                oneOf: ["tripleA", id],
+              },
+            },
+            // authors: [(result as any)?.[0]?.account?.address],
+          },
+        },
+        lensConnected?.sessionClient || lensClient
+      );
+
+      let posts: Post[] = [];
+
+      if ((postsRes as any)?.items?.length > 0) {
+        posts = (postsRes as any)?.items;
+      }
+
+      if ((postsRes as any)?.pageInfo?.next) {
+        setHasMore(true);
+        setActivityCursor((postsRes as any)?.pageInfo?.next);
+      } else {
+        setHasMore(false);
+        setActivityCursor(undefined);
+      }
+
+      setAgent({
+        id: res?.data?.agentCreateds?.[0]?.AAAAgents_id,
+        cover: metadata?.cover,
+        title: metadata?.title,
+        customInstructions: metadata?.customInstructions,
+        description: metadata?.description,
+        wallet: res?.data?.agentCreateds?.[0]?.wallet!,
+        balance: res?.data?.agentCreateds?.[0]?.balances,
+        owner: res?.data?.agentCreateds?.[0]?.owner,
+        profile,
+        activity: posts,
+        activeCollectionIds: res?.data?.agentCreateds?.[0]?.activeCollectionIds,
+        collectionIdsHistory:
+          res?.data?.agentCreateds?.[0]?.collectionIdsHistory,
+        accountConnected: (result as any)?.[0]?.account?.address,
+      });
+    } catch (err: any) {
+      console.error(err.message);
+    }
+    setAgentLoading(false);
+  };
+
+  const handleMoreActivity = async () => {
+    if (!hasMore || !activityCursor || !id) return;
+    setAgentLoading(true);
+    try {
+      const postsRes = await fetchPosts(
+        {
+          pageSize: "TEN",
+          filter: {
+            metadata: {
+              tags: {
+                oneOf: ["tripleA", id],
+              },
+            },
+            // authors: [agent?.accountConnected],
+          },
+        },
+        lensConnected?.sessionClient || lensClient
+      );
+
+      let posts: Post[] = [];
+
+      if ((postsRes as any)?.items?.length > 0) {
+        posts = (postsRes as any)?.items;
+      }
+
+      if ((postsRes as any)?.pageInfo?.next) {
+        setHasMore(true);
+        setActivityCursor((postsRes as any)?.pageInfo?.next);
+      } else {
+        setHasMore(false);
+        setActivityCursor(undefined);
+      }
+
+      setAgent({
+        ...(agent as Agent),
+        activity: [...(agent?.activity || []), ...posts],
+      });
+    } catch (err: any) {
+      console.error(err.message);
+    }
+    setAgentLoading(false);
+  };
+
+  useEffect(() => {
+    if (id && !agent && lensClient) {
+      handleAgent();
+    }
+  }, [id, lensClient]);
+
+  return {
+    agent,
+    agentLoading,
+    hasMore,
+    handleMoreActivity,
+    screen,
+    setScreen,
+    setAgent,
+  };
+};
+
+export default useAgent;

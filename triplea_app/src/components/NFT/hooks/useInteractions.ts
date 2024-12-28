@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import createRepost from "../../../../graphql/lens/mutations/createRepost";
 import addReaction from "../../../../graphql/lens/mutations/addReaction";
 import { NFTData } from "@/components/Common/types/common.types";
+import { Agent } from "@/components/Dashboard/types/dashboard.types";
 
 const useInteractions = (
   agentActivity: Post[] | undefined,
@@ -15,8 +16,10 @@ const useInteractions = (
   nftId: string,
   setIndexer: (e: SetStateAction<string | undefined>) => void,
   setNotification: (e: SetStateAction<string | undefined>) => void,
-  setNft: (e: SetStateAction<NFTData | undefined>) => void,
-  nft: NFTData | undefined
+  setData:
+    | ((e: SetStateAction<NFTData | undefined>) => void)
+    | ((e: SetStateAction<Agent | undefined>) => void),
+  data: NFTData | Agent | undefined
 ) => {
   const [success, setSuccess] = useState<boolean>(false);
   const [post, setPost] = useState<string>("");
@@ -48,7 +51,7 @@ const useInteractions = (
           content: post,
           id: uuidv4(),
           locale: "en",
-          tags: ["tripleA", nftId],
+          tags: (data as Agent)?.wallet ? ["tripleA", (data as Agent)?.id] : ["tripleA", nftId],
         },
       });
 
@@ -90,7 +93,9 @@ const useInteractions = (
           content: post,
           id: uuidv4(),
           locale: "en",
-          tags: ["tripleA", commentQuote?.id],
+          tags: (data as Agent)?.wallet
+            ? ["tripleA", (data as Agent)?.id]
+            : ["tripleA", commentQuote?.id],
         },
       });
 
@@ -218,7 +223,9 @@ const useInteractions = (
           content: post,
           id: uuidv4(),
           locale: "en",
-          tags: ["tripleA", commentQuote?.id],
+          tags: (data as Agent)?.wallet
+            ? ["tripleA", (data as Agent)?.id]
+            : ["tripleA", commentQuote?.id],
         },
       });
 

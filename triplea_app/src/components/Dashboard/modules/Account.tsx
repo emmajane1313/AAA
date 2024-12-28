@@ -2,8 +2,7 @@ import { FunctionComponent, JSX } from "react";
 import { AccountProps, Switcher } from "../types/dashboard.types";
 import Image from "next/legacy/image";
 import useAccount from "../hooks/useAccount";
-import createProfilePicture from "@/lib/helpers/createProfilePicture";
-import { AiOutlineLoading } from "react-icons/ai";
+import { INFURA_GATEWAY } from "@/lib/constants";
 
 const Account: FunctionComponent<AccountProps> = ({
   setSwitcher,
@@ -48,7 +47,9 @@ const Account: FunctionComponent<AccountProps> = ({
                   src={
                     newAccount.pfp instanceof Blob
                       ? URL.createObjectURL(newAccount.pfp)
-                      : createProfilePicture(newAccount.pfp) || ""
+                      : `${INFURA_GATEWAY}/ipfs/${
+                          (newAccount.pfp || "")?.split("ipfs://")?.[1]
+                        }`
                   }
                   objectFit="cover"
                   layout="fill"

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NFTData } from "../types/common.types";
 import { getCollections } from "../../../../graphql/queries/getGallery";
-import { INFURA_GATEWAY } from "@/lib/constants";
+import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 
@@ -31,6 +31,17 @@ const useGallery = (lensClient: PublicClient) => {
             },
             lensClient
           );
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${
+              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            }`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
 
           return {
             id: collection?.collectionId,
@@ -45,7 +56,13 @@ const useGallery = (lensClient: PublicClient) => {
             amountSold: collection?.amountSold,
             tokenIds: collection?.tokenIds,
             amount: collection?.amount,
-            profile: (result as any)?.[0]?.account,
+            profile: {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            },
             size: getRandomSize(),
           };
         })
@@ -96,6 +113,18 @@ const useGallery = (lensClient: PublicClient) => {
             lensClient
           );
 
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${
+              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            }`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
+
           return {
             id: collection?.id,
             image: collection?.metadata?.image,
@@ -109,7 +138,13 @@ const useGallery = (lensClient: PublicClient) => {
             amountSold: collection?.amountSold,
             tokenIds: collection?.tokenIds,
             amount: collection?.amount,
-            profile: (result as any)?.[0]?.account,
+            profile: {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            },
             size: getRandomSize(),
           };
         })

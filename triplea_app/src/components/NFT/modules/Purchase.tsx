@@ -6,9 +6,8 @@ import { useAccount } from "wagmi";
 import { AiOutlineLoading } from "react-icons/ai";
 import { createPublicClient, http } from "viem";
 import { chains } from "@lens-network/sdk/viem";
-import { TOKENS } from "@/lib/constants";
+import { INFURA_GATEWAY, STORAGE_NODE, TOKENS } from "@/lib/constants";
 import Image from "next/legacy/image";
-import createProfilePicture from "@/lib/helpers/createProfilePicture";
 import moment from "moment";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useInteractions from "../hooks/useInteractions";
@@ -139,9 +138,23 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
               </div>
               <div className="relative w-full h-fit flex items-center justify-between flex-row gap-3 font-jackey2">
                 <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
-                  <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado"></div>
+                  {nft?.profile?.metadata?.picture && (
+                    <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado">
+                      <Image
+                        src={`${INFURA_GATEWAY}/ipfs/${
+                          nft?.profile?.metadata?.picture?.split("ipfs://")?.[1]
+                        }`}
+                        draggable={false}
+                        className="rounded-full"
+                        layout="fill"
+                        objectFit="cover"
+                      />
+                    </div>
+                  )}
                   <div className="relative flex w-fit h-fit text-xs text-black">
-                    {nft?.artist?.slice(0, 10)}
+                    {nft?.profile?.username?.localName
+                      ? nft?.profile?.username?.localName?.slice(0, 10)
+                      : nft?.artist?.slice(0, 10)}
                   </div>
                 </div>
                 <div className="relative w-fit h-fit flex">
@@ -238,13 +251,14 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                           {collector?.pfp && (
                             <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
                               <Image
-                                src={
-                                  createProfilePicture(collector?.pfp as any) ||
-                                  ""
-                                }
+                                src={`${INFURA_GATEWAY}/ipfs/${
+                                  (collector?.pfp || "")?.split("ipfs://")?.[1]
+                                }`}
                                 alt="pfp"
                                 draggable={false}
                                 className="rounded-full"
+                                layout="fill"
+                                objectFit="cover"
                               />
                             </div>
                           )}
@@ -256,7 +270,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                           </div>
                         </div>
                       ) : (
-                        <div className="relative w-fit h-fit flex font-start">
+                        <div className="relative w-fit h-fit flex font-start text-xs">
                           {collector?.address?.slice(0, 10) + " ..."}
                         </div>
                       )}

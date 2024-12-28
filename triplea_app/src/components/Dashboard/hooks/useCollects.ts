@@ -3,6 +3,7 @@ import { Order } from "../types/dashboard.types";
 import { getOrders } from "../../../../graphql/queries/getOrders";
 import { evmAddress, PublicClient } from "@lens-protocol/client";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
+import { STORAGE_NODE } from "@/lib/constants";
 
 const useCollects = (
   address: `0x${string}` | undefined,
@@ -24,6 +25,18 @@ const useCollects = (
             },
             lensClient
           );
+
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${
+              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            }`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
 
           return {
             id: collect?.id,
@@ -49,7 +62,13 @@ const useCollects = (
               amount: collect?.collection?.amount,
             },
             buyer: collect?.buyer,
-            profile: (result as any)?.[0]?.account,
+            profile: {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            },
           };
         })
       );

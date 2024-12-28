@@ -13,6 +13,7 @@ import createAccount from "../../../../graphql/lens/mutations/createAccount";
 import switchAccount from "../../../../graphql/lens/mutations/switchAccount";
 import { v4 as uuidv4 } from "uuid";
 import { StorageClient } from "@lens-protocol/storage-node-client";
+import { STORAGE_NODE } from "@/lib/constants";
 
 const useCreateAccount = (
   address: `0x${string}` | undefined,
@@ -49,7 +50,15 @@ const useCreateAccount = (
       let picture = {};
 
       if (account?.pfp) {
-        const { uri } = await storageClient.uploadAsJson(account?.pfp);
+        const res = await fetch("/api/ipfs", {
+          method: "POST",
+          body: account?.pfp,
+        });
+        const json = await res.json();
+        const { uri } = await storageClient.uploadAsJson({
+          type: "image/png",
+          item: "ipfs://" + json?.cid,
+        });
 
         picture = {
           picture: uri,
@@ -107,9 +116,25 @@ const useCreateAccount = (
 
             if (ownerSigner?.isOk()) {
               if ((authTokens as any)?.accessToken) {
+                let picture = "";
+                const cadena = await fetch(
+                  `${STORAGE_NODE}/${(newAcc as any)?.metadata?.picture?.split("lens://")?.[1]}`
+                );
+
+                if (cadena) {
+                  const json = await cadena.json();
+                  picture = json.item;
+                }
+
                 setLensConnected?.({
                   ...lensConnected,
-                  profile: newAcc as Account,
+                  profile: {
+                    ...(newAcc as any),
+                    metadata: {
+                      ...(newAcc as any)?.metadata,
+                      picture,
+                    },
+                  },
                   sessionClient: ownerSigner?.value,
                   authTokens: authTokens as AuthenticationTokens,
                 });

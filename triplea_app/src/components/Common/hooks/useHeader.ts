@@ -5,7 +5,7 @@ import { createWalletClient, custom } from "viem";
 import { LensConnected, NFTData } from "../types/common.types";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 import { getCollectionSearch } from "../../../../graphql/queries/getCollectionSearch";
-import { INFURA_GATEWAY } from "@/lib/constants";
+import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import revoke from "../../../../graphql/lens/mutations/revoke";
 
 const useHeader = (
@@ -45,13 +45,31 @@ const useHeader = (
             lensClient!
           );
 
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${
+              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            }`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
+
           return {
             id: collection?.collectionId,
             image: collection?.metadata?.image,
             title: collection?.metadata?.title,
             description: collection?.metadata?.description,
             artist: collection?.artist,
-            profile: (result as any)?.[0]?.account,
+            profile: {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            },
           };
         })
       );
@@ -101,9 +119,27 @@ const useHeader = (
 
         const sessionClient = authenticated.value;
 
+        let picture = "";
+        const cadena = await fetch(
+          `${STORAGE_NODE}/${
+            (accounts as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+          }`
+        );
+
+        if (cadena) {
+          const json = await cadena.json();
+          picture = json.item;
+        }
+
         setLensConnected?.({
           sessionClient,
-          profile: (accounts as any)?.[0]?.account,
+          profile: {
+            ...(accounts as any)?.[0]?.account,
+            metadata: {
+              ...(accounts as any)?.[0]?.account?.metadata,
+              picture,
+            },
+          },
         });
       } else {
         const authenticatedOnboarding = await lensClient.login({
@@ -149,9 +185,27 @@ const useHeader = (
           lensClient!
         );
 
+        let picture = "";
+        const cadena = await fetch(
+          `${STORAGE_NODE}/${
+            (accounts as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+          }`
+        );
+
+        if (cadena) {
+          const json = await cadena.json();
+          picture = json.item;
+        }
+
         setLensConnected?.({
           ...lensConnected,
-          profile: (accounts as any)?.[0]?.account,
+          profile: {
+            ...(accounts as any)?.[0]?.account,
+            metadata: {
+              ...(accounts as any)?.[0]?.account?.metadata,
+              picture,
+            },
+          },
           sessionClient: resumed?.value,
         });
       }
@@ -195,6 +249,7 @@ const useHeader = (
       logout();
     }
   }, [address]);
+
 
   return {
     openAccount,

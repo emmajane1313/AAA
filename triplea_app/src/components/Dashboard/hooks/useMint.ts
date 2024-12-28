@@ -1,6 +1,10 @@
 import { SetStateAction, useEffect, useState } from "react";
 import { Agent, MintData, MintSwitcher } from "../types/dashboard.types";
-import { COLLECTION_MANAGER_CONTRACT, INFURA_GATEWAY } from "@/lib/constants";
+import {
+  COLLECTION_MANAGER_CONTRACT,
+  INFURA_GATEWAY,
+  STORAGE_NODE,
+} from "@/lib/constants";
 import CollectionManagerAbi from "@abis/CollectionManagerAbi.json";
 import { createWalletClient, custom, decodeEventLog, PublicClient } from "viem";
 import { chains } from "@lens-network/sdk/viem";
@@ -193,6 +197,18 @@ const useMint = (
             lensClient
           );
 
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${
+              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            }`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
+
           return {
             id: agent?.AAAAgents_id,
             cover: agent?.metadata?.cover,
@@ -200,7 +216,13 @@ const useMint = (
             description: agent?.metadata?.description,
             wallet: agent?.wallet,
             balance: agent?.balances,
-            profile: (result as any)?.[0]?.account,
+            profile: {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            },
           };
         })
       );
@@ -213,7 +235,7 @@ const useMint = (
   };
 
   useEffect(() => {
-    if (!agents || agents?.length < 1 && lensClient) {
+    if (!agents || (agents?.length < 1 && lensClient)) {
       loadAgents();
     }
   }, [lensClient]);

@@ -1,12 +1,12 @@
 import { LensConnected } from "@/components/Common/types/common.types";
 import { SetStateAction, useState } from "react";
-import { Maybe, ProfilePicture } from "../../../../generated";
 import { Account } from "@lens-protocol/client";
 import pollResult from "@/lib/helpers/pollResult";
 import updateAccount from "../../../../graphql/lens/mutations/updateAccount";
 import { v4 as uuidv4 } from "uuid";
 import { StorageClient } from "@lens-protocol/storage-node-client";
 import fetchAccount from "../../../../graphql/lens/queries/account";
+import { STORAGE_NODE } from "@/lib/constants";
 
 const useAccount = (
   lensConnected: LensConnected | undefined,
@@ -17,13 +17,11 @@ const useAccount = (
   const [newAccount, setNewAccount] = useState<{
     localname: string;
     bio: string;
-    pfp?: Blob | Maybe<ProfilePicture>;
+    pfp?: Blob | string;
   }>({
-    pfp: (lensConnected?.profile?.username?.namespace?.metadata as any)
-      ?.picture,
-    localname: lensConnected?.profile?.username?.localName || "",
-    bio:
-      lensConnected?.profile?.username?.namespace?.metadata?.description || "",
+    pfp: lensConnected?.profile?.metadata?.picture,
+    localname: lensConnected?.profile?.metadata?.name || "",
+    bio: lensConnected?.profile?.metadata?.bio || "",
   });
 
   const handleUpdateAccount = async () => {
@@ -33,7 +31,16 @@ const useAccount = (
       let picture = {};
 
       if (newAccount?.pfp && newAccount.pfp instanceof Blob) {
-        const { uri } = await storageClient.uploadAsJson(newAccount?.pfp);
+        const res = await fetch("/api/ipfs", {
+          method: "POST",
+          body: newAccount?.pfp,
+        });
+        const json = await res.json();
+
+        const { uri } = await storageClient.uploadAsJson({
+          type: "image/png",
+          item: "ipfs://" + json?.cid,
+        });
 
         picture = {
           picture: uri,
@@ -64,7 +71,6 @@ const useAccount = (
             lensConnected?.sessionClient
           )
         ) {
-          
           const result = await fetchAccount(
             {
               address: lensConnected?.profile?.address,
@@ -72,10 +78,26 @@ const useAccount = (
             lensConnected?.sessionClient
           );
 
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${(result as any)?.metadata?.picture?.split("lens://")?.[1]}`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
+
           if ((result as any)?.__typename == "Account") {
             setLensConnected?.({
               ...lensConnected,
-              profile: result as Account,
+              profile: {
+                ...(result as any),
+                metadata: {
+                  ...(result as any)?.metadata,
+                  picture,
+                },
+              },
             });
           }
         } else {

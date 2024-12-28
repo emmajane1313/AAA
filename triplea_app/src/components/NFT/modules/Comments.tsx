@@ -2,13 +2,8 @@ import { FunctionComponent, JSX } from "react";
 import { CommentsProps } from "../types/nft.types";
 import Metadata from "./Metadata";
 import Image from "next/legacy/image";
-import { INFURA_GATEWAY } from "@/lib/constants";
+import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import moment from "moment";
-import { FaHeart } from "react-icons/fa";
-import { AiOutlineLoading, AiOutlineRetweet } from "react-icons/ai";
-import { CiHeart } from "react-icons/ci";
-import { GoCommentDiscussion } from "react-icons/go";
-import { BsChatSquareQuote } from "react-icons/bs";
 
 const Comments: FunctionComponent<CommentsProps> = ({
   comments,
@@ -37,8 +32,9 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       objectFit="cover"
                       draggable={false}
                       src={`${INFURA_GATEWAY}/ipfs/${
-                        (activity?.author?.username?.namespace?.metadata as any)
-                          ?.picture
+                        activity?.author?.metadata?.picture?.split(
+                          "ipfs://"
+                        )?.[1]
                       }`}
                     />
                   </div>

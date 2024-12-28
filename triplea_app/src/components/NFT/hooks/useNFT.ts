@@ -1,5 +1,9 @@
-import { Collector, NFTData } from "@/components/Common/types/common.types";
-import { INFURA_GATEWAY } from "@/lib/constants";
+import {
+  Collector,
+  LensConnected,
+  NFTData,
+} from "@/components/Common/types/common.types";
+import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import { useEffect, useState } from "react";
 import { getCollection } from "../../../../graphql/queries/getCollection";
 import {
@@ -13,8 +17,14 @@ import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAc
 import { getCollectors } from "../../../../graphql/queries/getCollectors";
 import fetchPosts from "../../../../graphql/lens/queries/posts";
 import { Agent } from "@/components/Dashboard/types/dashboard.types";
+import { fetchPosts as fetchP } from "@lens-protocol/client/actions";
 
-const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
+const useNFT = (
+  id: string,
+  lensClient: PublicClient,
+  agents: Agent[],
+  lensConnected: LensConnected | undefined
+) => {
   const [nft, setNft] = useState<NFTData | undefined>();
   const [nftLoading, setNftLoading] = useState<boolean>(false);
   const [agentLoading, setAgentLoading] = useState<boolean>(false);
@@ -40,7 +50,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
         {
           managedBy: evmAddress(collection?.artist),
         },
-        lensClient
+        lensConnected?.sessionClient || lensClient
       );
 
       const res = await getCollectors(Number(id));
@@ -52,7 +62,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
           {
             managedBy: evmAddress(res?.data?.orders?.[i]?.buyer),
           },
-          lensClient
+          lensConnected?.sessionClient || lensClient
         );
 
         collectors.push({
@@ -60,9 +70,8 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
           blockTimestamp: res?.data?.orders?.[i]?.blockTimestamp,
           amount: res?.data?.orders?.[i]?.amount,
           address: res?.data?.orders?.[i]?.buyer,
-          pfp: (accounts as any)?.[0]?.account?.username?.namespace?.metadata
-            ?.picture,
-          name: (accounts as any)?.[0]?.account?.username?.localName,
+          pfp: (accounts as any)?.[0]?.account?.metadata?.picture,
+          name: (accounts as any)?.[0]?.account?.metadata?.name,
         });
       }
 
@@ -77,7 +86,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
             },
           },
         },
-        lensClient
+        lensConnected?.sessionClient || lensClient
       );
       let posts: Post[] = [];
 
@@ -90,6 +99,21 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
         setActivityCursor((postsRes as any)?.pageInfo?.next);
       } else {
         setHasMore(false);
+      }
+
+      let picture = "";
+      const cadena = await fetch(
+        `${STORAGE_NODE}/${
+          (result as any)?.[0]?.account?.metadata?.picture?.split(
+            "lens://"
+          )?.[1]
+        }`
+      );
+
+
+      if (cadena) {
+        const json = await cadena.json();
+        picture = json.item;
       }
 
       setNft({
@@ -105,7 +129,13 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
         amountSold: collection?.amountSold,
         tokenIds: collection?.tokenIds,
         amount: collection?.amount,
-        profile: (result as any)?.[0]?.account,
+        profile: {
+          ...(result as any)?.[0]?.account,
+          metadata: {
+            ...(result as any)?.[0]?.account?.metadata,
+            picture,
+          },
+        },
         collectors,
         agentActivity: posts,
       });
@@ -130,7 +160,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
             },
           },
         },
-        lensClient
+        lensConnected?.sessionClient || lensClient
       );
 
       let posts: Post[] = [];
@@ -161,7 +191,7 @@ const useNFT = (id: string, lensClient: PublicClient, agents: Agent[]) => {
     if (Number(id) > 0 && !nft && lensClient && agents?.length > 0) {
       handleNFT();
     }
-  }, [id, lensClient, agents]);
+  }, [id, lensClient, agents, lensConnected?.sessionClient]);
 
   return {
     nft,

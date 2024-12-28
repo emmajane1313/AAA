@@ -1,5 +1,5 @@
 import { LensConnected, NFTData } from "@/components/Common/types/common.types";
-import { Account, PublicClient } from "@lens-protocol/client";
+import { Account, Post, PublicClient } from "@lens-protocol/client";
 import { SetStateAction } from "react";
 import { StorageClient } from "@lens-protocol/storage-node-client";
 
@@ -109,10 +109,16 @@ export interface Agent {
   id: string;
   cover: string;
   title: string;
+  customInstructions: string;
   description: string;
   wallet: string;
   balance: Balances[];
+  owner: string;
+  activeCollectionIds: { cover: string; collectionId: number }[];
+  collectionIdsHistory: { cover: string; collectionId: number }[];
   profile?: Account;
+  activity?: Post[];
+  accountConnected?: string;
 }
 
 export interface Balances {

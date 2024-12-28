@@ -7,9 +7,7 @@ import { FunctionComponent, JSX, useContext } from "react";
 import useHeader from "../hooks/useHeader";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { AiOutlineLoading } from "react-icons/ai";
 import { ModalContext } from "@/app/providers";
-import createProfilePicture from "@/lib/helpers/createProfilePicture";
 import useAgents from "@/components/Common/hooks/useAgents";
 
 const Header: FunctionComponent = (): JSX.Element => {
@@ -142,22 +140,18 @@ const Header: FunctionComponent = (): JSX.Element => {
             className="relative w-10 h-10 flex items-center justify-center cursor-pixel active:scale-95 cursor-pixel"
             onClick={() => setOpenAccount(!openAccount)}
           >
-            {(
-              context?.lensConnected?.profile?.username?.namespace
-                ?.metadata as any
-            )?.picture ? (
+            {context?.lensConnected?.profile?.metadata?.picture ? (
               <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
                 <Image
-                  src={
-                    createProfilePicture(
-                      (
-                        context?.lensConnected?.profile?.username?.namespace
-                          ?.metadata as any
-                      )?.picture
-                    ) || ""
-                  }
+                  src={`${INFURA_GATEWAY}/ipfs/${
+                    context?.lensConnected?.profile?.metadata?.picture?.split(
+                      "ipfs://"
+                    )?.[1]
+                  }`}
                   draggable={false}
                   className="rounded-full"
+                  layout="fill"
+                  objectFit="cover"
                 />
               </div>
             ) : context?.lensConnected?.profile ? (
@@ -192,22 +186,18 @@ const Header: FunctionComponent = (): JSX.Element => {
                 className={`relative w-full h-fit flex items-center justify-start flex-row gap-1`}
               >
                 <div className="relative w-fit h-fit flex">
-                  {(
-                    context?.lensConnected?.profile?.username?.namespace
-                      ?.metadata as any
-                  )?.picture ? (
+                  {context?.lensConnected?.profile?.metadata?.picture ? (
                     <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
                       <Image
-                        src={
-                          createProfilePicture(
-                            (
-                              context?.lensConnected?.profile?.username
-                                ?.namespace?.metadata as any
-                            )?.picture
-                          ) || ""
-                        }
+                        src={`${INFURA_GATEWAY}/ipfs/${
+                          context?.lensConnected?.profile?.metadata?.picture?.split(
+                            "ipfs://"
+                          )?.[1]
+                        }`}
                         draggable={false}
                         className="rounded-full"
+                        layout="fill"
+                        objectFit="cover"
                       />
                     </div>
                   ) : context?.lensConnected?.profile ? (

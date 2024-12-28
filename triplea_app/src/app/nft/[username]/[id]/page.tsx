@@ -11,7 +11,12 @@ export default function NFT() {
   const id = useParams();
   const context = useContext(ModalContext);
   const { nft, nftLoading, setNft, hasMore, handleMoreActivity, agentLoading } =
-    useNFT(id?.id as string, context?.lensClient!, context?.agents!);
+    useNFT(
+      id?.id as string,
+      context?.lensClient!,
+      context?.agents!,
+      context?.lensConnected
+    );
 
   return (
     <div className="relative w-full h-full flex flex-row items-start justify-between gap-4 pb-10">
