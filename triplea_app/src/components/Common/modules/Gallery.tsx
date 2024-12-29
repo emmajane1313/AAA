@@ -15,13 +15,14 @@ const Gallery: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
   return (
     <div className="relative w-full h-full overflow-scroll pt-4">
-      <div  className="relative w-fit h-full">
+      <div id="scroll" className="relative w-fit h-full">
         <InfiniteScroll
           key={"gallery"}
           dataLength={nfts?.length}
           next={handleMoreGallery}
           hasMore={hasMore}
           loader={<></>}
+          scrollableTarget="scroll"
           className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
         >
           {(galleryLoading || Number(nfts?.length) < 1

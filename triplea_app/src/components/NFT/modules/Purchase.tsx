@@ -292,8 +292,10 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
             <div className="relative w-full gap-3 flex flex-col h-full">
               <div
                 className="relative w-full h-[50%] overflow-y-scroll"
+                id="scrollableDiv"
               >
                 <InfiniteScroll
+                  scrollableTarget="scrollableDiv"
                   dataLength={nft?.agentActivity?.length || 1}
                   next={handleMoreActivity}
                   hasMore={hasMore}

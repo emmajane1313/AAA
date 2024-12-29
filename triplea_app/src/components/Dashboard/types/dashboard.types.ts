@@ -11,6 +11,7 @@ export enum Switcher {
   Mint,
   Drops,
   Account,
+  Page
 }
 
 export enum MintSwitcher {
@@ -147,6 +148,7 @@ export interface DropInterface {
   title: string;
   cover: string;
   collectionIds: string[];
+  collections: NFTData[]
 }
 
 export interface Order {

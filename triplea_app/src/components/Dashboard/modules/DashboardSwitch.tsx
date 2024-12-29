@@ -9,9 +9,11 @@ import { ModalContext } from "@/app/providers";
 import DropsSwitch from "./DropsSwitch";
 import Account from "./Account";
 import { useAccount } from "wagmi";
+import { useRouter } from "next/navigation";
 
 const DashboardSwitch: FunctionComponent = (): JSX.Element => {
   const { address } = useAccount();
+  const router = useRouter();
   const context = useContext(ModalContext);
   const {
     setSwitcher,
@@ -271,6 +273,25 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
                 title: "Mint",
                 color: "#EA4782",
               },
+              {
+                svg: (
+                  <svg
+                    className="size-6"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    {" "}
+                    <path
+                      d="M15 2H9v2H7v6h2V4h6V2zm0 8H9v2h6v-2zm0-6h2v6h-2V4zM4 16h2v-2h12v2H6v4h12v-4h2v6H4v-6z"
+                      fill="currentColor"
+                    />{" "}
+                  </svg>
+                ),
+                switcher: Switcher.Page,
+                title: "User Page",
+                color: "#00cc00",
+              },
             ].map(
               (
                 item: {
@@ -287,7 +308,13 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
                     style={{
                       backgroundColor: item.color,
                     }}
-                    onClick={() => setSwitcher(item.switcher)}
+                    onClick={() =>
+                      item.switcher == Switcher.Page
+                        ? router.push(
+                            `/user/${context?.lensConnected?.profile?.username?.localName}`
+                          )
+                        : setSwitcher(item.switcher)
+                    }
                     key={index}
                     title={item.title}
                   >
