@@ -48,8 +48,8 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
           <div className="relative flex w-fit h-10 text-center text-black font-start uppercase text-3xl">
             Created!
           </div>
-          <div className="relative text-sm flex text-black text-jackey2">
-            {`Remember to fund your agent with $GRASS at it's address ${agentDetails?.address} to active it for use!`}
+          <div className="relative text-sm flex text-black font-jackey2">
+            {`Remember to fund your agent with $GRASS at it's address to active it for use!`}
           </div>
           <div className="relative w-full h-fit flex items-center justify-center">
             <div
@@ -82,10 +82,10 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
               <div className="relative flex w-fit h-10 text-center text-black font-start uppercase text-2xl">
                 {agentDetails.title}
               </div>
-              <div className="relative flex w-fit h-fit max-h-60 overflow-y-scroll text-left text-black text-base font-jack">
+              <div className="relative flex w-fit h-fit max-h-32 overflow-y-scroll text-left text-black text-base font-jack">
                 {agentDetails.description}
               </div>
-              <div className="relative flex w-fit h-fit max-h-60 overflow-y-scroll text-left text-black text-base font-jack">
+              <div className="relative flex w-fit h-fit max-h-32 overflow-y-scroll text-left text-black text-base font-jack">
                 {agentDetails.customInstructions}
               </div>
             </div>

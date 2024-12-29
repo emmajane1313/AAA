@@ -242,10 +242,13 @@ const Header: FunctionComponent = (): JSX.Element => {
                 )}
               </div>
               <div className="relative w-full h-fit flex flex-col gap-2 font-jack">
-                {context?.lensConnected?.profile && (
+                {context?.lensConnected?.profile && address && (
                   <div
                     className="relative flex w-full h-10 rounded-xl bg-[#FD91C6] active:scale-95 items-center justify-center text-center text-sm text-black hover:opacity-80 cursor-pixel pixel-border-4"
-                    onClick={() => address && router.push("/dashboard")}
+                    onClick={() => {
+                      router.push("/dashboard");
+                      setOpenAccount(false);
+                    }}
                   >
                     Dashboard
                   </div>

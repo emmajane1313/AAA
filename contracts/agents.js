@@ -12,12 +12,12 @@ const provider = new ethers.JsonRpcProvider(
   37111
 );
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const agentsAddress = "0xA36B994da5Bc7a666cbF3192d2c043193D300FE0";
-const accessAddress = "0x6B2d2cC4C4FA010f9ee6a8e1EbB2b914FA98A438";
-const marketAddress = "0x2d1e70BF010318B6597154C159BFe1EC805495C7";
-const treasuryAddress = "0x1651c9ee7018C78EA46EE13EdC8cD0Bc82D38F61";
+const agentsAddress = "0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2";
+const accessAddress = "0x15dbcCD5Bede97791a7898e8500530D99A9aB87E";
+const marketAddress = "0x9EAb4A6a26B24d2c3B4B4735C820Ebfa585992D7";
+const treasuryAddress = "0xe081da94E6C672480AF00c9E2fF8017ce640445c";
 const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
-const collectionAddress = "0xC094c540e003cBC2b7A30D35C8148B5792568Af4";
+const collectionAddress = "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701";
 
 (async () => {
   const feeData = await provider.getFeeData();

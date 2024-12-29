@@ -33,6 +33,11 @@
         "internalType": "struct AAALibrary.CollectionInput",
         "components": [
           {
+            "name": "customInstructions",
+            "type": "string[]",
+            "internalType": "string[]"
+          },
+          {
             "name": "tokens",
             "type": "address[]",
             "internalType": "address[]"
@@ -77,9 +82,19 @@
   },
   {
     "type": "function",
+    "name": "getAgentCollectionCustomInstructions",
+    "inputs": [
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getCollectionAgentIds",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [
       { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
@@ -90,7 +105,7 @@
     "type": "function",
     "name": "getCollectionAmount",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
@@ -99,7 +114,7 @@
     "type": "function",
     "name": "getCollectionAmountSold",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
@@ -108,7 +123,7 @@
     "type": "function",
     "name": "getCollectionArtist",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
@@ -124,7 +139,7 @@
     "type": "function",
     "name": "getCollectionDropId",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
@@ -133,7 +148,7 @@
     "type": "function",
     "name": "getCollectionERC20Tokens",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [
       { "name": "", "type": "address[]", "internalType": "address[]" }
@@ -144,7 +159,7 @@
     "type": "function",
     "name": "getCollectionMetadata",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
     "stateMutability": "view"
@@ -153,7 +168,7 @@
     "type": "function",
     "name": "getCollectionPrices",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [
       { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
@@ -164,7 +179,7 @@
     "type": "function",
     "name": "getCollectionTokenIds",
     "inputs": [
-      { "name": "_collectionId", "type": "uint256", "internalType": "uint256" }
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [
       { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
@@ -240,6 +255,20 @@
   },
   {
     "type": "function",
+    "name": "updateCustomInstructions",
+    "inputs": [
+      {
+        "name": "customInstructions",
+        "type": "string[]",
+        "internalType": "string[]"
+      },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "updateData",
     "inputs": [
       {
@@ -299,6 +328,25 @@
   },
   {
     "type": "event",
+    "name": "CustomInstructionsUpdated",
+    "inputs": [
+      {
+        "name": "customInstructions",
+        "type": "string[]",
+        "indexed": false,
+        "internalType": "string[]"
+      },
+      {
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "DropCreated",
     "inputs": [
       {
@@ -335,6 +383,7 @@
     ],
     "anonymous": false
   },
+  { "type": "error", "name": "BadUserInput", "inputs": [] },
   { "type": "error", "name": "CantDeleteSoldCollection", "inputs": [] },
   { "type": "error", "name": "DropInvalid", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },

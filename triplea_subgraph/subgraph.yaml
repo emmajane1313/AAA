@@ -8,9 +8,9 @@ dataSources:
     name: AAACollectionManager
     network: lens-testnet
     source:
-      address: "0xC094c540e003cBC2b7A30D35C8148B5792568Af4"
+      address: "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701"
       abi: AAACollectionManager
-      startBlock: 81629
+      startBlock: 103090
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -37,9 +37,9 @@ dataSources:
     name: AAAAgents
     network: lens-testnet
     source:
-      address: "0xA36B994da5Bc7a666cbF3192d2c043193D300FE0"
+      address: "0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2"
       abi: AAAAgents
-      startBlock: 81629
+      startBlock: 103090
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -62,16 +62,16 @@ dataSources:
           handler: handleAgentEdited
         - event: BalanceAdded(address,uint256,uint256,uint256)
           handler: handleBalanceAdded
-        - event: BalanceWithdrawn(address,uint256,uint256,uint256)
+        - event: BalanceWithdrawn(address[],uint256[],uint256[],uint256)
           handler: handleBalanceWithdrawn
       file: ./src/aaa-agents.ts
   - kind: ethereum
     name: AAAMarket
     network: lens-testnet
     source:
-      address: "0x2d1e70BF010318B6597154C159BFe1EC805495C7"
+      address: "0x9EAb4A6a26B24d2c3B4B4735C820Ebfa585992D7"
       abi: AAAMarket
-      startBlock: 81629
+      startBlock: 103090
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -87,6 +87,38 @@ dataSources:
         - event: CollectionPurchased(indexed uint256,uint256,uint256,address,address)
           handler: handleCollectionPurchased
       file: ./src/aaa-market.ts
+  - kind: ethereum
+    name: AAADevTreasury
+    network: lens-testnet
+    source:
+      address: "0xe081da94E6C672480AF00c9E2fF8017ce640445c"
+      abi: AAADevTreasury
+      startBlock: 103090
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AgentFundsWithdrawn
+        - AgentOwnerPaid
+        - FundsReceived
+        - FundsWithdrawn
+        - OrderPayment
+      abis:
+        - name: AAADevTreasury
+          file: ./abis/AAADevTreasury.json
+      eventHandlers:
+        - event: AgentFundsWithdrawn(address[],uint256[],indexed address)
+          handler: handleAgentFundsWithdrawn
+        - event: AgentOwnerPaid(address,address,uint256)
+          handler: handleAgentOwnerPaid
+        - event: FundsReceived(indexed address,indexed address,uint256)
+          handler: handleFundsReceived
+        - event: FundsWithdrawn(indexed address,uint256)
+          handler: handleFundsWithdrawn
+        - event: OrderPayment(address,address,uint256)
+          handler: handleOrderPayment
+      file: ./src/aaa-dev-treasury.ts
 templates:
   - name: AgentMetadata
     kind: file/ipfs

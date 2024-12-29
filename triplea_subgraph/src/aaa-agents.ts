@@ -1,8 +1,8 @@
 import {
   Address,
+  BigInt,
   ByteArray,
   Bytes,
-  crypto,
   store,
 } from "@graphprotocol/graph-ts";
 import {
@@ -21,6 +21,9 @@ import {
   BalanceWithdrawn,
   Balance,
   AgentActiveCollection,
+  AgentCollection,
+  CollectionCreated,
+  RentPaid,
 } from "../generated/schema";
 import { AgentMetadata as AgentMetadataTemplate } from "../generated/templates";
 
@@ -37,9 +40,9 @@ export function handleAgentCreated(event: AgentCreatedEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   let agents = AAAAgents.bind(
-    Address.fromString("0xA36B994da5Bc7a666cbF3192d2c043193D300FE0")
+    Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
   );
-
+  entity.owner = agents.getAgentOwner(entity.AAAAgents_id) as Bytes;
   entity.uri = agents.getAgentMetadata(entity.AAAAgents_id);
 
   let ipfsHash = (entity.uri as String).split("/").pop();
@@ -93,7 +96,7 @@ export function handleAgentEdited(event: AgentEditedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xA36B994da5Bc7a666cbF3192d2c043193D300FE0")
+      Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
     );
 
     entityAgent.uri = agents.getAgentMetadata(entity.AAAAgents_id);
@@ -129,7 +132,7 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xA36B994da5Bc7a666cbF3192d2c043193D300FE0")
+      Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
     );
 
     let collectionIdHex = entity.collectionId.toHexString();
@@ -161,7 +164,7 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
     );
 
     newBalance.save();
-    
+
     let balances = entityAgent.balances;
 
     if (!balances) {
@@ -201,9 +204,10 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
   let entity = new BalanceWithdrawn(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   );
-  entity.token = event.params.token;
+  entity.tokens = event.params.tokens.map<Bytes>((target: Bytes) => target);
   entity.agentId = event.params.agentId;
-  entity.amount = event.params.amount;
+  entity.amounts = event.params.amounts;
+  entity.collectionIds = event.params.collectionIds;
 
   entity.blockNumber = event.block.number;
   entity.blockTimestamp = event.block.timestamp;
@@ -217,42 +221,155 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xA36B994da5Bc7a666cbF3192d2c043193D300FE0")
+      Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
     );
 
-    let collectionIdHex = entity.collectionId.toHexString();
-    let tokenHex = entity.token.toHexString();
-    let combinedHex = collectionIdHex + tokenHex;
-    if (combinedHex.length % 2 !== 0) {
-      combinedHex = "0" + combinedHex;
+    let collectionIds: BigInt[] = entity.collectionIds as BigInt[];
+    let combinedHexes: string[] = [];
+
+    for (let i = 0; i < (collectionIds as BigInt[]).length; i++) {
+      let collectionId: BigInt = collectionIds[i];
+      let token: Bytes = (entity.tokens as Bytes[])[i] as Bytes;
+
+      let collectionIdHex = collectionId.toHexString();
+      let tokenHex = token.toHexString();
+      let combinedHex = collectionIdHex + tokenHex;
+      if (combinedHex.length % 2 !== 0) {
+        combinedHex = "0" + combinedHex;
+      }
+
+      combinedHexes.push(combinedHex);
+
+      let newBalance = Balance.load(Bytes.fromHexString(combinedHex));
+      if (!newBalance) {
+        newBalance = new Balance(Bytes.fromHexString(combinedHex));
+        newBalance.collectionId = collectionId;
+        newBalance.token = token;
+      }
+
+      newBalance.activeBalance = agents.getAgentActiveBalance(
+        token as Address,
+        entity.agentId,
+        collectionId
+      );
+      newBalance.totalBalance = agents.getAgentTotalBalance(
+        token as Address,
+        entity.agentId,
+        collectionId
+      );
+
+      newBalance.save();
     }
-
-    let newBalance = Balance.load(Bytes.fromHexString(combinedHex));
-    if (!newBalance) {
-      newBalance = new Balance(Bytes.fromHexString(combinedHex));
-      newBalance.collectionId = entity.collectionId;
-      newBalance.token = entity.token;
-    }
-
-    newBalance.activeBalance = agents.getAgentActiveBalance(
-      event.params.token,
-      entity.agentId,
-      entity.collectionId
-    );
-    newBalance.totalBalance = agents.getAgentTotalBalance(
-      event.params.token,
-      entity.agentId,
-      entity.collectionId
-    );
-
-    newBalance.save();
 
     let balances = entityAgent.balances;
 
     if (!balances) {
       balances = [];
-      balances.push(Bytes.fromHexString(combinedHex));
+      for (let i = 0; i < combinedHexes.length; i++) {
+        balances.push(Bytes.fromHexString(combinedHexes[i]));
+      }
     }
+
+    let activeCollectionIds = agents.getAgentActiveCollectionIds(
+      entity.agentId
+    );
+    let historicalCollectionIds = agents.getAgentCollectionIdsHistory(
+      entity.agentId
+    );
+
+    let activeCollectionIds_array: Bytes[] = [];
+    let historicalCollectionIds_array: Bytes[] = [];
+
+    for (let i = 0; i < (activeCollectionIds as BigInt[]).length; i++) {
+      let entityCollection = CollectionCreated.load(
+        Bytes.fromByteArray(
+          ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+        )
+      );
+
+      if (entityCollection) {
+        let agentColl = AgentCollection.load(
+          Bytes.fromByteArray(
+            ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+          )
+        );
+
+        if (!agentColl) {
+          agentColl = new AgentCollection(
+            Bytes.fromByteArray(
+              ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+            )
+          );
+        }
+
+        agentColl.collectionId = (activeCollectionIds as BigInt[])[i];
+        agentColl.metadata = entityCollection.metadata;
+        agentColl.artist = entityCollection.artist;
+
+        activeCollectionIds_array.push(
+          Bytes.fromByteArray(
+            ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+          )
+        );
+
+        agentColl.save();
+      }
+    }
+
+    for (let i = 0; i < (historicalCollectionIds as BigInt[]).length; i++) {
+      let entityCollection = CollectionCreated.load(
+        Bytes.fromByteArray(
+          ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+        )
+      );
+
+      if (entityCollection) {
+        let agentColl = AgentCollection.load(
+          Bytes.fromByteArray(
+            ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+          )
+        );
+
+        if (!agentColl) {
+          agentColl = new AgentCollection(
+            Bytes.fromByteArray(
+              ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+            )
+          );
+        }
+
+        agentColl.collectionId = (activeCollectionIds as BigInt[])[i];
+        agentColl.metadata = entityCollection.metadata;
+        agentColl.artist = entityCollection.artist;
+
+        historicalCollectionIds_array.push(
+          Bytes.fromByteArray(
+            ByteArray.fromBigInt((activeCollectionIds as BigInt[])[i])
+          )
+        );
+
+        agentColl.save();
+      }
+    }
+
+    let rentPaids = entityAgent.rentPaid;
+
+    if (!rentPaids) {
+      rentPaids = [];
+    }
+
+    let newRent = new RentPaid(
+      event.transaction.hash.concatI32(event.logIndex.toI32())
+    );
+    newRent.blockTimestamp = entity.blockTimestamp;
+    newRent.transactionHash = entity.transactionHash;
+    newRent.save();
+    rentPaids.push(event.transaction.hash.concatI32(event.logIndex.toI32()));
+
+    entityAgent.rentPaid = rentPaids;
+
+    entityAgent.activeCollectionIds = activeCollectionIds_array;
+    entityAgent.collectionIdsHistory = historicalCollectionIds_array;
 
     entityAgent.balances = balances;
 

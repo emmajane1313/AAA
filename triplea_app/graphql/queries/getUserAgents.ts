@@ -1,15 +1,17 @@
 import { aaaClient } from "@/lib/graph/client";
 import { FetchResult, gql } from "@apollo/client";
 
-const AGENTS = gql`
-  query {
-    agentCreateds {
+const USER_AGENTS = gql`
+  query($owner: String!) {
+    agentCreateds( where: {owner: $owner }) {
       metadata {
         title
         description
         cover
+        customInstructions
       }
       creator
+      owner
       blockTimestamp
       balances {
         activeBalance
@@ -17,9 +19,21 @@ const AGENTS = gql`
         collectionId
         token
       }
-      rentPaid {
-        transactionHash
-        blockTimestamp
+      activeCollectionIds {
+        collectionId
+        artist
+        metadata {
+          image
+          title
+        }
+      }
+      collectionIdsHistory {
+        collectionId
+        artist
+        metadata {
+          image
+          title
+        }
       }
       blockNumber
       AAAAgents_id
@@ -30,11 +44,15 @@ const AGENTS = gql`
   }
 `;
 
-export const getAgents = async (): Promise<FetchResult | void> => {
+export const getUserAgents = async (
+  owner: string
+): Promise<FetchResult | void> => {
   let timeoutId: NodeJS.Timeout | undefined;
   const queryPromise = aaaClient.query({
-    query: AGENTS,
-
+    query: USER_AGENTS,
+    variables: {
+      owner,
+    },
     fetchPolicy: "no-cache",
     errorPolicy: "all",
   });

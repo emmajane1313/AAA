@@ -14,12 +14,12 @@ const provider = new ethers.JsonRpcProvider(
 );
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
-const accessAddress = "0x6B2d2cC4C4FA010f9ee6a8e1EbB2b914FA98A438";
-const marketAddress = "0x2d1e70BF010318B6597154C159BFe1EC805495C7";
-const agentsAddress = "0xA36B994da5Bc7a666cbF3192d2c043193D300FE0";
-const nftAddress = "0x95De12097eE75B3281cD6EfA50158eCE51c79c0b";
-const devAddress = "0x1651c9ee7018C78EA46EE13EdC8cD0Bc82D38F61";
-const collectionAddress = "0xC094c540e003cBC2b7A30D35C8148B5792568Af4";
+const accessAddress = "0x15dbcCD5Bede97791a7898e8500530D99A9aB87E";
+const marketAddress = "0x9EAb4A6a26B24d2c3B4B4735C820Ebfa585992D7";
+const agentsAddress = "0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2";
+const nftAddress = "0xCDcF2dd7f9b89DeCF0DB2C3dC385ccda08fE6037";
+const devAddress = "0xe081da94E6C672480AF00c9E2fF8017ce640445c";
+const collectionAddress = "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701";
 const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
 
 (async () => {
@@ -36,43 +36,43 @@ const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
     });
     await tx_1.wait();
 
-  //   const tx_2 = await accessContract.setAcceptedToken(
-  //     "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8", {
-  //         gasLimit: 1000000,
-  //         maxFeePerGas: feeData?.gasPrice,
-  //         maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
-  //       }
-  //   );
-  //   await tx_2.wait();
+    const tx_2 = await accessContract.setAcceptedToken(
+      "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8", {
+          gasLimit: 1000000,
+          maxFeePerGas: feeData?.gasPrice,
+          maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
+        }
+    );
+    await tx_2.wait();
 
-  //   const tx_3 = await accessContract.setTokenThreshold(
-  //     "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8",
-  //     "100000000000000000000",  {
-  //         gasLimit: 1000000,
-  //         maxFeePerGas: feeData?.gasPrice,
-  //         maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
-  //       }
-  //   );
-  //   await tx_3.wait();
+    const tx_3 = await accessContract.setTokenThreshold(
+      "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8",
+      "100000000000000000000",  {
+          gasLimit: 1000000,
+          maxFeePerGas: feeData?.gasPrice,
+          maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
+        }
+    );
+    await tx_3.wait();
 
-  //   const tx_4 = await accessContract.setAcceptedToken(
-  //   GM_CONTRACT, {
-  //       gasLimit: 1000000,
-  //       maxFeePerGas: feeData?.gasPrice,
-  //       maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
-  //     }
-  // );
-  // await tx_4.wait();
+    const tx_4 = await accessContract.setAcceptedToken(
+    GM_CONTRACT, {
+        gasLimit: 1000000,
+        maxFeePerGas: feeData?.gasPrice,
+        maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
+      }
+  );
+  await tx_4.wait();
 
-  // const tx_5 = await accessContract.setTokenThreshold(
-  //   GM_CONTRACT,
-  //   "10000000000000000000",  {
-  //       gasLimit: 1000000,
-  //       maxFeePerGas: feeData?.gasPrice,
-  //       maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
-  //     }
-  // );
-  // await tx_5.wait();
+  const tx_5 = await accessContract.setTokenThreshold(
+    GM_CONTRACT,
+    "10000000000000000000",  {
+        gasLimit: 1000000,
+        maxFeePerGas: feeData?.gasPrice,
+        maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
+      }
+  );
+  await tx_5.wait();
 
   // Collection Manager
   const collectionContract = new ethers.Contract(

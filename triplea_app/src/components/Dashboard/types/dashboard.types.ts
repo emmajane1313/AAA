@@ -80,9 +80,9 @@ export type ChooseAgentProps = {
 
 export type AgentProps = {
   setSwitcher: (e: SetStateAction<Switcher>) => void;
-  agents: Agent[];
-  setAgents: (e: SetStateAction<Agent[]>) => void;
-  lensConnected: LensConnected | undefined;
+  lensClient: PublicClient;
+  address: `0x${string}` | undefined;
+  setNotification: (e: SetStateAction<string | undefined>) => void;
 };
 
 export type AccountProps = {
@@ -114,11 +114,25 @@ export interface Agent {
   wallet: string;
   balance: Balances[];
   owner: string;
-  activeCollectionIds: { cover: string; collectionId: number }[];
-  collectionIdsHistory: { cover: string; collectionId: number }[];
+  activeCollectionIds: AgentCollection[];
+  collectionIdsHistory: AgentCollection[];
+  rentPaid: {
+    transactionHash: string;
+    blockTimestamp: string;
+  }[];
   profile?: Account;
+  ownerProfile?: Account;
   activity?: Post[];
   accountConnected?: string;
+}
+
+export interface AgentCollection {
+  metadata: {
+    title: string;
+    image: string;
+  };
+  collectionId: number;
+  profile: Account;
 }
 
 export interface Balances {

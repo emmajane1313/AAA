@@ -15,7 +15,7 @@
       },
       { "name": "_agents", "type": "address", "internalType": "address" }
     ],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -78,6 +78,17 @@
   },
   {
     "type": "function",
+    "name": "getAllCollectorsByCollectionId",
+    "inputs": [
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "address[]", "internalType": "address[]" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getBuyerToOrderIds",
     "inputs": [
       { "name": "buyer", "type": "address", "internalType": "address" }
@@ -125,20 +136,20 @@
   },
   {
     "type": "function",
-    "name": "getOrderTotalPrice",
-    "inputs": [
-      { "name": "orderId", "type": "uint256", "internalType": "uint256" }
-    ],
-    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
     "name": "getOrderToken",
     "inputs": [
       { "name": "orderId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getOrderTotalPrice",
+    "inputs": [
+      { "name": "orderId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -240,6 +251,7 @@
     ],
     "anonymous": false
   },
+  { "type": "error", "name": "InsufficientBalance", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
   { "type": "error", "name": "NotAvailable", "inputs": [] },
   { "type": "error", "name": "PaymentFailed", "inputs": [] },

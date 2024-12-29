@@ -47,6 +47,11 @@ export function handleAgentMetadata(content: Bytes): void {
     if (description && description.kind === JSONValueKind.STRING) {
       metadata.description = description.toString();
     }
+    
+    let customInstructions = value.get("customInstructions");
+    if (customInstructions && customInstructions.kind === JSONValueKind.STRING) {
+      metadata.customInstructions = customInstructions.toString();
+    }
 
     metadata.save();
   }

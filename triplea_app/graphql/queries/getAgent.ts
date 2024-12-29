@@ -11,11 +11,30 @@ const AGENT = gql`
       }
       creator
       blockTimestamp
+      rentPaid {
+        transactionHash
+        blockTimestamp
+      }
       balances {
         activeBalance
         totalBalance
         collectionId
         token
+      }
+      owner
+      activeCollectionIds {
+        collectionId
+        metadata {
+          image
+          title
+        }
+      }
+      collectionIdsHistory {
+        collectionId
+        metadata {
+          image
+          title
+        }
       }
       blockNumber
       AAAAgents_id

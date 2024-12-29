@@ -78,6 +78,17 @@
   },
   {
     "type": "function",
+    "name": "getAllCollectorsByCollectionId",
+    "inputs": [
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [
+      { "name": "", "type": "address[]", "internalType": "address[]" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getBuyerToOrderIds",
     "inputs": [
       { "name": "buyer", "type": "address", "internalType": "address" }

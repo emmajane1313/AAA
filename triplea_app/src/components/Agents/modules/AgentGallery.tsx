@@ -19,6 +19,7 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
     <div className="relative w-full h-full overflow-scroll pt-4">
       <div id="scroll" className="relative w-fit h-full">
         <InfiniteScroll
+           key={"agentGallery"}
           dataLength={context?.agents?.length || 1}
           next={handleMoreAgents}
           hasMore={hasMore}
@@ -26,14 +27,14 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
           scrollableTarget="scroll"
           className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
         >
-          {(agentGalleryLoading
+          {(agentGalleryLoading || Number(context?.agents?.length) < 1
             ? [...(context?.agents || []), ...Array.from({ length: 20 })]
             : context?.agents || []
           ).map((agent: Agent | unknown, indice: number) =>
             (agent as any)?.id !== undefined &&
             Number((agent as any)?.id) > 0 ? (
               <div
-                key={(agent as Agent).id}
+                key={`agent-${(agent as Agent).id}`}
                 className={`w-fit h-fit flex relative flex-col gap-3`}
               >
                 <div className="w-96 h-96 bg-white flex p-4 relative pixel-border-2 gap-2">
@@ -96,7 +97,7 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
             ) : (
               <div className={`w-fit h-fit flex relative`}>
                 <div
-                  key={indice + Number(context?.agents?.length)}
+                  key={`placeholder-${indice}`}
                   className={`w-96 h-96 bg-white flex p-4 relative pixel-border-2 animate-pulse`}
                 >
                   <div className="relative w-full h-full flex bg-mochi pixel-border-3 rounded-lg">

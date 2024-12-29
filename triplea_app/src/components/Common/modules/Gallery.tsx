@@ -17,6 +17,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
     <div className="relative w-full h-full overflow-scroll pt-4">
       <div id="scroll" className="relative w-fit h-full">
         <InfiniteScroll
+          key={"gallery"}
           dataLength={nfts?.length}
           next={handleMoreGallery}
           hasMore={hasMore}
@@ -24,13 +25,13 @@ const Gallery: FunctionComponent = (): JSX.Element => {
           scrollableTarget="scroll"
           className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
         >
-          {(galleryLoading
+          {(galleryLoading || Number(nfts?.length) < 1
             ? [...nfts, ...Array.from({ length: 20 })]
             : nfts
           ).map((nft: NFTData | unknown, indice: number) =>
             (nft as any)?.id !== undefined && Number((nft as any)?.id) > 0 ? (
               <div
-                key={(nft as NFTData).id}
+                key={`nft-${(nft as NFTData).id}`}
                 className={`w-fit h-fit flex relative flex-col gap-3`}
               >
                 <div className="w-96 h-96 bg-white flex p-4 relative pixel-border-2 gap-2">
@@ -116,7 +117,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
             ) : (
               <div className={`w-fit h-fit flex relative`}>
                 <div
-                  key={indice + Number(nfts?.length)}
+                  key={`placeholder-${indice}`}
                   className={`w-96 h-96 bg-white flex p-4 relative pixel-border-2 animate-pulse`}
                 >
                   <div className="relative w-full h-full flex bg-mochi pixel-border-3 rounded-lg">

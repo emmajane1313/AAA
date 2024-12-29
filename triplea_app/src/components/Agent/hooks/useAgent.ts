@@ -1,6 +1,9 @@
 import { LensConnected } from "@/components/Common/types/common.types";
-import { Agent } from "@/components/Dashboard/types/dashboard.types";
-import { evmAddress, Post, PublicClient } from "@lens-protocol/client";
+import {
+  Agent,
+  AgentCollection,
+} from "@/components/Dashboard/types/dashboard.types";
+import { Account, evmAddress, Post, PublicClient } from "@lens-protocol/client";
 import { useEffect, useState } from "react";
 import fetchPosts from "../../../../graphql/lens/queries/posts";
 import { getAgent } from "../../../../graphql/queries/getAgent";
@@ -68,6 +71,39 @@ const useAgent = (
           },
         };
       }
+
+      const resultOwner = await fetchAccountsAvailable(
+        {
+          managedBy: evmAddress(res?.data?.agentCreateds?.[0]?.owner),
+        },
+        lensClient
+      );
+      let ownerPicture = "";
+      let ownerProfile: any;
+
+      if (resultOwner) {
+        const cadena = await fetch(
+          `${STORAGE_NODE}/${
+            (resultOwner as any)?.[0]?.account?.metadata?.picture?.split(
+              "lens://"
+            )?.[1]
+          }`
+        );
+
+        if (cadena) {
+          const json = await cadena.json();
+          ownerPicture = json.item;
+        }
+
+        ownerProfile = {
+          ...(resultOwner as any)?.[0]?.account,
+          metadata: {
+            ...(resultOwner as any)?.[0]?.account?.metadata,
+            picture: ownerPicture,
+          },
+        };
+      }
+
       const postsRes = await fetchPosts(
         {
           pageSize: "TEN",
@@ -97,6 +133,49 @@ const useAgent = (
         setActivityCursor(undefined);
       }
 
+      let activeCollectionIds: AgentCollection[] = [];
+      let collectionIdsHistory: AgentCollection[] = [];
+
+      await Promise.all(
+        res?.data?.agentCreateds?.[0]?.activeCollectionIds?.map(
+          async (id: any) => {
+            const result = await fetchAccountsAvailable(
+              {
+                managedBy: evmAddress(id?.owner),
+              },
+              lensClient
+            );
+
+            activeCollectionIds.push({
+              profile: (result as any)?.[0]?.account as Account,
+              collectionId: id?.collectionId,
+              metadata: id?.metadata,
+            });
+          }
+        )
+      );
+
+      await Promise.all(
+        res?.data?.agentCreateds?.[0]?.collectionIdsHistory?.map(
+          async (id: any) => {
+            const result = await fetchAccountsAvailable(
+              {
+                managedBy: evmAddress(id?.owner),
+              },
+              lensClient
+            );
+
+            collectionIdsHistory.push({
+              profile: (result as any)?.[0]?.account as Account,
+              collectionId: id?.collectionId,
+              metadata: id?.metadata,
+            });
+          }
+        )
+      );
+
+
+
       setAgent({
         id: res?.data?.agentCreateds?.[0]?.AAAAgents_id,
         cover: metadata?.cover,
@@ -108,10 +187,11 @@ const useAgent = (
         owner: res?.data?.agentCreateds?.[0]?.owner,
         profile,
         activity: posts,
-        activeCollectionIds: res?.data?.agentCreateds?.[0]?.activeCollectionIds,
-        collectionIdsHistory:
-          res?.data?.agentCreateds?.[0]?.collectionIdsHistory,
+        activeCollectionIds,
+        collectionIdsHistory,
         accountConnected: (result as any)?.[0]?.account?.address,
+        ownerProfile,
+        rentPaid: res?.data?.agentCreateds?.[0]?.rentPaid || [],
       });
     } catch (err: any) {
       console.error(err.message);

@@ -51,10 +51,10 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
     case Switcher.Agents:
       return (
         <Agents
-          setAgents={context?.setAgents!}
-          agents={context?.agents!}
           setSwitcher={setSwitcher}
-          lensConnected={context?.lensConnected!}
+          address={address}
+          lensClient={context?.lensClient!}
+          setNotification={context?.setNotification!}
         />
       );
 

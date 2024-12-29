@@ -5,6 +5,7 @@ import Modals from "@/components/Modals/modules/Modals";
 import Header from "@/components/Common/modules/Header";
 import "@rainbow-me/rainbowkit/styles.css";
 import Footer from "@/components/Common/modules/Footer";
+import Animation from "./animation";
 
 export const metadata: Metadata = {
   title: "Triple A",
@@ -19,12 +20,14 @@ export default function RootLayout({
     <html>
       <body>
         <Providers>
-          <div className="relative w-full h-screen flex flex-col items-start justify-start gap-3 px-2">
-            <Header />
-            {children}
-          </div>
-          <Footer />
-          <Modals />
+          <Animation>
+            <div className="relative w-full h-screen flex flex-col items-start justify-start gap-3 px-2">
+              <Header />
+              {children}
+            </div>
+            <Footer />
+            <Modals />
+          </Animation>
         </Providers>
       </body>
     </html>
