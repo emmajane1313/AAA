@@ -212,10 +212,8 @@ export default function Agent() {
               <div className="relative w-full gap-3 flex flex-col h-full">
                 <div
                   className="relative w-full h-[50%] overflow-y-scroll"
-                  id="scrollableDiv"
                 >
                   <InfiniteScroll
-                    scrollableTarget="scrollableDiv"
                     dataLength={agent?.activity?.length || 1}
                     next={handleMoreActivity}
                     hasMore={hasMore}

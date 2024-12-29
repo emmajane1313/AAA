@@ -32,6 +32,7 @@ type DropCreated @entity(immutable: false) {
   uri: String
   metadata: DropMetadata
   collectionIds: [BigInt!]
+  collections: [CollectionCreated!]
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

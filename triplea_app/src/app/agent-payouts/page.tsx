@@ -63,10 +63,8 @@ export default function AgentPayouts() {
           <div className="relative w-full h-full flex flex-col gap-6 items-center justify-center font-jacey">
             <div
               className="relative w-full h-[50%] overflow-y-scroll"
-              id="scrollableDiv"
             >
               <InfiniteScroll
-                scrollableTarget="scrollableDiv"
                 dataLength={
                   (screen < 1 ? ownersPaid : collectorsPaid)?.length || 1
                 }

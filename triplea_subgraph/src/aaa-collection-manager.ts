@@ -1,4 +1,11 @@
-import { Address, ByteArray, Bytes, log, store } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  BigInt,
+  ByteArray,
+  Bytes,
+  log,
+  store,
+} from "@graphprotocol/graph-ts";
 import {
   AAACollectionManager,
   CollectionDeleted as CollectionDeletedEvent,
@@ -34,7 +41,39 @@ export function handleCollectionDeleted(event: CollectionDeletedEvent): void {
     Bytes.fromByteArray(ByteArray.fromBigInt(event.params.collectionId))
   );
 
+  // drops
+
   if (entityCollection) {
+    entity.collectionId;
+
+    let entityDrop = DropCreated.load(
+      Bytes.fromByteArray(ByteArray.fromBigInt(entityCollection.dropId))
+    );
+
+    if (entityDrop) {
+      let updatedCollectionIds: BigInt[] = [];
+      let updatedCollections: Bytes[] = [];
+      for (let i = 0; i < (entityDrop.collectionIds as BigInt[]).length; i++) {
+        if ((entityDrop.collectionIds as BigInt[])[i] !== entity.collectionId) {
+          updatedCollectionIds.push((entityDrop.collectionIds as BigInt[])[i]);
+        }
+      }
+
+      for (let i = 0; i < (entityDrop.collections as Bytes[]).length; i++) {
+        if (
+          (entityDrop.collections as Bytes[])[i] !==
+          Bytes.fromByteArray(ByteArray.fromBigInt(entity.collectionId))
+        ) {
+          updatedCollections.push((entityDrop.collections as Bytes[])[i]);
+        }
+      }
+
+      entityDrop.collectionIds = updatedCollectionIds;
+      entityDrop.collections = updatedCollections;
+
+      entityDrop.save();
+    }
+
     store.remove(
       "CollectionCreated",
       Bytes.fromByteArray(
@@ -102,7 +141,6 @@ export function handleDropCreated(event: DropCreatedEvent): void {
   }
   entity.uri = uriResult.value;
 
-  // log.debug("entity uri {}", [entity.uri as string]);
   if (entity.uri !== null) {
     let ipfsHash = (entity.uri as string).split("/").pop();
     if (ipfsHash != null) {
@@ -112,6 +150,17 @@ export function handleDropCreated(event: DropCreatedEvent): void {
   }
 
   entity.collectionIds = collectionManager.getDropCollectionIds(entity.dropId);
+
+  let collections: Bytes[] = [];
+  for (let i = 0; i < (entity.collectionIds as BigInt[]).length; i++) {
+    collections.push(
+      Bytes.fromByteArray(
+        ByteArray.fromBigInt((entity.collectionIds as BigInt[])[i])
+      )
+    );
+  }
+
+  entity.collections = collections;
 
   entity.save();
 }
