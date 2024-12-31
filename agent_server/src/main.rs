@@ -1,13 +1,18 @@
 use chrono::Utc;
 use dotenv::dotenv;
+use ethers::utils::hex;
 use futures_util::StreamExt;
-use serde_json::{from_str, to_string, Value};
-use std::{collections::HashMap, env, error::Error, net::SocketAddr, sync::Arc, time::Duration};
+use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
+use serde_json::{from_str, Value};
+use std::{
+    collections::HashMap, env, error::Error, fs::OpenOptions, io::Write, net::SocketAddr,
+    sync::Arc, time::Duration,
+};
 use tokio::{
     net::{TcpListener, TcpStream},
-    runtime, spawn,
+    spawn,
     sync::RwLock,
-    task,
     time::{self},
 };
 use tokio_tungstenite::{
@@ -20,10 +25,9 @@ use tokio_tungstenite::{
 use tungstenite::http::method;
 mod classes;
 mod utils;
-use utils::{
-    constants::{AGENT_LIST, NGROK_URL},
-    types::*,
-};
+use aes_gcm::aead::{Aead, KeyInit, OsRng};
+use aes_gcm::{Aes256Gcm, Nonce};
+use utils::{constants::AGENT_INTERFACE_URL, types::*};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -38,12 +42,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         .await
         .expect("Couldn't connect address");
 
-    let mut agent_map = HashMap::new();
-    let agents = AGENT_LIST.iter().map(|ag| AgentManager::new(ag));
-
-    for agent in agents {
-        agent_map.insert(agent.agent.id.clone(), agent);
-    }
+    let agent_map = HashMap::new();
     let agent_map = Arc::new(RwLock::new(agent_map));
     let agent_map_clone = agent_map.clone();
     spawn(activity_loop(agent_map_clone));
@@ -92,7 +91,7 @@ async fn handle_connection(
                             match origen.to_str() {
                                 Ok(origen_str) => {
                                     // if origen_str ==
-                                    //          NGROK_URL
+                                    //          AGENT_INTERFACE_URL
 
                                     // {
                                     return Ok(respuesta);
@@ -133,40 +132,87 @@ async fn handle_connection(
         match msg {
             Message::Text(text) => {
                 if let Ok(parsed) = from_str::<Value>(&text) {
-                    if let Some(data_type) = parsed.get("data_type").and_then(Value::as_str) {
-                        if data_type == "llamaContent" {
-                            if let Some(agent_key) = parsed.get("agent_key").and_then(Value::as_str)
-                            {
-                                let agent_key = agent_key.parse::<u32>().unwrap_or_default();
+                    if let (
+                        Some(public_address),
+                        Some(encrypted_private_key),
+                        Some(id),
+                        Some(title),
+                        Some(description),
+                        Some(cover),
+                        Some(custom_instructions),
+                        Some(account_address),
+                    ) = (
+                        parsed["publicAddress"].as_str(),
+                        parsed["encryptedPrivateKey"].as_str(),
+                        parsed["id"].as_str(),
+                        parsed["title"].as_str(),
+                        parsed["description"].as_str(),
+                        parsed["cover"].as_str(),
+                        parsed["customInstructions"].as_str(),
+                        parsed["accountAddress"].as_str(),
+                    ) {
+                        let encryption_key = std::env::var("ENCRYPTION_KEY")
+                            .expect("ENCRYPTION_KEY isn't configured.");
+                        let key = encryption_key.as_bytes();
+                        let cipher = Aes256Gcm::new_from_slice(key).expect("Invalid Key");
 
-                                if let Some(json) = parsed.get("json") {
-                                    if let Ok(json_string) = to_string(json) {
-                                        let agents_clone = agents.clone();
-                                        task::spawn_blocking(move || {
-                                            let rt = runtime::Handle::current();
-                                            rt.block_on(async move {
-                                                let mut agents_guard = agents_clone.write().await;
+                        let encrypted_data = hex::decode(encrypted_private_key)
+                            .expect("Error in decoding private key");
+                        let nonce_bytes = &encrypted_data[..12];
+                        let ciphertext = &encrypted_data[12..];
 
-                                                if let Some(agent) =
-                                                    agents_guard.get_mut(&agent_key)
-                                                {
-                                                    agent.llama_response(&json_string).await;
-                                                } else {
-                                                    eprintln!(
-                                                        "Agent not found for key: {}",
-                                                        agent_key
-                                                    );
-                                                }
-                                            });
-                                        });
-                                    } else {
-                                        eprintln!("Error converting JSON to string");
-                                    }
-                                }
+                        let nonce = Nonce::from_slice(nonce_bytes);
+                        let decrypted_key = cipher
+                            .decrypt(nonce, ciphertext.as_ref())
+                            .expect("Error in decoding private key");
+
+                        let private_key =
+                            String::from_utf8(decrypted_key).expect("Private key isn't utf8");
+
+                        let mut rng = StdRng::from_entropy();
+
+                        let agents_snapshot = agents.read().await;
+
+                        let mut clock;
+                        loop {
+                            let random_hour = rng.gen_range(0..24);
+                            let random_minute = rng.gen_range(0..60);
+                            let random_second = rng.gen_range(0..60);
+                            clock = random_hour * 3600 + random_minute * 60 + random_second;
+
+                            if !agents_snapshot.values().any(|agent| {
+                                let agent_clock = agent.agent.clock;
+                                (clock as i32 - agent_clock as i32).abs() < 1800
+                            }) {
+                                break;
                             }
-                        } else {
-                            eprintln!("Type not recognised: {}", data_type);
                         }
+
+                        let mut agents_write = agents.write().await;
+                        let new_id = id.parse().expect("Error converting id to u32");
+                        agents_write.insert(
+                            new_id,
+                            AgentManager::new(&TripleAAgent {
+                                id: new_id,
+                                name: title.to_string(),
+                                description: description.to_string(),
+                                cover: cover.to_string(),
+                                custom_instructions: custom_instructions.to_string(),
+                                wallet: public_address.to_string(),
+                                clock,
+                                last_active_time: Utc::now().timestamp() as u32,
+                                account_address: account_address.to_string(),
+                            }),
+                        );
+
+                        let mut env_file = OpenOptions::new()
+                            .append(true)
+                            .open(".env")
+                            .expect("Can't open .env");
+                        writeln!(env_file, "{}={}", title, private_key)
+                            .expect("Error writing to the .env");
+
+                        println!("Agente added at address: {}", public_address);
                     }
                 }
             }
@@ -220,14 +266,14 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
             });
         }
 
-        time::sleep(Duration::from_secs(43200)).await;
+        time::sleep(Duration::from_secs(60)).await;
     }
 }
 
 fn should_trigger(agent: &TripleAAgent) -> bool {
-    // let now_seconds = Utc::now().num_seconds_from_midnight();
-    // now_seconds >= agent.clock && (now_seconds - agent.last_active_time >= 60)
+    let now_seconds = Utc::now().timestamp() as u32;
+    let day_seconds = now_seconds % 86400;
+    let diff = (agent.clock as i32 - day_seconds as i32).abs();
 
-    let now_seconds = Utc::now().timestamp();
-    now_seconds >= (agent.last_active_time as i64) + 43_200
+    diff <= 60
 }

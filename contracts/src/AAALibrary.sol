@@ -34,8 +34,8 @@ contract AAALibrary {
     struct Agent {
         uint256[] collectionIdsHistory;
         uint256[] activeCollectionIds;
+        address[] wallets;
         string metadata;
-        address wallet;
         address owner;
         uint256 id;
     }

@@ -17,7 +17,7 @@ contract AAAAgents {
     mapping(uint256 => mapping(address => mapping(uint256 => uint256)))
         private _agentTotalBalances;
 
-    event AgentCreated(address wallet, address creator, uint256 indexed id);
+    event AgentCreated(address[] wallets, address creator, uint256 indexed id);
     event AgentDeleted(uint256 indexed id);
     event AgentEdited(uint256 indexed id);
     event BalanceAdded(
@@ -59,32 +59,37 @@ contract AAAAgents {
         devTreasury = AAADevTreasury(_devTreasury);
     }
 
-    function createAgent(string memory metadata, address wallet) external {
+    function createAgent(
+        address[] memory wallets,
+        string memory metadata
+    ) external {
         _agentCounter++;
 
         _agents[_agentCounter] = AAALibrary.Agent({
             id: _agentCounter,
             metadata: metadata,
-            wallet: wallet,
+            wallets: wallets,
             owner: msg.sender,
             collectionIdsHistory: new uint256[](0),
             activeCollectionIds: new uint256[](0)
         });
 
-        accessControls.addAgent(wallet);
+        for (uint256 i = 0; i < wallets.length; i++) {
+            accessControls.addAgent(wallets[i]);
+        }
 
-        emit AgentCreated(wallet, msg.sender, _agentCounter);
+        emit AgentCreated(wallets, msg.sender, _agentCounter);
     }
 
     function editAgent(
+        address[] memory wallets,
         string memory metadata,
-        address wallet,
         uint256 agentId
     ) external onlyAgentOwner(agentId) {
         _agents[agentId] = AAALibrary.Agent({
             id: agentId,
             metadata: metadata,
-            wallet: wallet,
+            wallets: wallets,
             owner: msg.sender,
             collectionIdsHistory: _agents[agentId].collectionIdsHistory,
             activeCollectionIds: _agents[agentId].activeCollectionIds
@@ -98,7 +103,10 @@ contract AAAAgents {
             revert AAAErrors.AgentStillActive();
         }
 
-        accessControls.removeAgent(_agents[agentId].wallet);
+        for (uint256 i = 0; i < _agents[agentId].wallets.length; i++) {
+            accessControls.removeAgent(_agents[agentId].wallets[i]);
+        }
+
         delete _agents[agentId];
 
         emit AgentDeleted(_agentCounter);
@@ -149,10 +157,18 @@ contract AAAAgents {
         uint256[] memory amounts,
         uint256 agentId
     ) external {
-        if (
-            !accessControls.isAgent(msg.sender) ||
-            _agents[agentId].wallet != msg.sender
-        ) {
+        bool _isAgent = false;
+
+        if (accessControls.isAgent(msg.sender)) {
+            for (uint256 i = 0; i < _agents[agentId].wallets.length; i++) {
+                if (_agents[agentId].wallets[i] == msg.sender) {
+                    _isAgent = true;
+                    break;
+                }
+            }
+        }
+
+        if (!_isAgent) {
             revert AAAErrors.NotAgent();
         }
 
@@ -174,8 +190,10 @@ contract AAAAgents {
         return _agentCounter;
     }
 
-    function getAgentWallet(uint256 agentId) public view returns (address) {
-        return _agents[agentId].wallet;
+    function getAgentWallets(
+        uint256 agentId
+    ) public view returns (address[] memory) {
+        return _agents[agentId].wallets;
     }
 
     function getAgentMetadata(
