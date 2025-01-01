@@ -83,7 +83,6 @@ const Agents: FunctionComponent<AgentProps> = ({
                             cover: agent?.cover,
                             description: agent?.description,
                             customInstructions: agent?.customInstructions,
-                            wallet: agent?.wallet,
                           });
                         }}
                       >
@@ -205,18 +204,7 @@ const Agents: FunctionComponent<AgentProps> = ({
                     value={agentMetadata.title}
                     disabled={agentEditLoading}
                   />
-                  <input
-                    disabled={agentEditLoading}
-                    placeholder="Wallet"
-                    value={agentMetadata.wallet}
-                    className="relative flex w-full h-10 text-left text-black pixel-border-2 focus:outline-none text-3xl p-1.5"
-                    onChange={(e) =>
-                      setAgentMetadata({
-                        ...agentMetadata,
-                        wallet: e.target.value,
-                      })
-                    }
-                  />
+
                   <textarea
                     className="relative flex w-full h-1/2 overflow-y-scroll text-left text-black pixel-border-2 p-1.5 focus:outline-none text-lg"
                     placeholder="Description"

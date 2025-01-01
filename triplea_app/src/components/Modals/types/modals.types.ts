@@ -15,6 +15,7 @@ export type CreateAccountProps = {
     | undefined;
   setCreateAccount: (e: SetStateAction<boolean>) => void;
   setIndexer: (e: SetStateAction<string | undefined>) => void;
+  setNotification: (e: SetStateAction<string | undefined>) => void;
   storageClient: StorageClient;
 };
 

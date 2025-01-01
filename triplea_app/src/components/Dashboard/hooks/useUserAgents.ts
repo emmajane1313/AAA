@@ -26,12 +26,10 @@ const useUserAgents = (
     title: string;
     description: string;
     customInstructions: string;
-    wallet: string;
   }>({
     title: "",
     description: "",
     customInstructions: "",
-    wallet: "",
   });
   const [currentAgent, setCurrentAgent] = useState<Agent | undefined>();
 
@@ -52,7 +50,7 @@ const useUserAgents = (
 
           const result = await fetchAccountsAvailable(
             {
-              managedBy: evmAddress(agent?.wallet),
+              managedBy: evmAddress(agent?.wallets?.[0]),
             },
             lensClient
           );
@@ -76,7 +74,7 @@ const useUserAgents = (
             title: agent?.metadata?.title,
             description: agent?.metadata?.description,
             customInstructions: agent?.metadata?.customInstructions,
-            wallet: agent?.wallet,
+            wallet: agent?.wallets?.[0],
             balance: agent?.balances,
             owner: agent?.owner,
             profile: {
@@ -104,7 +102,6 @@ const useUserAgents = (
         (agentMetadata.cover as string)?.trim() == "") ||
       agentMetadata.title?.trim() == "" ||
       agentMetadata.description?.trim() == "" ||
-      agentMetadata.wallet?.trim() == "" ||
       agentMetadata.customInstructions?.trim() == ""
     )
       return;
@@ -156,8 +153,8 @@ const useUserAgents = (
         functionName: "editAgent",
         chain: chains.testnet,
         args: [
+          [currentAgent?.wallet],
           "ipfs://" + responseJSON?.cid,
-          agentMetadata?.wallet,
           currentAgent?.id,
         ],
         account: address,

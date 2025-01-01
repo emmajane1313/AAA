@@ -18,7 +18,8 @@ const useCreateAccount = (
     | undefined,
   setCreateAccount: (e: SetStateAction<boolean>) => void,
   setIndexer: (e: SetStateAction<string | undefined>) => void,
-  storageClient: StorageClient
+  storageClient: StorageClient,
+  setNotification: (e: SetStateAction<string | undefined>) => void,
 ) => {
   const [account, setAccount] = useState<{
     localname: string;
@@ -80,6 +81,13 @@ const useCreateAccount = (
         },
         lensConnected?.sessionClient
       );
+
+
+      if ((accountResponse as any)?.message?.includes("username already exists")) {
+        setNotification("Username Already Taken. Try something else?");
+        setAccountLoading(false);
+        return;
+      }
 
       if ((accountResponse as any)?.hash) {
         const res = await pollResult(

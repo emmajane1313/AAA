@@ -48,7 +48,9 @@ const useHeader = (
           let picture = "";
           const cadena = await fetch(
             `${STORAGE_NODE}/${
-              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+              (result as any)?.[0]?.account?.metadata?.picture?.split(
+                "lens://"
+              )?.[1]
             }`
           );
 
@@ -81,8 +83,6 @@ const useHeader = (
     setSearchLoading(false);
   };
 
-  console.log({lensConnected})
-
   const handleLensConnect = async () => {
     if (!address || !lensClient) return;
     setLensLoading(true);
@@ -100,8 +100,6 @@ const useHeader = (
         },
         lensClient
       );
-
-      console.log({accounts})
 
       if ((accounts as any)?.[0]?.account?.address) {
         const authenticated = await lensClient.login({
@@ -126,7 +124,9 @@ const useHeader = (
         let picture = "";
         const cadena = await fetch(
           `${STORAGE_NODE}/${
-            (accounts as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            (accounts as any)?.[0]?.account?.metadata?.picture?.split(
+              "lens://"
+            )?.[1]
           }`
         );
 
@@ -180,7 +180,6 @@ const useHeader = (
   const resumeLensSession = async () => {
     try {
       const resumed = await lensClient?.resumeSession();
-  
 
       if (resumed?.isOk()) {
         const accounts = await fetchAccountsAvailable(
@@ -193,7 +192,9 @@ const useHeader = (
         let picture = "";
         const cadena = await fetch(
           `${STORAGE_NODE}/${
-            (accounts as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+            (accounts as any)?.[0]?.account?.metadata?.picture?.split(
+              "lens://"
+            )?.[1]
           }`
         );
 
@@ -254,7 +255,6 @@ const useHeader = (
       logout();
     }
   }, [address]);
-
 
   return {
     openAccount,

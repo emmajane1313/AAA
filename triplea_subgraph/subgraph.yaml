@@ -54,7 +54,7 @@ dataSources:
         - name: AAAAgents
           file: ./abis/AAAAgents.json
       eventHandlers:
-        - event: AgentCreated(address,address,indexed uint256)
+        - event: AgentCreated(address[],address,indexed uint256)
           handler: handleAgentCreated
         - event: AgentDeleted(indexed uint256)
           handler: handleAgentDeleted

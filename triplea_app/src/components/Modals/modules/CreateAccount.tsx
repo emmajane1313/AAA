@@ -11,6 +11,7 @@ const CreateAccount: FunctionComponent<CreateAccountProps> = ({
   setCreateAccount,
   setIndexer,
   storageClient,
+  setNotification
 }): JSX.Element => {
   const { account, accountLoading, setAccount, handleCreateAccount } =
     useCreateAccount(
@@ -19,7 +20,8 @@ const CreateAccount: FunctionComponent<CreateAccountProps> = ({
       setLensConnected,
       setCreateAccount,
       setIndexer,
-      storageClient
+      storageClient,
+      setNotification
     );
   return (
     <div

@@ -42,7 +42,7 @@ const useAgent = (
 
       const result = await fetchAccountsAvailable(
         {
-          managedBy: evmAddress(res?.data?.agentCreateds?.[0]?.wallet),
+          managedBy: evmAddress(res?.data?.agentCreateds?.[0]?.wallets?.[0]),
         },
         lensClient
       );
@@ -182,7 +182,7 @@ const useAgent = (
         title: metadata?.title,
         customInstructions: metadata?.customInstructions,
         description: metadata?.description,
-        wallet: res?.data?.agentCreateds?.[0]?.wallet!,
+        wallet: res?.data?.agentCreateds?.[0]?.wallets?.[0],
         balance: res?.data?.agentCreateds?.[0]?.balances,
         owner: res?.data?.agentCreateds?.[0]?.owner,
         profile,

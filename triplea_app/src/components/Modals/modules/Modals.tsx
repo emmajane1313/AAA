@@ -22,12 +22,7 @@ const Modals: FunctionComponent = (): JSX.Element => {
           setImageView={context?.setImageView}
         />
       )}
-      {context?.notification && (
-        <Notification
-          notification={context?.notification}
-          setNotification={context?.setNotification}
-        />
-      )}
+
       {context?.createAccount && (
         <CreateAccount
           address={address}
@@ -36,12 +31,19 @@ const Modals: FunctionComponent = (): JSX.Element => {
           setCreateAccount={context?.setCreateAccount}
           setIndexer={context?.setIndexer}
           storageClient={context?.storageClient!}
+          setNotification={context?.setNotification}
         />
       )}
       {context?.signless && (
         <Signless
           setSignless={context?.setSignless}
           lensConnected={context?.lensConnected}
+        />
+      )}
+      {context?.notification && (
+        <Notification
+          notification={context?.notification}
+          setNotification={context?.setNotification}
         />
       )}
     </>

@@ -48,7 +48,7 @@ type DropDeleted @entity(immutable: false) {
 }
 type AgentCreated @entity(immutable: false) {
   id: Bytes!
-  wallet: Bytes! # address
+  wallets: [Bytes!] # address
   creator: Bytes! # address
   AAAAgents_id: BigInt! # uint256
   blockNumber: BigInt!

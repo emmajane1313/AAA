@@ -39,7 +39,7 @@ const USER_AGENTS = gql`
       AAAAgents_id
       transactionHash
       uri
-      wallet
+      wallets
     }
   }
 `;

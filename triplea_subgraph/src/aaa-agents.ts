@@ -31,7 +31,7 @@ export function handleAgentCreated(event: AgentCreatedEvent): void {
   let entity = new AgentCreated(
     Bytes.fromByteArray(ByteArray.fromBigInt(event.params.id))
   );
-  entity.wallet = event.params.wallet;
+  entity.wallets = event.params.wallets.map<Bytes>((target: Bytes) => target);;
   entity.creator = event.params.creator;
   entity.AAAAgents_id = event.params.id;
 

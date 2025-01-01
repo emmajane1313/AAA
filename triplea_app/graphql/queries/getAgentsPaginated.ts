@@ -21,7 +21,7 @@ const AGENTS_PAGINATED = gql`
       AAAAgents_id
       transactionHash
       uri
-      wallet
+      wallets
     }
   }
 `;
