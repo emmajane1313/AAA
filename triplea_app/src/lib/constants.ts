@@ -3,13 +3,13 @@ export const STORAGE_NODE: string = "https://storage-api.testnet.lens.dev";
 
 export const IPFS_REGEX: RegExp = /\b(Qm[1-9A-Za-z]{44}|ba[A-Za-z2-7]{57})\b/;
 export const AGENTS_CONTRACT: `0x${string}` =
-  "0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2";
+  "0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1";
 export const MARKET_CONTRACT: `0x${string}` =
-  "0x9EAb4A6a26B24d2c3B4B4735C820Ebfa585992D7";
+  "0xC726dCb8e5eBF5e6d6B9072FE090D09EFF6f623F";
 export const WGRASS_CONTRACT: `0x${string}` =
   "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 export const COLLECTION_MANAGER_CONTRACT: `0x${string}` =
-  "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701";
+  "0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a";
 
 export const TOKENS: { symbol: string; contract: string; image: string }[] = [
   {

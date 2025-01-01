@@ -1,5 +1,4 @@
 # Triple A
-## ()
 
 [TripleA](https://triplea.agentmeme.xyz)
 

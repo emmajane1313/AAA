@@ -8,7 +8,7 @@ dataSources:
     name: AAACollectionManager
     network: lens-testnet
     source:
-      address: "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701"
+      address: "0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a"
       abi: AAACollectionManager
       startBlock: 103090
     mapping:
@@ -37,7 +37,7 @@ dataSources:
     name: AAAAgents
     network: lens-testnet
     source:
-      address: "0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2"
+      address: "0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1"
       abi: AAAAgents
       startBlock: 103090
     mapping:
@@ -69,7 +69,7 @@ dataSources:
     name: AAAMarket
     network: lens-testnet
     source:
-      address: "0x9EAb4A6a26B24d2c3B4B4735C820Ebfa585992D7"
+      address: "0xC726dCb8e5eBF5e6d6B9072FE090D09EFF6f623F"
       abi: AAAMarket
       startBlock: 103090
     mapping:
@@ -91,7 +91,7 @@ dataSources:
     name: AAADevTreasury
     network: lens-testnet
     source:
-      address: "0xe081da94E6C672480AF00c9E2fF8017ce640445c"
+      address: "0x3E5D47795680ea6956190281dAE8bfB225d4B660"
       abi: AAADevTreasury
       startBlock: 103090
     mapping:

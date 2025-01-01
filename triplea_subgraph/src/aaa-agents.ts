@@ -40,7 +40,7 @@ export function handleAgentCreated(event: AgentCreatedEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   let agents = AAAAgents.bind(
-    Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
+    Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
   );
   entity.owner = agents.getAgentOwner(entity.AAAAgents_id) as Bytes;
   entity.uri = agents.getAgentMetadata(entity.AAAAgents_id);
@@ -96,7 +96,7 @@ export function handleAgentEdited(event: AgentEditedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
+      Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
     );
 
     entityAgent.uri = agents.getAgentMetadata(entity.AAAAgents_id);
@@ -132,7 +132,7 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
+      Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
     );
 
     let collectionIdHex = entity.collectionId.toHexString();
@@ -221,7 +221,7 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2")
+      Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
     );
 
     let collectionIds: BigInt[] = entity.collectionIds as BigInt[];
