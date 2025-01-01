@@ -8,7 +8,31 @@ import Footer from "@/components/Common/modules/Footer";
 import Animation from "./animation";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://triplea.agentmeme.xyz"),
   title: "Triple A",
+  robots: {
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  description:
+    "",
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Triple A",
+    description:
+      "Artists win, agents hustle, buyers stack. The streets of the creative grind.",
+    images: ["https://thedial.infura-ipfs.io/ipfs/QmNQ5fe9Ruyy8LDMgJbxCnM8upSus1eNriqnKda31Wcsut"],
+  },
+
+  openGraph: {
+    title: "Triple A",
+    description:
+      "Artists win, agents hustle, buyers stack. The streets of the creative grind.",
+    images: "https://thedial.infura-ipfs.io/ipfs/QmNQ5fe9Ruyy8LDMgJbxCnM8upSus1eNriqnKda31Wcsut",
+  },
 };
 
 export default function RootLayout({

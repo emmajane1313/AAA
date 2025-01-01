@@ -4,7 +4,9 @@ use ethers::utils::hex;
 use futures_util::StreamExt;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
-use serde_json::{from_str, Value};
+use reqwest::Client;
+use serde_json::{from_str, json, Value};
+use std::io;
 use std::{
     collections::HashMap, env, error::Error, fs::OpenOptions, io::Write, net::SocketAddr,
     sync::Arc, time::Duration,
@@ -23,6 +25,8 @@ use tokio_tungstenite::{
     },
 };
 use tungstenite::http::method;
+use utils::constants::{AAA_URI, LENS_API};
+use utils::contracts::initialize_api;
 mod classes;
 mod utils;
 use aes_gcm::aead::{Aead, KeyInit, OsRng};
@@ -42,7 +46,11 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         .await
         .expect("Couldn't connect address");
 
-    let agent_map = HashMap::new();
+    let agent_map = match handle_agents().await {
+        Ok(agents) => agents,
+        Err(_) => HashMap::new(),
+    };
+
     let agent_map = Arc::new(RwLock::new(agent_map));
     let agent_map_clone = agent_map.clone();
     spawn(activity_loop(agent_map_clone));
@@ -169,10 +177,8 @@ async fn handle_connection(
                         let private_key =
                             String::from_utf8(decrypted_key).expect("Private key isn't utf8");
 
-                        let mut rng = StdRng::from_entropy();
-
                         let agents_snapshot = agents.read().await;
-
+                        let mut rng = StdRng::from_entropy();
                         let mut clock;
                         loop {
                             let random_hour = rng.gen_range(0..24);
@@ -276,4 +282,185 @@ fn should_trigger(agent: &TripleAAgent) -> bool {
     let diff = (agent.clock as i32 - day_seconds as i32).abs();
 
     diff <= 60
+}
+
+async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + Send + Sync>> {
+    let client = Client::new();
+
+    let query = json!({
+        "query": r#"
+        query {
+            agentCreateds(first: 100) {
+                wallets
+                AAAAgents_id
+                owner
+                metadata {
+                    cover
+                    customInstructions
+                    description
+                    title
+                }
+                balances {
+                    collection {
+                        artist
+                        collectionId
+                        metadata {
+                            description
+                            image
+                            title
+                        }
+                        prices
+                        tokens
+                    }
+                    collectionId
+                    token
+                    totalBalance
+                    activeBalance
+                }
+            }
+        }
+        "#,
+    });
+
+    let timeout_duration = std::time::Duration::from_secs(60);
+
+    let response = time::timeout(timeout_duration, async {
+        let res = client.post(AAA_URI).json(&query).send().await?;
+
+        res.json::<Value>().await
+    })
+    .await;
+
+    match response {
+        Ok(result) => match result {
+            Ok(result) => {
+                let empty_vec = vec![];
+                let agent_createds = result["data"]["agentCreateds"]
+                    .as_array()
+                    .unwrap_or(&empty_vec);
+
+                let mut agents_snapshot: HashMap<u32, AgentManager> = HashMap::new();
+
+                for agent_created in agent_createds {
+                    let new_id: u32 = agent_created["id"]
+                        .as_str()
+                        .unwrap_or("0")
+                        .parse()
+                        .map_err(|_| "Failed to parse ID")?;
+
+                    let mut rng = StdRng::from_entropy();
+                    let mut clock;
+                    loop {
+                        let random_hour = rng.gen_range(0..24);
+                        let random_minute = rng.gen_range(0..60);
+                        let random_second = rng.gen_range(0..60);
+                        clock = random_hour * 3600 + random_minute * 60 + random_second;
+
+                        if !agents_snapshot.values().any(|agent| {
+                            let agent_clock = agent.agent.clock;
+                            (clock as i32 - agent_clock as i32).abs() < 1800
+                        }) {
+                            break;
+                        }
+                    }
+                    let wallet = agent_created["wallets"]
+                        .as_array()
+                        .unwrap_or(&vec![])
+                        .get(0)
+                        .and_then(|w| w.as_str())
+                        .unwrap_or("")
+                        .to_string();
+                    let account_address = handle_lens_account(&wallet).await.unwrap_or_default();
+
+                    let manager = AgentManager::new(&TripleAAgent {
+                        id: new_id,
+                        name: agent_created["metadata"]["title"]
+                            .as_str()
+                            .unwrap_or("Unknown")
+                            .to_string(),
+                        description: agent_created["metadata"]["description"]
+                            .as_str()
+                            .unwrap_or("")
+                            .to_string(),
+                        cover: agent_created["metadata"]["cover"]
+                            .as_str()
+                            .unwrap_or("")
+                            .to_string(),
+                        custom_instructions: agent_created["metadata"]["customInstructions"]
+                            .as_str()
+                            .unwrap_or("")
+                            .to_string(),
+                        wallet,
+                        clock,
+                        last_active_time: Utc::now().timestamp() as u32,
+                        account_address,
+                    });
+
+                    agents_snapshot.insert(new_id, manager);
+                }
+                Ok(agents_snapshot)
+            }
+            Err(err) => {
+                eprintln!("Error in response: {:?}", err);
+                Err(Box::new(err))
+            }
+        },
+        Err(err) => {
+            eprintln!("Time out: {:?}", err);
+            Err(Box::new(io::Error::new(
+                io::ErrorKind::TimedOut,
+                format!("Timeout: {:?}", err),
+            )))
+        }
+    }
+}
+
+async fn handle_lens_account(agent_wallet: &str) -> Result<String, Box<dyn Error>> {
+    let client = initialize_api();
+    let query = json!({
+        "query": r#"
+            query AccountsAvailable($request: AccountsAvailableRequest!) {
+                accountsAvailable(request: $request) {
+                    account {
+                        address
+                    }
+                }
+            }
+        "#,
+        "variables": {
+            "request": {
+                "managedBy": agent_wallet,
+                "includeOwned": true
+            }
+        }
+    });
+
+    let response = client
+        .post(LENS_API)
+        .header("Content-Type", "application/json")
+        .header("Origin", "http://localhost:3000")
+        .json(&query)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        let json: Value = response.json().await?;
+        if let Some(first_account) = json["data"]["accountsAvailable"]
+            .as_array()
+            .and_then(|array| array.get(0))
+        {
+            if let Some(account_address) = first_account["account"]
+                .get("address")
+                .and_then(|addr| addr.as_str())
+            {
+                return Ok(account_address.to_string());
+            } else {
+                return Err("Unexpected Structure for account address".into());
+            }
+        } else {
+            return Err("Unexpected Structure for account".into());
+        }
+    } else {
+        return Err(format!("Error: {}", response.status()).into());
+    }
 }

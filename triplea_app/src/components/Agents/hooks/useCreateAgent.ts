@@ -12,8 +12,7 @@ import { evmAddress } from "@lens-protocol/client";
 import pollResult from "@/lib/helpers/pollResult";
 import fetchAccount from "../../../../graphql/lens/queries/account";
 import { ethers } from "ethers";
-import CryptoJS from "crypto-js";
-import axios from "axios";
+import forge from "node-forge";
 
 const useCreateAgent = (
   publicClient: PublicClient,
@@ -22,12 +21,14 @@ const useCreateAgent = (
   lensConnected: LensConnected | undefined,
   setIndexer: (e: SetStateAction<string | undefined>) => void,
   storageClient: StorageClient,
-  setNotification: (e: SetStateAction<string | undefined>) => void,
+  setNotification: (e: SetStateAction<string | undefined>) => void
 ) => {
   const [createAgentLoading, setCreateAgentLoading] = useState<boolean>(false);
   const [lensLoading, setLensLoading] = useState<boolean>(false);
   const [id, setId] = useState<string | undefined>();
-  const [agentAccountAddress, setAgentAccountAddress] = useState<string | undefined>();
+  const [agentAccountAddress, setAgentAccountAddress] = useState<
+    string | undefined
+  >();
   const [agentDetails, setAgentDetails] = useState<AgentDetails>({
     title: "",
     cover: undefined,
@@ -155,10 +156,10 @@ const useCreateAgent = (
     )
       return;
 
-    if (!agentAccountAddress) {
-      setNotification?.("Create your Agent's Lens Account!");
-      return;
-    }
+    // if (!agentAccountAddress) {
+    //   setNotification?.("Create your Agent's Lens Account!");
+    //   return;
+    // }
     setCreateAgentLoading(true);
     try {
       const clientWallet = createWalletClient({
@@ -231,14 +232,29 @@ const useCreateAgent = (
         })
         .filter((event) => event !== null);
 
-      const encryptedPrivateKey = CryptoJS.AES.encrypt(
-        agentWallet.privateKey,
-        process.env.ENCRYPTION_KEY!
-      ).toString();
+      const responsePublicKey = await fetch("/api/public-key");
+      const { publicKey } = await responsePublicKey.json();
+
+      const rsaPublicKey = forge.pki.publicKeyFromPem(publicKey);
+      const encryptedPrivateKey = forge.util.encode64(
+        rsaPublicKey.encrypt(agentWallet.privateKey, "RSA-OAEP")
+      );
+
+      const responseKey = await fetch("/api/encrypt", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          encryptedPrivateKey,
+        }),
+      });
+
+      let responseKeyJSON = await responseKey.json();
 
       const data = {
         publicAddress: agentWallet.address,
-        encryptedPrivateKey,
+        encryptedPrivateKey: responseKeyJSON.encryptedPrivateKey,
         id: agentId,
         title: agentDetails.title,
         description: agentDetails.description,
@@ -247,9 +263,16 @@ const useCreateAgent = (
         accountAddress: agentAccountAddress,
       };
 
-      await axios.post("wss://renderhere", data, {
-        headers: { "Content-Type": "application/json" },
-      });
+      console.log({ data });
+
+      const newSocket = new WebSocket(
+        `ws://127.0.0.1:10000?key=${process.env.NEXT_PUBLIC_RENDER_KEY}`
+      );
+
+      newSocket.onopen = () => {
+        console.log("enviando!!!")
+        newSocket.send(JSON.stringify(data));
+      };
 
       setAgentDetails({
         title: "",

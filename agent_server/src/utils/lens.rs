@@ -280,7 +280,6 @@ pub async fn make_publication(
 
     let json: Value = response.json().await?;
 
-    println!("JSON: {:?}\n{}", json, private_key);
 
     if let Some(post_response) = json["data"]["post"].as_object() {
         if let Some(hash) = post_response.get("hash").and_then(|v| v.as_str()) {
