@@ -112,9 +112,9 @@ const useUser = (username: string, lensClient: PublicClient) => {
     if (!info) return;
     setItemsLoading(true);
     try {
-      const agents = await getUserAgentsPaginated(address, 0);
-      const drops = await getDropCollections(address, 0);
-      const collected = await getOrdersPaginated(address, 0);
+      const agents = await getUserAgentsPaginated(info?.address?.ownedBy, 0);
+      const drops = await getDropCollections(info?.username?.ownedBy, 0);
+      const collected = await getOrdersPaginated(info?.username?.ownedBy, 0);
 
       setHasMore({
         agents: agents?.data?.agentCreateds?.length == 20 ? true : false,
@@ -158,7 +158,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
 
       if (hasMore.collected) {
         const collectedData = await getOrdersPaginated(
-          address,
+          userInfo?.username?.ownedBy,
           paginated?.agents
         );
         setCollected([
@@ -173,7 +173,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
       }
 
       if (hasMore.drops) {
-        const dropsData = await getDropCollections(address, paginated?.drops);
+        const dropsData = await getDropCollections(userInfo?.username?.ownedBy, paginated?.drops);
         setDrops([...drops, ...(dropsData?.data?.dropCreateds || [])] as any);
 
         if (dropsData?.data?.dropCreateds?.length == 20) {
@@ -184,7 +184,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
 
       if (hasMore.agents) {
         const agentsData = await getUserAgentsPaginated(
-          address,
+          userInfo?.username?.ownedBy,
           paginated?.agents
         );
         setAgents([

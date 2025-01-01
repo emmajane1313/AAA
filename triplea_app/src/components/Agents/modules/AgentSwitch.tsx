@@ -46,6 +46,7 @@ const AgentSwitch: FunctionComponent<AgentSwitchProps> = ({
               setIndexer={context?.setIndexer!}
               storageClient={context?.storageClient!}
               lensConnected={context?.lensConnected}
+              setNotifcation={context?.setNotification!}
             />
             <div className="relative w-full h-fit flex items-end justify-between flex-row gap-4">
               <div

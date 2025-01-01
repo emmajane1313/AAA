@@ -11,6 +11,9 @@ import createAccount from "../../../../graphql/lens/mutations/createAccount";
 import { evmAddress } from "@lens-protocol/client";
 import pollResult from "@/lib/helpers/pollResult";
 import fetchAccount from "../../../../graphql/lens/queries/account";
+import { ethers } from "ethers";
+import CryptoJS from "crypto-js";
+import axios from "axios";
 
 const useCreateAgent = (
   publicClient: PublicClient,
@@ -18,17 +21,18 @@ const useCreateAgent = (
   setCreateSwitcher: (e: SetStateAction<CreateSwitcher>) => void,
   lensConnected: LensConnected | undefined,
   setIndexer: (e: SetStateAction<string | undefined>) => void,
-  storageClient: StorageClient
+  storageClient: StorageClient,
+  setNotification: (e: SetStateAction<string | undefined>) => void,
 ) => {
   const [createAgentLoading, setCreateAgentLoading] = useState<boolean>(false);
   const [lensLoading, setLensLoading] = useState<boolean>(false);
   const [id, setId] = useState<string | undefined>();
+  const [agentAccountAddress, setAgentAccountAddress] = useState<string | undefined>();
   const [agentDetails, setAgentDetails] = useState<AgentDetails>({
     title: "",
     cover: undefined,
     description: "",
     customInstructions: "",
-    address: "",
   });
   const [agentLensDetails, setAgentLensDetails] = useState<{
     localname: string;
@@ -116,6 +120,7 @@ const useCreateAgent = (
 
           if ((newAcc as any)?.address) {
             setCreateSwitcher(CreateSwitcher.Create);
+            setAgentAccountAddress((newAcc as any)?.address);
           } else {
             console.error(accountResponse);
             setIndexer?.("Error with Fetching New Account");
@@ -149,6 +154,11 @@ const useCreateAgent = (
       !agentDetails?.cover
     )
       return;
+
+    if (!agentAccountAddress) {
+      setNotification?.("Create your Agent's Lens Account!");
+      return;
+    }
     setCreateAgentLoading(true);
     try {
       const clientWallet = createWalletClient({
@@ -185,12 +195,14 @@ const useCreateAgent = (
 
       let responseJSON = await response.json();
 
+      const agentWallet = ethers.Wallet.createRandom();
+
       const { request } = await publicClient.simulateContract({
         address: AGENTS_CONTRACT,
         abi: AgentAbi,
         functionName: "createAgent",
         chain: chains.testnet,
-        args: ["ipfs://" + responseJSON?.cid, agentDetails?.address],
+        args: [[agentWallet.address], "ipfs://" + responseJSON?.cid],
         account: address,
       });
 
@@ -199,6 +211,7 @@ const useCreateAgent = (
         hash: res,
       });
       const logs = receipt.logs;
+      let agentId: number = 0;
 
       logs
         .map((log) => {
@@ -209,6 +222,7 @@ const useCreateAgent = (
               topics: log.topics,
             });
             if (event.eventName == "AgentCreated") {
+              agentId = Number((event.args as any)?.id);
               setId(Number((event.args as any)?.id).toString());
             }
           } catch (err) {
@@ -217,12 +231,31 @@ const useCreateAgent = (
         })
         .filter((event) => event !== null);
 
+      const encryptedPrivateKey = CryptoJS.AES.encrypt(
+        agentWallet.privateKey,
+        process.env.ENCRYPTION_KEY!
+      ).toString();
+
+      const data = {
+        publicAddress: agentWallet.address,
+        encryptedPrivateKey,
+        id: agentId,
+        title: agentDetails.title,
+        description: agentDetails.description,
+        cover: "ipfs://" + responseImageJSON.cid,
+        customInstructions: agentDetails.customInstructions,
+        accountAddress: agentAccountAddress,
+      };
+
+      await axios.post("wss://renderhere", data, {
+        headers: { "Content-Type": "application/json" },
+      });
+
       setAgentDetails({
         title: "",
         cover: undefined,
         description: "",
         customInstructions: "",
-        address: "",
       });
       setAgentLensDetails({
         localname: "",

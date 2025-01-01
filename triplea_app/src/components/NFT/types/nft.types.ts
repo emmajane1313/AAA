@@ -2,7 +2,6 @@ import { LensConnected, NFTData } from "@/components/Common/types/common.types";
 import { ImageMetadata, Post, TextOnlyMetadata } from "@lens-protocol/client";
 import { SetStateAction } from "react";
 import { StorageClient } from "@lens-protocol/storage-node-client";
-import { ImageMetadataV3, TextOnlyMetadataV3 } from "../../../../generated";
 
 export type DataProps = {
   url: string;

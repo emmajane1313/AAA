@@ -7,6 +7,7 @@ const collectionAbi = require("../abis/CollectionManagerAbi.json");
 const accountsAbi = require("../abis/AccountsAbi.json");
 require("dotenv").config();
 
+
 const provider = new ethers.JsonRpcProvider(
   "https://rpc.testnet.lens.dev",
   37111
@@ -16,7 +17,7 @@ const agentsAddress = "0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2";
 const accessAddress = "0x15dbcCD5Bede97791a7898e8500530D99A9aB87E";
 const marketAddress = "0x9EAb4A6a26B24d2c3B4B4735C820Ebfa585992D7";
 const treasuryAddress = "0xe081da94E6C672480AF00c9E2fF8017ce640445c";
-const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
+const grassAddress = "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 const collectionAddress = "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701";
 
 (async () => {
@@ -75,22 +76,22 @@ const collectionAddress = "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701";
   // const agents_treasury = await treasuryContract.agents();
   // const agents_market = await marketContract.agents();
   // const balance1 = await agentsContract.getAgentActiveBalance(
-  //   GM_CONTRACT,
+  //   GR,
   //   1,
   //   1
   // );
   // const balance2 = await agentsContract.getAgentActiveBalance(
-  //   GM_CONTRACT,
+  //   grassAddress,
   //   2,
   //   1
   // );
   // const balance3 = await agentsContract.getAgentActiveBalance(
-  //   GM_CONTRACT,
+  //   grassAddress,
   //   3,
   //   1
   // );
   // const balance4 = await agentsContract.getAgentActiveBalance(
-  //   GM_CONTRACT,
+  //   grassAddress,
   //   4,
   //   1
   // );

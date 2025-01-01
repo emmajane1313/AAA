@@ -1,15 +1,9 @@
 import { NFTData } from "@/components/Common/types/common.types";
 import { chains } from "@lens-network/sdk/viem";
 import { SetStateAction, useEffect, useState } from "react";
-import {
-  BaseError,
-  ContractFunctionRevertedError,
-  createWalletClient,
-  custom,
-  PublicClient,
-} from "viem";
+import { createWalletClient, custom, PublicClient } from "viem";
 import MarketAbi from "@abis/MarketAbi.json";
-import { MARKET_CONTRACT, TOKENS, GRASS_CONTRACT } from "@/lib/constants";
+import { MARKET_CONTRACT, TOKENS, WGRASS_CONTRACT } from "@/lib/constants";
 import { CollectData } from "../types/nft.types";
 
 const usePurchase = (
@@ -31,7 +25,7 @@ const usePurchase = (
     if (!address) return;
     try {
       const data = await publicClient.readContract({
-        address: GRASS_CONTRACT,
+        address: WGRASS_CONTRACT,
         abi: [
           {
             inputs: [
@@ -79,7 +73,7 @@ const usePurchase = (
 
     try {
       const balance = await publicClient.readContract({
-        address: GRASS_CONTRACT,
+        address: WGRASS_CONTRACT,
         abi: [
           {
             constant: true,
@@ -121,7 +115,7 @@ const usePurchase = (
       });
 
       const { request } = await publicClient.simulateContract({
-        address: GRASS_CONTRACT,
+        address: WGRASS_CONTRACT,
         abi: [
           {
             inputs: [

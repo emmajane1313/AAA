@@ -72,7 +72,7 @@ export default function AgentPayouts() {
                 }
                 next={handleMorePaid}
                 hasMore={screen < 1 ? hasMore?.owners : hasMore?.collectors}
-                loader={<></>}
+                loader={<div key={0}/>}
                 className="relative w-full"
               >
                 {(screen < 1 ? ownersPaid : collectorsPaid)?.map(

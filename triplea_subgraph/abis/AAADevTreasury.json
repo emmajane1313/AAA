@@ -5,7 +5,7 @@
       {
         "name": "_accessControls",
         "type": "address",
-        "internalType": "address"
+        "internalType": "address payable"
       }
     ],
     "stateMutability": "payable"
@@ -34,6 +34,7 @@
         "internalType": "uint256[]"
       },
       { "name": "amounts", "type": "uint256[]", "internalType": "uint256[]" },
+      { "name": "agentWallet", "type": "address", "internalType": "address" },
       { "name": "agentId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
@@ -111,7 +112,7 @@
       {
         "name": "_accessControls",
         "type": "address",
-        "internalType": "address"
+        "internalType": "address payable"
       }
     ],
     "outputs": [],

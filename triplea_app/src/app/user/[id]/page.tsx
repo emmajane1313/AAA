@@ -29,7 +29,6 @@ export default function User() {
     hasMore,
     handleMoreItems,
   } = useUser(id?.id as string, context?.lensClient!);
-  console.log({ userInfo });
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
       <UserInfo userInfo={userInfo} />
@@ -114,7 +113,7 @@ export default function User() {
                           ? hasMore?.collected
                           : hasMore?.agents
                       }
-                      loader={<></>}
+                      loader={<div key={0}/>}
                       className="relative w-full"
                     >
                       {screen > 1 ? (

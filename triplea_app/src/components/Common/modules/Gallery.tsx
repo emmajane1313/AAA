@@ -21,7 +21,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
           dataLength={nfts?.length}
           next={handleMoreGallery}
           hasMore={hasMore}
-          loader={<></>}
+          loader={<div key={0}/>}
           scrollableTarget="scroll"
           className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
         >

@@ -35,14 +35,24 @@ contract AAAMarketTest is Test {
 
     function setUp() public {
         accessControls = new AAAAccessControls();
-        collectionManager = new AAACollectionManager(address(accessControls));
-        nft = new AAANFT("Triple A NFT", "AAANFT", address(accessControls));
-        devTreasury = new AAADevTreasury(address(accessControls));
-        agents = new AAAAgents(address(accessControls), address(devTreasury));
+        collectionManager = new AAACollectionManager(
+            payable(address(accessControls))
+        );
+
+        nft = new AAANFT(
+            "Triple A NFT",
+            "AAANFT",
+            payable(address(accessControls))
+        );
+        devTreasury = new AAADevTreasury(payable(address(accessControls)));
+        agents = new AAAAgents(
+            payable(address(accessControls)),
+            address(devTreasury)
+        );
         market = new AAAMarket(
             address(nft),
             address(collectionManager),
-            address(accessControls),
+            payable(address(accessControls)),
             address(agents)
         );
 
@@ -147,8 +157,9 @@ contract AAAMarketTest is Test {
 
     function createAgent() public {
         vm.startPrank(admin);
-
-        agents.createAgent("Agent Metadata", address(0x789));
+        address[] memory wallets = new address[](1);
+        wallets[0] = address(0x789);
+        agents.createAgent(wallets, "Agent Metadata");
     }
 
     function testBuyCollectionOverThreshold() public {
@@ -222,7 +233,7 @@ contract AAAMarketTest is Test {
     function testSetCollectionManager() public {
         vm.startPrank(admin);
         AAACollectionManager newCollectionManager = new AAACollectionManager(
-            address(accessControls)
+            payable(address(accessControls))
         );
         market.setCollectionManager(address(newCollectionManager));
         assertEq(
@@ -237,7 +248,7 @@ contract AAAMarketTest is Test {
         AAANFT newNFT = new AAANFT(
             "Triple A NFT",
             "AAANFT",
-            address(accessControls)
+            payable(address(accessControls))
         );
         market.setNFT(address(newNFT));
         assertEq(address(market.nft()), address(newNFT));
@@ -247,7 +258,7 @@ contract AAAMarketTest is Test {
     function testSetAccessControls() public {
         vm.startPrank(admin);
         AAAAccessControls newAccessControls = new AAAAccessControls();
-        market.setAccessControls(address(newAccessControls));
+        market.setAccessControls(payable(address(newAccessControls)));
         assertEq(address(market.accessControls()), address(newAccessControls));
         vm.stopPrank();
     }

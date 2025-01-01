@@ -1,4 +1,4 @@
-import { Post, SessionClient } from "@lens-protocol/client";
+import { MainContentFocus, Post, SessionClient } from "@lens-protocol/client";
 import { SetStateAction, useEffect, useState } from "react";
 import createPost from "../../../../graphql/lens/mutations/createPost";
 import { StorageClient } from "@lens-protocol/storage-node-client";
@@ -46,7 +46,7 @@ const useInteractions = (
       const { uri } = await storageClient.uploadAsJson({
         $schema: "https://json-schemas.lens.dev/posts/text/3.0.0.json",
         lens: {
-          mainContentFocus: focus,
+          mainContentFocus:  MainContentFocus.TextOnly,
           title: post?.slice(0, 10),
           content: post,
           id: uuidv4(),
@@ -88,7 +88,7 @@ const useInteractions = (
       const { uri } = await storageClient.uploadAsJson({
         $schema: "https://json-schemas.lens.dev/posts/text/3.0.0.json",
         lens: {
-          mainContentFocus: focus,
+          mainContentFocus: MainContentFocus.TextOnly,
           title: post?.slice(0, 10),
           content: post,
           id: uuidv4(),
@@ -218,7 +218,7 @@ const useInteractions = (
       const { uri } = await storageClient.uploadAsJson({
         $schema: "https://json-schemas.lens.dev/posts/text/3.0.0.json",
         lens: {
-          mainContentFocus: focus,
+          mainContentFocus:  MainContentFocus.TextOnly,
           title: post?.slice(0, 10),
           content: post,
           id: uuidv4(),

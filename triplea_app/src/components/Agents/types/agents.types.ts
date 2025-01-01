@@ -20,6 +20,7 @@ export type CreateSwitchProps = {
   lensConnected: LensConnected | undefined;
   setIndexer: (e: SetStateAction<string | undefined>) => void;
   storageClient: StorageClient;
+  setNotifcation: (e: SetStateAction<string | undefined>) => void;
 };
 
 export type AgentSwitchProps = {
@@ -36,5 +37,4 @@ export interface AgentDetails {
   cover: Blob | undefined;
   description: string;
   customInstructions: string;
-  address: string;
 }

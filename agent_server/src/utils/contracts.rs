@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex, Once};
 
-use crate::utils::constants::{AGENTS, LENS_CHAIN_ID, LENS_GLOBAL_FEED, LENS_RPC_URL};
+use crate::utils::constants::{AGENTS, LENS_CHAIN_ID, ACCESS_CONTROLS, LENS_RPC_URL};
 use dotenv::{dotenv, var};
 use ethers::{
     abi::{Abi, Address},
@@ -15,7 +15,7 @@ use serde_json::from_str;
 
 static INIT_PROVIDER: Once = Once::new();
 static INIT_LENS: Once = Once::new();
-static LENS_GLOBAL_FEED_CONTRACT: Mutex<
+static ACCESS_CONTROLS_CONTRACT: Mutex<
     Option<Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>>,
 > = Mutex::new(None);
 static AGENTS_CONTRACT: Mutex<
@@ -84,17 +84,17 @@ pub fn initialize_contracts(
     let wallet = initialize_wallet(private_key);
     let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
 
-    let lens_global_feed_address = LENS_GLOBAL_FEED
+    let access_controls_address = ACCESS_CONTROLS
         .parse::<Address>()
-        .expect("Error in parsing LENS_GLOBAL_FEED");
-    let lens_global_feed_abi: Abi = from_str(include_str!("./../../abis/LensGlobalFeed.json"))
-        .expect("Error in loading LensGlobalFeed ABI");
-    let lens_global_feed_contract = Contract::new(
-        lens_global_feed_address,
-        lens_global_feed_abi,
+        .expect("Error in parsing ACCESS_CONTROLS");
+    let access_controls_abi: Abi = from_str(include_str!("./../../abis/AccessControls.json"))
+        .expect("Error in loading AccessControls ABI");
+    let access_controls_contract = Contract::new(
+        access_controls_address,
+        access_controls_abi,
         client.clone(),
     );
-    *LENS_GLOBAL_FEED_CONTRACT.lock().unwrap() = Some(Arc::new(lens_global_feed_contract));
+    *ACCESS_CONTROLS_CONTRACT.lock().unwrap() = Some(Arc::new(access_controls_contract));
 
     let agents_address = AGENTS.parse::<Address>().expect("Error in parsing AGENTS");
     let agents_abi: Abi =
@@ -103,11 +103,11 @@ pub fn initialize_contracts(
     *AGENTS_CONTRACT.lock().unwrap() = Some(Arc::new(agents_contract));
 
     (
-        LENS_GLOBAL_FEED_CONTRACT
+        ACCESS_CONTROLS_CONTRACT
             .lock()
             .unwrap()
             .clone()
-            .expect("LENS_GLOBAL_FEED_CONTRACT not initialized"),
+            .expect("ACCESS_CONTROLS_CONTRACT not initialized"),
         AGENTS_CONTRACT
             .lock()
             .unwrap()

@@ -1,6 +1,6 @@
 use crate::{
     utils::{
-        constants::{AAA_URI, AGENTS, LENS_CHAIN_ID},
+        constants::{AAA_URI, ACCESS_CONTROLS, AGENTS, LENS_CHAIN_ID},
         contracts::{initialize_api, initialize_contracts},
         ipfs::upload_lens_storage,
         lens::{handle_tokens, make_publication},
@@ -25,14 +25,15 @@ use uuid::Uuid;
 
 impl AgentManager {
     pub fn new(agent: &TripleAAgent) -> Self {
-        let (lens_global_contract, agents_contract) = initialize_contracts(&agent.name.to_string());
+        let (access_controls_contract, agents_contract) =
+            initialize_contracts(&agent.name.to_string());
         initialize_api();
 
         return AgentManager {
             agent: agent.clone(),
             current_queue: Vec::new(),
             agents_contract,
-            lens_global_contract,
+            access_controls_contract,
             tokens: None,
         };
     }
@@ -72,8 +73,8 @@ impl AgentManager {
         let mut rent_collection_ids: Vec<U256> = vec![];
 
         let method = self
-            .faucet_contract
-            .method::<_, U256>("getGRASSBalance", self.agent.wallet);
+            .access_controls_contract
+            .method::<_, U256>("getNativeGrassBalance", self.agent.wallet.clone());
 
         match method {
             Ok(call) => {
@@ -85,10 +86,10 @@ impl AgentManager {
                 match result {
                     Ok(balance) => {
                         println!("Agent Grass Balance: {}\n", balance);
-                        if balance <= U256::from(10u128.pow(17)) {
+                        if balance <= U256::from(1u128.pow(18)) {
                             let method = self
-                                .faucet_contract
-                                .method::<_, H256>("claimFaucet", self.agent.wallet);
+                                .access_controls_contract
+                                .method::<_, H256>("faucet", self.agent.wallet.clone());
 
                             match method {
                                 Ok(call) => {
@@ -102,11 +103,11 @@ impl AgentManager {
                                         let client = self.agents_contract.client().clone();
                                         let chain_id = *LENS_CHAIN_ID;
                                         let req = Eip1559TransactionRequest {
-                                            from: Some(NameOrAddress::Address(
-                                                FAUCET.parse::<Address>().unwrap(),
-                                            )),
-                                            to: Some(NameOrAddress::Address(
+                                            from: Some(
                                                 self.agent.wallet.parse::<Address>().unwrap(),
+                                            ),
+                                            to: Some(NameOrAddress::Address(
+                                                ACCESS_CONTROLS.parse::<Address>().unwrap(),
                                             )),
                                             gas: Some(gas_limit),
                                             value: tx_request.value,
@@ -149,11 +150,11 @@ impl AgentManager {
                                                 .retain(|item| &item.collection_id == collection);
                                         }
 
-                                        Ok(());
+                                        return Ok(());
                                     } else {
                                         self.current_queue = Vec::new();
                                         eprintln!("Error in sending Faucet Transaction");
-                                        Err(Box::new(io::Error::new(
+                                        return Err(Box::new(io::Error::new(
                                             io::ErrorKind::Other,
                                             "Error in sending Faucet Transaction",
                                         )));
@@ -163,7 +164,7 @@ impl AgentManager {
                                 Err(err) => {
                                     self.current_queue = Vec::new();
                                     eprintln!("Error in method for Faucet claim: {:?}", err);
-                                    Err(Box::new(err));
+                                    return Err(Box::new(err));
                                 }
                             }
                         }
@@ -592,6 +593,4 @@ impl AgentManager {
             }
         }
     }
-
-    async fn claim_from_faucet(&self) {}
 }

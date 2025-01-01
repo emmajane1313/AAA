@@ -299,7 +299,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   dataLength={nft?.agentActivity?.length || 1}
                   next={handleMoreActivity}
                   hasMore={hasMore}
-                  loader={<></>}
+                  loader={<div key={0}/>}
                   className="relative w-full"
                 >
                   <Comments

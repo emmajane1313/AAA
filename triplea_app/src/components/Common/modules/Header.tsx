@@ -141,7 +141,7 @@ const Header: FunctionComponent = (): JSX.Element => {
             onClick={() => setOpenAccount(!openAccount)}
           >
             {context?.lensConnected?.profile?.metadata?.picture ? (
-              <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
+              <div className="relative rounded-full w-10 h-10 bg-crema border border-morado">
                 <Image
                   src={`${INFURA_GATEWAY}/ipfs/${
                     context?.lensConnected?.profile?.metadata?.picture?.split(

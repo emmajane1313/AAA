@@ -54,7 +54,7 @@ contract AAAAgents {
         _;
     }
 
-    constructor(address _accessControls, address _devTreasury) payable {
+    constructor(address payable _accessControls, address _devTreasury) payable {
         accessControls = AAAAccessControls(_accessControls);
         devTreasury = AAADevTreasury(_devTreasury);
     }
@@ -181,7 +181,13 @@ contract AAAAgents {
             }
         }
 
-        devTreasury.agentPayRent(tokens, collectionIds, amounts, agentId);
+        devTreasury.agentPayRent(
+            tokens,
+            collectionIds,
+            amounts,
+            msg.sender,
+            agentId
+        );
 
         emit BalanceWithdrawn(tokens, collectionIds, amounts, agentId);
     }
@@ -234,7 +240,9 @@ contract AAAAgents {
         return _agents[agentId].activeCollectionIds;
     }
 
-    function setAccessControls(address _accessControls) external onlyAdmin {
+    function setAccessControls(
+        address payable _accessControls
+    ) external onlyAdmin {
         accessControls = AAAAccessControls(_accessControls);
     }
 

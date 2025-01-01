@@ -1,16 +1,11 @@
 import { SetStateAction, useState } from "react";
 import { LensConnected } from "@/components/Common/types/common.types";
-import {
-  Account,
-  AuthenticationTokens,
-  evmAddress,
-} from "@lens-protocol/client";
+import { evmAddress } from "@lens-protocol/client";
 import { createWalletClient, custom } from "viem";
 import { chains } from "@lens-network/sdk/viem";
 import fetchAccount from "./../../../../graphql/lens/queries/account";
 import pollResult from "@/lib/helpers/pollResult";
 import createAccount from "../../../../graphql/lens/mutations/createAccount";
-import switchAccount from "../../../../graphql/lens/mutations/switchAccount";
 import { v4 as uuidv4 } from "uuid";
 import { StorageClient } from "@lens-protocol/storage-node-client";
 import { STORAGE_NODE } from "@/lib/constants";
@@ -91,6 +86,7 @@ const useCreateAccount = (
           (accountResponse as any)?.hash,
           lensConnected?.sessionClient
         );
+
         if (res) {
           const newAcc = await fetchAccount(
             {
@@ -102,54 +98,41 @@ const useCreateAccount = (
           );
 
           if ((newAcc as any)?.address) {
-            const authTokens = await switchAccount(
-              {
-                account: (newAcc as any)?.address,
-              },
-              lensConnected?.sessionClient
-            );
-
             const ownerSigner =
               await lensConnected?.sessionClient?.switchAccount({
                 account: (newAcc as any)?.address,
               });
 
             if (ownerSigner?.isOk()) {
-              if ((authTokens as any)?.accessToken) {
-                let picture = "";
-                const cadena = await fetch(
-                  `${STORAGE_NODE}/${(newAcc as any)?.metadata?.picture?.split("lens://")?.[1]}`
-                );
+              let picture = "";
+              const cadena = await fetch(
+                `${STORAGE_NODE}/${
+                  (newAcc as any)?.metadata?.picture?.split("lens://")?.[1]
+                }`
+              );
 
-                if (cadena) {
-                  const json = await cadena.json();
-                  picture = json.item;
-                }
-
-                setLensConnected?.({
-                  ...lensConnected,
-                  profile: {
-                    ...(newAcc as any),
-                    metadata: {
-                      ...(newAcc as any)?.metadata,
-                      picture,
-                    },
-                  },
-                  sessionClient: ownerSigner?.value,
-                  authTokens: authTokens as AuthenticationTokens,
-                });
-                setCreateAccount(false);
-                setAccount({
-                  localname: "",
-                  bio: "",
-                  username: "",
-                });
-              } else {
-                console.error(accountResponse);
-                setIndexer?.("Error with Auth Tokens");
-                setAccountLoading(false);
-                return;
+              if (cadena) {
+                const json = await cadena.json();
+                picture = json.item;
               }
+
+              setLensConnected?.({
+                ...lensConnected,
+                profile: {
+                  ...(newAcc as any),
+                  metadata: {
+                    ...(newAcc as any)?.metadata,
+                    picture,
+                  },
+                },
+                sessionClient: ownerSigner?.value,
+              });
+              setCreateAccount(false);
+              setAccount({
+                localname: "",
+                bio: "",
+                username: "",
+              });
             }
           } else {
             console.error(accountResponse);

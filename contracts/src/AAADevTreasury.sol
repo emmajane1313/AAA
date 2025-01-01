@@ -38,7 +38,7 @@ contract AAADevTreasury {
     event OrderPayment(address token, address recipient, uint256 amount);
     event AgentOwnerPaid(address token, address owner, uint256 amount);
 
-    constructor(address _accessControls) payable {
+    constructor(address payable _accessControls) payable {
         accessControls = AAAAccessControls(_accessControls);
     }
 
@@ -88,6 +88,7 @@ contract AAADevTreasury {
         address[] memory tokens,
         uint256[] memory collectionIds,
         uint256[] memory amounts,
+        address agentWallet,
         uint256 agentId
     ) external {
         if (msg.sender != address(agents)) {
@@ -138,7 +139,7 @@ contract AAADevTreasury {
         emit AgentFundsWithdrawn(
             tokens,
             amounts,
-            agents.getAgentWallet(agentId)
+            agentWallet
         );
     }
 
@@ -162,7 +163,7 @@ contract AAADevTreasury {
         return _allTimeServices[token];
     }
 
-    function setAccessControls(address _accessControls) external onlyAdmin {
+    function setAccessControls(address payable _accessControls) external onlyAdmin {
         accessControls = AAAAccessControls(_accessControls);
     }
 

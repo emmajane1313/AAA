@@ -22,11 +22,6 @@ export interface NFTData {
 export interface LensConnected {
   profile?: Account;
   sessionClient?: SessionClient;
-  authTokens?: {
-    accessToken: string;
-    refreshToken: string;
-    idToken: string;
-  };
 }
 
 export interface Collector {

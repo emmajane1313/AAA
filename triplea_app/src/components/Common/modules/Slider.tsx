@@ -17,7 +17,7 @@ const Slider: FunctionComponent = (): JSX.Element => {
       >
         <div className="relative w-full h-fit text-base">
           {
-            " NEW COLLECTIONS ** // ** // WHAT'S HOT? $)($)(#)(# DON'T CRY .. JUST BUY! &&!!@@ NEW COLLECTIONS ** // ** // WHAT'S HOT? $)($)(#)(# DON'T CRY .. JUST BUY! &&!!@@ NEW COLLECTIONS ** // ** // WHAT'S HOT? $)($)(#)(# DON'T CRY .. JUST BUY! &&!!@@ NEW COLLECTIONS ** // ** // WHAT'S HOT? $)($)(#)(# DON'T CRY .. JUST BUY! &&!!@@ NEW COLLECTIONS ** // ** // WHAT'S HOT? $)($)(#)(# DON'T CRY .. JUST BUY! &&!!@@"
+            " NEW COLLECTIONS ** // ** WHAT'S HOT?! 💎 IT'S YOURS, IF YOU'RE QUICK ENOUGH. 💎💣💎 GRAB IT, STACK IT, FLEX IT ** // ** BURNING UP THE BLOCK ! &&!!@@ ONLY FOR THE FAST 🔥, ONLY FOR THE HUNGRY NEW COLLECTIONS ** // ** WHAT'S HOT?! 💎 IT'S YOURS, IF YOU'RE QUICK ENOUGH. 💎💣💎 GRAB IT, STACK IT, FLEX IT ** // ** BURNING UP THE BLOCK ! &&!!@@ ONLY FOR THE FAST 🔥, ONLY FOR THE HUNGRY NEW COLLECTIONS ** // ** WHAT'S HOT?! 💎 IT'S YOURS, IF YOU'RE QUICK ENOUGH. 💎💣💎 GRAB IT, STACK IT, FLEX IT ** // ** BURNING UP THE BLOCK ! &&!!@@ ONLY FOR THE FAST 🔥, ONLY FOR THE HUNGRY"
           }
         </div>
       </MarqueeText>

@@ -17,6 +17,14 @@ contract AAAAccessControls {
     event AcceptedTokenSet(address token);
     event AcceptedTokenRemoved(address token);
     event TokenThresholdSet(address token, uint256 threshold);
+    event FaucetUsed(address to, uint256 amount);
+
+    modifier onlyAgentOrAdmin() {
+        if (!_admins[msg.sender] && !_agents[msg.sender]) {
+            revert AAAErrors.NotAgentOrAdmin();
+        }
+        _;
+    }
 
     modifier onlyAdmin() {
         if (!_admins[msg.sender]) {
@@ -124,4 +132,28 @@ contract AAAAccessControls {
     function setAgentsContract(address _agentsContract) public onlyAdmin {
         agentsContract = _agentsContract;
     }
+
+    function faucet(
+        address payable to,
+        uint256 amount
+    ) external onlyAgentOrAdmin {
+        if (address(this).balance < amount) {
+            revert AAAErrors.InsufficientFunds();
+        }
+
+        (bool _success, ) = to.call{value: amount}("");
+        if (!_success) {
+            revert AAAErrors.TransferFailed();
+        }
+
+        emit FaucetUsed(to, amount);
+    }
+
+    function getNativeGrassBalance(address user) public view returns (uint256) {
+        return user.balance;
+    }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 }

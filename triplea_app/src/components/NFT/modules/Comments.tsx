@@ -2,7 +2,7 @@ import { FunctionComponent, JSX } from "react";
 import { CommentsProps } from "../types/nft.types";
 import Metadata from "./Metadata";
 import Image from "next/legacy/image";
-import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
+import { INFURA_GATEWAY } from "@/lib/constants";
 import moment from "moment";
 
 const Comments: FunctionComponent<CommentsProps> = ({
@@ -166,7 +166,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       />{" "}
                     </svg>
                   ),
-                  stats: (activity as any)?.stats?.reposts,
+                  stats: (activity as any)?.stats?.comments,
                   loader: postLoading && commentQuote?.type == "Comment",
                 },
                 {

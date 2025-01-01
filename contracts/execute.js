@@ -5,7 +5,7 @@ const marketAbi = require("../abis/MarketAbi.json");
 const agentsAbi = require("../abis/AgentsAbi.json");
 const devsAbi = require("../abis/DevTreasuryAbi.json");
 const collectionAbi = require("../abis/CollectionManagerAbi.json");
-const gmAbi = require("../abis/GMAbi.json");
+const wgrassAbi = require("../abis/WGrassAbi.json");
 require("dotenv").config();
 
 const provider = new ethers.JsonRpcProvider(
@@ -20,7 +20,7 @@ const agentsAddress = "0xE03E9461d4AE7Ff79c7FfEf677593E4D5a86F9E2";
 const nftAddress = "0xCDcF2dd7f9b89DeCF0DB2C3dC385ccda08fE6037";
 const devAddress = "0xe081da94E6C672480AF00c9E2fF8017ce640445c";
 const collectionAddress = "0x38A419A1d67f5952493BDf1A2aB4a54844Be9701";
-const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
+const wgrassAddress = "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 
 (async () => {
   // Access Controls
@@ -56,7 +56,7 @@ const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
     await tx_3.wait();
 
     const tx_4 = await accessContract.setAcceptedToken(
-    GM_CONTRACT, {
+    GRASS_CONTRACT, {
         gasLimit: 1000000,
         maxFeePerGas: feeData?.gasPrice,
         maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
@@ -65,7 +65,7 @@ const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
   await tx_4.wait();
 
   const tx_5 = await accessContract.setTokenThreshold(
-    GM_CONTRACT,
+    GRASS_CONTRACT,
     "10000000000000000000",  {
         gasLimit: 1000000,
         maxFeePerGas: feeData?.gasPrice,
@@ -119,14 +119,14 @@ const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
   // const agentIds = await collectionContract.getCollectionAgentIds(5);
   // const amountSold = await collectionContract.getCollectionAmountSold(5);
   // const prices = await collectionContract.getCollectionPrices(5);
-  // const threshold = await accessContract.getTokenThreshold(GM_CONTRACT);
+  // const threshold = await accessContract.getTokenThreshold(GRASS_CONTRACT);
 
   // console.log({ agentIds, amountSold, prices, threshold });
   // let balances = [];
   // let wallets = [];
   // for (let i = 0; i < agentIds?.length; i++) {
   //   const balance = await agentsContract.getAgentActiveBalance(
-  //     GM_CONTRACT,
+  //     GRASS_CONTRACT,
   //     agentIds[i],
   //     5
   //   );
@@ -139,10 +139,10 @@ const GM_CONTRACT = "0x63F16E0Cc467E7f2A68595c05B6ec83Eda6705c8";
 
   // console.log({ balances, wallets });
 
-  // const gmContract = new ethers.Contract(GM_CONTRACT, gmAbi, wallet);
+  // const wgrassContract = new ethers.Contract(GRASS_CONTRACT, wgrassAbi, wallet);
 
-  // const balance = await gmContract.balanceOf("0xd2dA1a02403125c0DE8BC23417DeA9e6f09eD89a");
-  // const allowance = await gmContract.allowance("0xd2dA1a02403125c0DE8BC23417DeA9e6f09eD89a", marketAddress);
+  // const balance = await wgrassContract.balanceOf("0xd2dA1a02403125c0DE8BC23417DeA9e6f09eD89a");
+  // const allowance = await wgrassContract.allowance("0xd2dA1a02403125c0DE8BC23417DeA9e6f09eD89a", marketAddress);
 
   // const counter = await agentsContract.getAgentCounter();
   // console.log({ balance, allowance, counter });

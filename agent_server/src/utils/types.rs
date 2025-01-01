@@ -32,7 +32,7 @@ pub struct AgentManager {
             SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,
         >,
     >,
-    pub lens_global_contract: Arc<
+    pub access_controls_contract: Arc<
         ContractInstance<
             Arc<SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>>,
             SignerMiddleware<Arc<Provider<Http>>, Wallet<SigningKey>>,

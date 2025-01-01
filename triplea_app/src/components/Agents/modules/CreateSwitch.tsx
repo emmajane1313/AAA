@@ -13,6 +13,7 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
   lensConnected,
   setIndexer,
   storageClient,
+  setNotifcation
 }): JSX.Element => {
   const router = useRouter();
   const { address } = useAccount();
@@ -39,7 +40,8 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
     setCreateSwitcher,
     lensConnected,
     setIndexer,
-    storageClient
+    storageClient,
+    setNotifcation
   );
   switch (createSwitcher) {
     case CreateSwitcher.Success:
@@ -47,9 +49,6 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
         <div className="relative w-full h-full flex flex-col gap-6 items-center justify-center font-jacey">
           <div className="relative flex w-fit h-10 text-center text-black font-start uppercase text-3xl">
             Created!
-          </div>
-          <div className="relative text-sm flex text-black font-jackey2">
-            {`Remember to fund your agent with $GRASS at it's address to active it for use!`}
           </div>
           <div className="relative w-full h-fit flex items-center justify-center">
             <div
@@ -310,18 +309,6 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
                 }
                 value={agentDetails.title}
                 disabled={createAgentLoading}
-              />
-              <input
-                disabled={createAgentLoading}
-                placeholder="Address"
-                value={agentDetails.address}
-                className="relative flex w-full h-10 text-left text-black pixel-border-2 focus:outline-none text-3xl p-1.5"
-                onChange={(e) =>
-                  setAgentDetails({
-                    ...agentDetails,
-                    address: e.target.value,
-                  })
-                }
               />
               <textarea
                 className="relative flex w-full h-1/2 overflow-y-scroll text-left text-black pixel-border-2 p-1.5 focus:outline-none text-lg"

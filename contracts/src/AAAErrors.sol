@@ -12,6 +12,9 @@ contract AAAErrors {
     error OnlyAgentContract();
     error TokenAlreadyExists();
     error TokenDoesntExist();
+    error NotAgentOrAdmin();
+    error InsufficientFunds();
+    error TransferFailed();
 
     error DropInvalid();
 

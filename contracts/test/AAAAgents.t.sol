@@ -19,9 +19,9 @@ contract AAAAgentsTest is Test {
 
     function setUp() public {
         accessControls = new AAAAccessControls();
-        devTreasury = new AAADevTreasury(address(accessControls));
+        devTreasury = new AAADevTreasury(payable(address(accessControls)));
         agents = new AAAAgents(
-            address(accessControls),
+            payable(address(accessControls)),
             address(devTreasury)
         );
 
@@ -35,11 +35,12 @@ contract AAAAgentsTest is Test {
     function testCreateAgent() public {
         vm.startPrank(admin);
 
-        agents.createAgent(metadata, agentWallet);
-
+        address[] memory wallets = new address[](1);
+        wallets[0] = agentWallet;
+        agents.createAgent(wallets, metadata);
         uint256 agentId = agents.getAgentCounter();
         assertEq(agentId, 1);
-        assertEq(agents.getAgentWallet(agentId), agentWallet);
+        assertEq(agents.getAgentWallets(agentId)[0], agentWallet);
         assertEq(agents.getAgentMetadata(agentId), metadata);
 
         vm.stopPrank();
@@ -48,22 +49,27 @@ contract AAAAgentsTest is Test {
     function testCreateAgentRevertIfNotAdmin() public {
         vm.startPrank(address(0xABC));
         vm.expectRevert(abi.encodeWithSelector(AAAErrors.NotAdmin.selector));
-        agents.createAgent(metadata, agentWallet);
+        address[] memory wallets = new address[](1);
+        wallets[0] = agentWallet;
+        agents.createAgent(wallets, metadata);
         vm.stopPrank();
     }
 
     function testEditAgent() public {
         vm.startPrank(admin);
 
-        agents.createAgent(metadata, agentWallet);
+        address[] memory wallets = new address[](1);
+        wallets[0] = agentWallet;
+        agents.createAgent(wallets, metadata);
 
         uint256 agentId = agents.getAgentCounter();
         string memory newMetadata = "Updated Metadata";
-        address newWallet = address(0xDEF);
+        address[] memory newWallet = new address[](1);
+        newWallet[0] = address(0xDEF);
 
-        agents.editAgent(newMetadata, newWallet, agentId);
+        agents.editAgent(newWallet, newMetadata, agentId);
 
-        assertEq(agents.getAgentWallet(agentId), newWallet);
+        assertEq(agents.getAgentWallets(agentId)[0], newWallet[0]);
         assertEq(agents.getAgentMetadata(agentId), newMetadata);
 
         vm.stopPrank();
@@ -71,26 +77,33 @@ contract AAAAgentsTest is Test {
 
     function testEditAgentRevertIfNotAdmin() public {
         vm.startPrank(admin);
-        agents.createAgent(metadata, agentWallet);
+        address[] memory wallets = new address[](1);
+        wallets[0] = agentWallet;
+        agents.createAgent(wallets, metadata);
         uint256 agentId = agents.getAgentCounter();
         vm.stopPrank();
 
         vm.startPrank(address(0xABC));
         vm.expectRevert(abi.encodeWithSelector(AAAErrors.NotAdmin.selector));
-        agents.editAgent("New Metadata", address(0xDEF), agentId);
+
+        address[] memory newWallet = new address[](1);
+        newWallet[0] = address(0xDEF);
+
+        agents.editAgent(newWallet, "New Metadata", agentId);
         vm.stopPrank();
     }
 
     function testDeleteAgent() public {
         vm.startPrank(admin);
-
-        agents.createAgent(metadata, agentWallet);
+        address[] memory wallets = new address[](1);
+        wallets[0] = agentWallet;
+        agents.createAgent(wallets, metadata);
 
         uint256 agentId = agents.getAgentCounter();
 
         agents.deleteAgent(agentId);
 
-        address agentWalletAfterDeletion = agents.getAgentWallet(agentId);
+        address agentWalletAfterDeletion = agents.getAgentWallets(agentId)[0];
         assertEq(agentWalletAfterDeletion, address(0));
 
         vm.stopPrank();
@@ -98,7 +111,9 @@ contract AAAAgentsTest is Test {
 
     function testDeleteAgentRevertIfNotAdmin() public {
         vm.startPrank(admin);
-        agents.createAgent(metadata, agentWallet);
+        address[] memory wallets = new address[](1);
+        wallets[0] = agentWallet;
+        agents.createAgent(wallets, metadata);
         uint256 agentId = agents.getAgentCounter();
         vm.stopPrank();
 
@@ -111,10 +126,15 @@ contract AAAAgentsTest is Test {
     function testAgentCounterIncrements() public {
         vm.startPrank(admin);
 
-        agents.createAgent(metadata, agentWallet);
+        address[] memory wallets = new address[](1);
+        wallets[0] = agentWallet;
+        agents.createAgent(wallets, metadata);
         uint256 firstAgentId = agents.getAgentCounter();
 
-        agents.createAgent("Another Metadata", address(0xDEF));
+        address[] memory newWallet = new address[](1);
+        newWallet[0] = address(0xDEF);
+
+        agents.createAgent(newWallet, "Another Metadata");
         uint256 secondAgentId = agents.getAgentCounter();
 
         assertEq(firstAgentId, 1);

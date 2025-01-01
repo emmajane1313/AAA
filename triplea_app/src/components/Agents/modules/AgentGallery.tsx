@@ -23,7 +23,7 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
           dataLength={context?.agents?.length || 1}
           next={handleMoreAgents}
           hasMore={hasMore}
-          loader={<></>}
+          loader={<div key={0}/>}
           scrollableTarget="scroll"
           className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
         >

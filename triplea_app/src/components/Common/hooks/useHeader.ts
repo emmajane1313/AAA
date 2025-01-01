@@ -81,6 +81,8 @@ const useHeader = (
     setSearchLoading(false);
   };
 
+  console.log({lensConnected})
+
   const handleLensConnect = async () => {
     if (!address || !lensClient) return;
     setLensLoading(true);
@@ -98,6 +100,8 @@ const useHeader = (
         },
         lensClient
       );
+
+      console.log({accounts})
 
       if ((accounts as any)?.[0]?.account?.address) {
         const authenticated = await lensClient.login({
@@ -176,6 +180,7 @@ const useHeader = (
   const resumeLensSession = async () => {
     try {
       const resumed = await lensClient?.resumeSession();
+  
 
       if (resumed?.isOk()) {
         const accounts = await fetchAccountsAvailable(
