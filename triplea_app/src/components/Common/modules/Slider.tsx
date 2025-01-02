@@ -1,4 +1,4 @@
-import { ModalContext } from "@/app/providers";
+import { AnimationContext, ModalContext } from "@/app/providers";
 import { useRouter } from "next/navigation";
 import { FunctionComponent, JSX, useContext } from "react";
 import MarqueeText from "react-fast-marquee";
@@ -6,6 +6,7 @@ import MarqueeText from "react-fast-marquee";
 const Slider: FunctionComponent = (): JSX.Element => {
   const context = useContext(ModalContext);
   const router = useRouter();
+  const animationContext = useContext(AnimationContext);
   return (
     <div className="relative w-full h-16 flex gap-4 flex-row justify-between items-center z-0 bg-white pixel-border-2 font-jackey2 text-sm text-black">
       <MarqueeText
@@ -31,7 +32,10 @@ const Slider: FunctionComponent = (): JSX.Element => {
         </div>
         <div
           className="relative w-10 h-10 flex pixel-border-4 bg-[#5aacfa] rounded-xl items-center justify-center hover:opacity-70 cursor-pixel"
-          onClick={() => router.push("/agent-payouts")}
+          onClick={() => {
+            animationContext?.setPageChange?.(true);
+            router.push("/agent-payouts");
+          }}
           title={"Agent Payouts"}
         >
           <svg
@@ -47,7 +51,10 @@ const Slider: FunctionComponent = (): JSX.Element => {
         </div>
         <div
           className="relative w-10 h-10 flex pixel-border-4 bg-morado rounded-xl items-center justify-center hover:opacity-70 cursor-pixel"
-          onClick={() => router.push("/agents")}
+          onClick={() => {
+            animationContext?.setPageChange?.(true);
+            router.push("/agents");
+          }}
           title={"Agents"}
         >
           <svg
@@ -65,7 +72,10 @@ const Slider: FunctionComponent = (): JSX.Element => {
         </div>
         <div
           className="relative w-10 h-10 flex pixel-border-4 bg-[#FFF026] rounded-xl items-center justify-center hover:opacity-70 cursor-pixel"
-          onClick={() => router.push("/dev-treasury")}
+          onClick={() => {
+            animationContext?.setPageChange?.(true);
+            router.push("/dev-treasury");
+          }}
           title={"Dev Treasury"}
         >
           <svg

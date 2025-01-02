@@ -56,7 +56,6 @@ const useUser = (username: string, lensClient: PublicClient) => {
         },
         lensClient
       );
-
       let ownerPicture = "";
       let ownerProfile: any;
 
@@ -72,9 +71,10 @@ const useUser = (username: string, lensClient: PublicClient) => {
           ownerPicture = json.item;
         }
 
+
         const stats = await fetchStats(
           {
-            account: (newAcc as any)?.address,
+            account: (newAcc as any)?.owner,
           },
           lensClient
         );
@@ -89,7 +89,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
         };
       }
 
-      if ((newAcc as any)?.address) {
+      if ((newAcc as any)?.owner) {
         setUserInfo(ownerProfile);
       }
 
@@ -112,9 +112,9 @@ const useUser = (username: string, lensClient: PublicClient) => {
     if (!info) return;
     setItemsLoading(true);
     try {
-      const agents = await getUserAgentsPaginated(info?.address?.ownedBy, 0);
-      const drops = await getDropCollections(info?.username?.ownedBy, 0);
-      const collected = await getOrdersPaginated(info?.username?.ownedBy, 0);
+      const agents = await getUserAgentsPaginated(info?.owner, 0);
+      const drops = await getDropCollections(info?.owner, 0);
+      const collected = await getOrdersPaginated(info?.owner, 0);
 
       setHasMore({
         agents: agents?.data?.agentCreateds?.length == 20 ? true : false,
@@ -158,7 +158,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
 
       if (hasMore.collected) {
         const collectedData = await getOrdersPaginated(
-          userInfo?.username?.ownedBy,
+          userInfo?.owner,
           paginated?.agents
         );
         setCollected([
@@ -173,7 +173,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
       }
 
       if (hasMore.drops) {
-        const dropsData = await getDropCollections(userInfo?.username?.ownedBy, paginated?.drops);
+        const dropsData = await getDropCollections(userInfo?.owner, paginated?.drops);
         setDrops([...drops, ...(dropsData?.data?.dropCreateds || [])] as any);
 
         if (dropsData?.data?.dropCreateds?.length == 20) {
@@ -184,7 +184,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
 
       if (hasMore.agents) {
         const agentsData = await getUserAgentsPaginated(
-          userInfo?.username?.ownedBy,
+          userInfo?.owner,
           paginated?.agents
         );
         setAgents([

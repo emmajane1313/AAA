@@ -1,6 +1,6 @@
 "use client";
 
-import { ModalContext } from "@/app/providers";
+import { AnimationContext, ModalContext } from "@/app/providers";
 import { NFTData } from "@/components/Common/types/common.types";
 import {
   Agent,
@@ -17,6 +17,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 export default function User() {
   const id = useParams();
   const router = useRouter();
+  const animationContext = useContext(AnimationContext);
   const context = useContext(ModalContext);
   const {
     screen,
@@ -113,14 +114,17 @@ export default function User() {
                           ? hasMore?.collected
                           : hasMore?.agents
                       }
-                      loader={<div key={0}/>}
+                      loader={<div key={0} />}
                       className="relative w-full"
                     >
                       {screen > 1 ? (
                         <div
                           key={key}
                           className={`relative w-60 h-80 rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2 cursor-pixel`}
-                          onClick={() => router.push(`/agent/${item?.id}`)}
+                          onClick={() => {
+                            animationContext?.setPageChange?.(true);
+                            router.push(`/agent/${item?.id}`);
+                          }}
                         >
                           <div className="relative w-full h-full rounded-md flex">
                             <Image
@@ -147,11 +151,12 @@ export default function User() {
                         <div
                           key={key}
                           className={`relative w-60 h-80 rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2 cursor-pixel`}
-                          onClick={() =>
+                          onClick={() => {
+                            animationContext?.setPageChange?.(true);
                             router.push(
                               `/nft/${userInfo?.username?.localName}/${item?.id}`
-                            )
-                          }
+                            );
+                          }}
                         >
                           <div className="relative w-full h-full rounded-md flex">
                             <Image
@@ -208,11 +213,12 @@ export default function User() {
                                   <div
                                     key={index}
                                     className="relative w-fit h-fit flex rounded-md items-center justify-center cursor-pixel"
-                                    onClick={() =>
+                                    onClick={() => {
+                                      animationContext?.setPageChange?.(true);
                                       router.push(
                                         `/nft/${userInfo?.username?.localName}/${col?.id}`
-                                      )
-                                    }
+                                      );
+                                    }}
                                     title={col?.title}
                                   >
                                     <div className="relative w-6 h-6 flex rounded-md items-center justify-center">

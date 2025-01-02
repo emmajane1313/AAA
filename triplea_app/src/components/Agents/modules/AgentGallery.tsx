@@ -3,12 +3,13 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useRouter } from "next/navigation";
-import { ModalContext } from "@/app/providers";
+import { AnimationContext, ModalContext } from "@/app/providers";
 import useAgentGallery from "../hooks/useAgentGallery";
 import { Agent } from "@/components/Dashboard/types/dashboard.types";
 
 const AgentGallery: FunctionComponent = (): JSX.Element => {
   const context = useContext(ModalContext);
+  const animationContext = useContext(AnimationContext);
   const { agentGalleryLoading, handleMoreAgents, hasMore } = useAgentGallery(
     context?.agents,
     context?.setAgents!,
@@ -19,11 +20,11 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
     <div className="relative w-full h-full overflow-scroll pt-4">
       <div id="scroll" className="relative w-fit h-full">
         <InfiniteScroll
-           key={"agentGallery"}
+          key={"agentGallery"}
           dataLength={context?.agents?.length || 1}
           next={handleMoreAgents}
           hasMore={hasMore}
-          loader={<div key={0}/>}
+          loader={<div key={0} />}
           scrollableTarget="scroll"
           className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
         >
@@ -42,9 +43,10 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
                     <div className="relative w-full h-full  rounded-sm bg-mochi p-2">
                       <div
                         className="relative w-full h-full flex bg-mochi cursor-pixel"
-                        onClick={() =>
-                          router.push(`/agent/${(agent as Agent)?.id}`)
-                        }
+                        onClick={() => {
+                          animationContext?.setPageChange?.(true);
+                          router.push(`/agent/${(agent as Agent)?.id}`);
+                        }}
                       >
                         <Image
                           src={`${INFURA_GATEWAY}/ipfs/${
@@ -86,9 +88,10 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
                 <div className="relative w-full justify-end h-fit flex">
                   <div
                     className="relative flex w-fit h-fit pixel-border-2 font-start text-xxs text-black py-2 px-3 cursor-pixel"
-                    onClick={() =>
-                      router.push(`/agent/${(agent as Agent)?.id}`)
-                    }
+                    onClick={() => {
+                      animationContext?.setPageChange?.(true);
+                      router.push(`/agent/${(agent as Agent)?.id}`);
+                    }}
                   >
                     See More?
                   </div>

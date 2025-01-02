@@ -5,7 +5,7 @@ import Agents from "./Agents";
 import MintSwitch from "./MintSwitch";
 import Sales from "./Sales";
 import Collects from "./Collects";
-import { ModalContext } from "@/app/providers";
+import { AnimationContext, ModalContext } from "@/app/providers";
 import DropsSwitch from "./DropsSwitch";
 import Account from "./Account";
 import { useAccount } from "wagmi";
@@ -15,6 +15,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
   const { address } = useAccount();
   const router = useRouter();
   const context = useContext(ModalContext);
+  const animationContext = useContext(AnimationContext);
   const {
     setSwitcher,
     switcher,
@@ -308,13 +309,16 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
                     style={{
                       backgroundColor: item.color,
                     }}
-                    onClick={() =>
-                      item.switcher == Switcher.Page
-                        ? router.push(
-                            `/user/${context?.lensConnected?.profile?.username?.localName}`
-                          )
-                        : setSwitcher(item.switcher)
-                    }
+                    onClick={() => {
+                      if (item.switcher == Switcher.Page) {
+                        animationContext?.setPageChange?.(true);
+                        router.push(
+                          `/user/${context?.lensConnected?.profile?.username?.localName}`
+                        );
+                      } else {
+                        setSwitcher(item.switcher);
+                      }
+                    }}
                     key={index}
                     title={item.title}
                   >

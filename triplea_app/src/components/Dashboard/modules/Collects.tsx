@@ -1,4 +1,4 @@
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useContext } from "react";
 
 import { CollectsProps, Switcher } from "../types/dashboard.types";
 import useCollects from "../hooks/useCollects";
@@ -7,6 +7,7 @@ import { INFURA_GATEWAY } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import moment from "moment";
+import { AnimationContext } from "@/app/providers";
 
 const Collects: FunctionComponent<CollectsProps> = ({
   setSwitcher,
@@ -14,6 +15,7 @@ const Collects: FunctionComponent<CollectsProps> = ({
 }): JSX.Element => {
   const { address } = useAccount();
   const { collectsLoading, allCollects } = useCollects(address, lensClient);
+    const animationContext = useContext(AnimationContext);
   const router = useRouter();
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
@@ -24,17 +26,17 @@ const Collects: FunctionComponent<CollectsProps> = ({
             onClick={() => setSwitcher(Switcher.Home)}
           >
             <svg
-                  className="size-6"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                >
-                  {" "}
-                  <path
-                    d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
-                    fill="currentColor"
-                  />{" "}
-                </svg>
+              className="size-6"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              {" "}
+              <path
+                d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                fill="currentColor"
+              />{" "}
+            </svg>
           </div>
         </div>
         <div className="flex relative w-full h-full items-center justify-start overflow-x-scroll">
@@ -47,9 +49,9 @@ const Collects: FunctionComponent<CollectsProps> = ({
               Array.from({ length: 10 }).map((_, key) => {
                 return (
                   <div
-                  key={key}
-                  className="relative w-60 h-full bg-morado pixel-border-4 animate-pulse rounded-xl"
-                ></div>
+                    key={key}
+                    className="relative w-60 h-full bg-morado pixel-border-4 animate-pulse rounded-xl"
+                  ></div>
                 );
               })
             ) : allCollects?.length < 1 ? (
@@ -65,15 +67,16 @@ const Collects: FunctionComponent<CollectsProps> = ({
                   >
                     <div
                       className="relative w-full h-full rounded-2xl flex cursor-pixel pixel-border-2"
-                      onClick={() =>
+                      onClick={() => {
+                        animationContext?.setPageChange?.(true);
                         router.push(
                           `/nft/${
                             collect?.collection?.profile?.username?.value?.split(
                               "lens/"
                             )?.[1]
                           }/${collect?.collection?.id}`
-                        )
-                      }
+                        );
+                      }}
                     >
                       <Image
                         objectFit="cover"

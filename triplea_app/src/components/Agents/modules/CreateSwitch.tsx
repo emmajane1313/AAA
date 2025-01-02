@@ -1,4 +1,4 @@
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useContext } from "react";
 import { CreateSwitcher, CreateSwitchProps } from "../types/agents.types";
 import { useRouter } from "next/navigation";
 import useCreateAgent from "../hooks/useCreateAgent";
@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { createPublicClient, http } from "viem";
 import { chains } from "@lens-network/sdk/viem";
 import Image from "next/legacy/image";
+import { AnimationContext } from "@/app/providers";
 
 const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
   createSwitcher,
@@ -13,10 +14,11 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
   lensConnected,
   setIndexer,
   storageClient,
-  setNotifcation
+  setNotifcation,
 }): JSX.Element => {
   const router = useRouter();
   const { address } = useAccount();
+  const animationContext = useContext(AnimationContext);
   const publicClient = createPublicClient({
     chain: chains.testnet,
     transport: http(
@@ -53,7 +55,10 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
           <div className="relative w-full h-fit flex items-center justify-center">
             <div
               className={`relative w-fit px-6 py-1 h-12 bg-black text-white cursor-pixel hover:opacity-70 text-base rounded-md flex items-center justify-center font-jack`}
-              onClick={() => router.push(`/agent/${id}`)}
+              onClick={() => {
+                animationContext?.setPageChange?.(true);
+                router.push(`/agent/${id}`);
+              }}
             >
               Go to Agent
             </div>

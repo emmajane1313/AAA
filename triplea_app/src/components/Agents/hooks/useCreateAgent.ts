@@ -119,6 +119,16 @@ const useCreateAgent = (
             lensConnected?.sessionClient
           );
 
+          if (
+            (accountResponse as any)?.message?.includes(
+              "username already exists"
+            )
+          ) {
+            setNotification("Username Already Taken. Try something else?");
+            setLensLoading(false);
+            return;
+          }
+
           if ((newAcc as any)?.address) {
             setCreateSwitcher(CreateSwitcher.Create);
             setAgentAccountAddress((newAcc as any)?.address);
@@ -156,10 +166,10 @@ const useCreateAgent = (
     )
       return;
 
-    // if (!agentAccountAddress) {
-    //   setNotification?.("Create your Agent's Lens Account!");
-    //   return;
-    // }
+    if (!agentAccountAddress) {
+      setNotification?.("Create your Agent's Lens Account!");
+      return;
+    }
     setCreateAgentLoading(true);
     try {
       const clientWallet = createWalletClient({
@@ -254,7 +264,7 @@ const useCreateAgent = (
 
       const data = {
         publicAddress: agentWallet.address,
-        encryptedPrivateKey: responseKeyJSON.encryptedPrivateKey,
+        encryptionDetails: responseKeyJSON.encryptionDetails,
         id: agentId,
         title: agentDetails.title,
         description: agentDetails.description,
@@ -263,14 +273,28 @@ const useCreateAgent = (
         accountAddress: agentAccountAddress,
       };
 
-      console.log({ data });
+      // const data = {
+      //   publicAddress: "0x898B0028e6e1446118852bA69bA472b41d852dcD",
+      //   encryptedPrivateKey:
+      //     "U2FsdGVkX18VlCkogTg6V7aJlzDrDRdhX0ESZY8B3PfQrCwjB3XNmws5To/47IkAKHmMqmEDkGscBr+TSQFZLj5X27e86FBVNCZn5uTV71tXNA9PgvB6ruPhIUy8c8+7",
+      //   id: 10,
+      //   title: "carlos 3",
+      //   description: "holiii",
+      //   cover: "ipfs://QmQoms1aCZ3LuYobhMpHCXFi4JvdufxsDuBPSKwTUrjQ62",
+      //   customInstructions: "nada interesante",
+      //   accountAddress: "0x13Ad819FB0d0fB3cD208aF6C2Dd846E3857b17cA",
+      // };
 
       const newSocket = new WebSocket(
         `ws://127.0.0.1:10000?key=${process.env.NEXT_PUBLIC_RENDER_KEY}`
       );
 
+      newSocket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
       newSocket.onopen = () => {
-        console.log("enviando!!!")
+        console.log("enviando")
         newSocket.send(JSON.stringify(data));
       };
 

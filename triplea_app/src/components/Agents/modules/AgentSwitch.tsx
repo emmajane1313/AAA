@@ -11,10 +11,8 @@ import { ModalContext } from "@/app/providers";
 const AgentSwitch: FunctionComponent<AgentSwitchProps> = ({
   agentSwitcher,
   setAgentSwitcher,
+  createSwitcher, setCreateSwitcher
 }): JSX.Element => {
-  const [createSwitcher, setCreateSwitcher] = useState<CreateSwitcher>(
-    CreateSwitcher.Details
-  );
   const context = useContext(ModalContext);
   switch (agentSwitcher) {
     case AgentSwitcher.Create:

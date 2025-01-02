@@ -10,6 +10,7 @@ import { createPublicClient, http } from "viem";
 import { useAccount } from "wagmi";
 import { chains } from "@lens-network/sdk/viem";
 import { useRouter } from "next/navigation";
+import { AnimationContext } from "@/app/providers";
 
 const MintSwitch: FunctionComponent<MintSwitchProps> = ({
   mintSwitcher,
@@ -21,6 +22,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
 }): JSX.Element => {
   const { address } = useAccount();
   const router = useRouter();
+  const animationContext = useContext(AnimationContext);
   const publicClient = createPublicClient({
     chain: chains.testnet,
     transport: http(
@@ -80,11 +82,12 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
           <div className="relative w-full h-fit flex items-center justify-center">
             <div
               className={`relative w-fit px-6 py-1 h-12 bg-black text-white cursor-pixel hover:opacity-70 text-base rounded-md flex items-center justify-center font-jack`}
-              onClick={() =>
+              onClick={() => {
+                animationContext?.setPageChange?.(true);
                 router.push(
                   `/nft/${lensConnected?.profile?.username?.localName}/${id}`
-                )
-              }
+                );
+              }}
             >
               Go to NFT
             </div>
@@ -182,7 +185,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 value={mintData.description}
                 disabled={mintLoading}
                 style={{
-                  resize: "none"
+                  resize: "none",
                 }}
               ></textarea>
             </div>

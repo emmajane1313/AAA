@@ -5,10 +5,11 @@ import Image from "next/legacy/image";
 import { INFURA_GATEWAY, TOKENS } from "@/lib/constants";
 import { NFTData } from "../types/common.types";
 import { useRouter } from "next/navigation";
-import { ModalContext } from "@/app/providers";
+import { AnimationContext, ModalContext } from "@/app/providers";
 
 const Gallery: FunctionComponent = (): JSX.Element => {
   const context = useContext(ModalContext);
+  const animationContext = useContext(AnimationContext);
   const { handleMoreGallery, nfts, hasMore, galleryLoading } = useGallery(
     context?.lensClient!
   );
@@ -21,7 +22,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
           dataLength={nfts?.length}
           next={handleMoreGallery}
           hasMore={hasMore}
-          loader={<div key={0}/>}
+          loader={<div key={0} />}
           scrollableTarget="scroll"
           className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
         >
@@ -39,15 +40,16 @@ const Gallery: FunctionComponent = (): JSX.Element => {
                     <div className="relative w-full h-full  rounded-sm bg-mochi p-2">
                       <div
                         className="relative w-full h-full flex bg-mochi cursor-pixel"
-                        onClick={() =>
+                        onClick={() => {
+                          animationContext?.setPageChange?.(true);
                           router.push(
                             `/nft/${
                               (nft as NFTData)?.profile?.username?.value?.split(
                                 "lens/"
                               )?.[1]
                             }/${(nft as NFTData)?.id}`
-                          )
-                        }
+                          );
+                        }}
                       >
                         <Image
                           src={`${INFURA_GATEWAY}/ipfs/${
@@ -100,15 +102,16 @@ const Gallery: FunctionComponent = (): JSX.Element => {
                 <div className="relative w-full justify-end h-fit flex">
                   <div
                     className="relative flex w-fit h-fit pixel-border-2 font-start text-xxs text-black py-2 px-3 cursor-pixel"
-                    onClick={() =>
+                    onClick={() => {
+                      animationContext?.setPageChange?.(true);
                       router.push(
                         `/nft/${
                           (nft as NFTData)?.profile?.username?.value?.split(
                             "lens/"
                           )?.[1]
                         }/${(nft as NFTData)?.id}`
-                      )
-                    }
+                      );
+                    }}
                   >
                     See More?
                   </div>

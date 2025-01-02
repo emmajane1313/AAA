@@ -1,6 +1,6 @@
 "use client";
 
-import { ModalContext } from "@/app/providers";
+import { AnimationContext, ModalContext } from "@/app/providers";
 import useAgent from "@/components/Agent/hooks/useAgent";
 import useInteractions from "@/components/NFT/hooks/useInteractions";
 import Comments from "@/components/NFT/modules/Comments";
@@ -15,6 +15,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 export default function Agent() {
   const id = useParams();
   const router = useRouter();
+  const animationContext = useContext(AnimationContext);
   const context = useContext(ModalContext);
   const {
     agent,
@@ -210,14 +211,12 @@ export default function Agent() {
               </>
             ) : screen == 1 ? (
               <div className="relative w-full gap-3 flex flex-col h-full">
-                <div
-                  className="relative w-full h-[50%] overflow-y-scroll"
-                >
+                <div className="relative w-full h-[50%] overflow-y-scroll">
                   <InfiniteScroll
                     dataLength={agent?.activity?.length || 1}
                     next={handleMoreActivity}
                     hasMore={hasMore}
-                    loader={<div key={0}/>}
+                    loader={<div key={0} />}
                     className="relative w-full"
                   >
                     <Comments
@@ -292,7 +291,8 @@ export default function Agent() {
                         <div
                           key={key}
                           className="relative w-full h-fit flex justify-between items-center flex-row gap-2 cursor-pixel"
-                          onClick={() =>
+                          onClick={() => {
+                            animationContext?.setPageChange?.(true);
                             router.push(
                               `/nft/${
                                 agent?.collectionIdsHistory
@@ -311,8 +311,8 @@ export default function Agent() {
                                     Number(balance?.collectionId)
                                 )?.collectionId
                               }`
-                            )
-                          }
+                            );
+                          }}
                         >
                           <div className="relative w-fit h-fit flex items-center justify-center">
                             <div className="rounded-sm w-7 h-7 flex relative">
@@ -369,15 +369,16 @@ export default function Agent() {
                         <div
                           key={key}
                           className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
-                          onClick={() =>
+                          onClick={() => {
+                            animationContext?.setPageChange?.(true);
                             router.push(
                               `/nft/${
                                 collection?.profile?.username?.value?.split(
                                   "lens/"
                                 )?.[1]
                               }/${collection?.collectionId}`
-                            )
-                          }
+                            );
+                          }}
                         >
                           <div className="relative w-fit h-fit flex items-center justify-center">
                             <div className="rounded-sm w-7 h-7 flex relative">

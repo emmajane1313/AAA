@@ -1,9 +1,10 @@
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useContext } from "react";
 import { DropSwitcher, CollectionProps } from "../types/dashboard.types";
 import useDrops from "../hooks/useDrops";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useRouter } from "next/navigation";
+import { AnimationContext } from "@/app/providers";
 
 const Collection: FunctionComponent<CollectionProps> = ({
   setDropSwitcher,
@@ -13,9 +14,10 @@ const Collection: FunctionComponent<CollectionProps> = ({
 }): JSX.Element => {
   const { allCollections, collectionsLoading } = useDrops(drop, lensClient);
   const router = useRouter();
+  const animationContext = useContext(AnimationContext);
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
-     <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
+      <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
             className="relative flex w-fit h-fit cursor-pixel hover:opacity-70"
@@ -54,18 +56,19 @@ const Collection: FunctionComponent<CollectionProps> = ({
                     <div
                       key={key}
                       className={`relative w-60 h-full bg-morado pixel-border-4 rounded-lg flex flex-col items-center justify-between cursor-pixel p-2`}
-                      onClick={() =>
+                      onClick={() => {
+                        animationContext?.setPageChange?.(true);
                         router.push(
                           `/nft/${
                             collection?.profile?.username?.value?.split(
                               "lens/"
                             )?.[1]
                           }/${collection.id}`
-                        )
-                      }
+                        );
+                      }}
                     >
-                    <div className="relative w-full h-full rounded-md flex pixel-border-4">
-                    <Image
+                      <div className="relative w-full h-full rounded-md flex pixel-border-4">
+                        <Image
                           objectFit="cover"
                           layout="fill"
                           draggable={false}

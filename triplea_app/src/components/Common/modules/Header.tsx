@@ -7,13 +7,14 @@ import { FunctionComponent, JSX, useContext } from "react";
 import useHeader from "../hooks/useHeader";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { ModalContext } from "@/app/providers";
+import { AnimationContext, ModalContext } from "@/app/providers";
 import useAgents from "@/components/Common/hooks/useAgents";
 
 const Header: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
   const { openConnectModal } = useConnectModal();
   const { openAccountModal } = useAccountModal();
+  const animationContext = useContext(AnimationContext);
   const { isConnected, address } = useAccount();
   const context = useContext(ModalContext);
   const {
@@ -47,7 +48,10 @@ const Header: FunctionComponent = (): JSX.Element => {
     <div className="relative w-full h-16 flex flex-col gap-4 sm:flex-row justify-between items-center z-50">
       <div
         className="relative flex items-center justify-center w-fit h-fit cursor-pixel"
-        onClick={() => router.push("/")}
+        onClick={() => {
+          animationContext?.setPageChange?.(true);
+          router.push("/");
+        }}
       >
         <div className="w-fit h-fit text-xl font-jackey text-black flex relative">
           Triple A
@@ -105,6 +109,7 @@ const Header: FunctionComponent = (): JSX.Element => {
                     key={key}
                     className="cursor-pixel relative w-full h-fit flex flex-row gap-2 items-center justify-between hover:opacity-70 cursor-pixel"
                     onClick={() => {
+                      animationContext?.setPageChange?.(true);
                       router.push(
                         `/nft/${item?.profile?.username?.localName}/${item?.id}`
                       );
@@ -183,7 +188,15 @@ const Header: FunctionComponent = (): JSX.Element => {
           {openAccount && (
             <div className="absolute w-40 h-fit rounded-md flex right-0 top-12 flex-col gap-5 shadow-lg p-2 text-xxs font-jackey pixel-border-3">
               <div
-                className={`relative w-full h-fit flex items-center justify-start flex-row gap-1`}
+                className={`relative w-full h-fit flex items-center justify-start flex-row gap-1 ${
+                  context?.lensConnected?.profile && "cursor-pixel"
+                }`}
+                onClick={() => {
+                  animationContext?.setPageChange?.(true);
+                  router.push(
+                    `/user/${context?.lensConnected?.profile?.username?.localName}`
+                  );
+                }}
               >
                 <div className="relative w-fit h-fit flex">
                   {context?.lensConnected?.profile?.metadata?.picture ? (
@@ -246,6 +259,7 @@ const Header: FunctionComponent = (): JSX.Element => {
                   <div
                     className="relative flex w-full h-10 rounded-xl bg-[#FD91C6] active:scale-95 items-center justify-center text-center text-sm text-black hover:opacity-80 cursor-pixel pixel-border-4"
                     onClick={() => {
+                      animationContext?.setPageChange?.(true);
                       router.push("/dashboard");
                       setOpenAccount(false);
                     }}

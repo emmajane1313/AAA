@@ -29,6 +29,14 @@ export const config = getDefaultConfig({
 
 const queryClient = new QueryClient();
 
+export const AnimationContext = createContext<
+  | {
+      pageChange: boolean;
+      setPageChange: (e: SetStateAction<boolean>) => void;
+    }
+  | undefined
+>(undefined);
+
 export const ModalContext = createContext<
   | {
       imageView: string | undefined;
@@ -58,6 +66,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [indexer, setIndexer] = useState<string | undefined>();
   const [imageView, setImageView] = useState<string | undefined>();
   const [notification, setNotification] = useState<string | undefined>();
+  const [pageChange, setPageChange] = useState<boolean>(false);
   const [signless, setSignless] = useState<boolean>(false);
   const [createAccount, setCreateAccount] = useState<boolean>(false);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -78,28 +87,35 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
-          <ModalContext.Provider
+          <AnimationContext.Provider
             value={{
-              imageView,
-              setImageView,
-              agents,
-              setAgents,
-              lensClient,
-              createAccount,
-              setCreateAccount,
-              lensConnected,
-              setLensConnected,
-              indexer,
-              setIndexer,
-              notification,
-              setNotification,
-              storageClient,
-              signless,
-              setSignless,
+              pageChange,
+              setPageChange,
             }}
           >
-            {children}
-          </ModalContext.Provider>
+            <ModalContext.Provider
+              value={{
+                imageView,
+                setImageView,
+                agents,
+                setAgents,
+                lensClient,
+                createAccount,
+                setCreateAccount,
+                lensConnected,
+                setLensConnected,
+                indexer,
+                setIndexer,
+                notification,
+                setNotification,
+                storageClient,
+                signless,
+                setSignless,
+              }}
+            >
+              {children}
+            </ModalContext.Provider>
+          </AnimationContext.Provider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

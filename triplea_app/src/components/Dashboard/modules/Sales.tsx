@@ -1,4 +1,4 @@
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useContext } from "react";
 import { SalesProps, Switcher } from "../types/dashboard.types";
 import useSales from "../hooks/useSales";
 import { useRouter } from "next/navigation";
@@ -6,12 +6,14 @@ import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import { useAccount } from "wagmi";
 import moment from "moment";
+import { AnimationContext } from "@/app/providers";
 
 const Sales: FunctionComponent<SalesProps> = ({
   setSwitcher,
   lensClient,
 }): JSX.Element => {
   const { address } = useAccount();
+  const animationContext = useContext(AnimationContext);
   const { salesLoading, allSales } = useSales(address, lensClient);
   const router = useRouter();
   return (
@@ -22,18 +24,18 @@ const Sales: FunctionComponent<SalesProps> = ({
             className="relative flex w-fit h-fit cursor-pixel hover:opacity-70"
             onClick={() => setSwitcher(Switcher.Home)}
           >
-           <svg
-                  className="size-6"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                >
-                  {" "}
-                  <path
-                    d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
-                    fill="currentColor"
-                  />{" "}
-                </svg>
+            <svg
+              className="size-6"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              {" "}
+              <path
+                d="M20 11v2H8v2H6v-2H4v-2h2V9h2v2h12zM10 7H8v2h2V7zm0 0h2V5h-2v2zm0 10H8v-2h2v2zm0 0h2v2h-2v-2z"
+                fill="currentColor"
+              />{" "}
+            </svg>
           </div>
         </div>
         <div className="flex relative w-full h-full items-center justify-start overflow-x-scroll">
@@ -64,15 +66,16 @@ const Sales: FunctionComponent<SalesProps> = ({
                   >
                     <div
                       className="relative w-full h-full rounded-2xl flex cursor-pixel pixel-border-2"
-                      onClick={() =>
+                      onClick={() => {
+                        animationContext?.setPageChange?.(true);
                         router.push(
                           `/nft/${
                             sale?.collection?.profile?.username?.value?.split(
                               "lens/"
                             )?.[1]
                           }/${sale?.collection?.id}`
-                        )
-                      }
+                        );
+                      }}
                     >
                       <Image
                         objectFit="cover"
@@ -86,7 +89,7 @@ const Sales: FunctionComponent<SalesProps> = ({
                       />
                     </div>
                     <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 pt-4">
-                    <div className="relative w-fit h-fit flex text-xs font-start">
+                      <div className="relative w-fit h-fit flex text-xs font-start">
                         {sale?.collection?.title}
                       </div>
                       <div

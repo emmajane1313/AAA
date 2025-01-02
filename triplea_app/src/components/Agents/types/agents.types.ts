@@ -26,6 +26,8 @@ export type CreateSwitchProps = {
 export type AgentSwitchProps = {
   agentSwitcher: AgentSwitcher;
   setAgentSwitcher: (e: SetStateAction<AgentSwitcher>) => void;
+  createSwitcher: CreateSwitcher;
+  setCreateSwitcher: (e: SetStateAction<CreateSwitcher>) => void;
 };
 
 export type AgentCreateProps = {

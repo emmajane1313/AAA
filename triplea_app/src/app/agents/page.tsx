@@ -1,7 +1,10 @@
 "use client";
 
 import AgentSwitch from "@/components/Agents/modules/AgentSwitch";
-import { AgentSwitcher } from "@/components/Agents/types/agents.types";
+import {
+  AgentSwitcher,
+  CreateSwitcher,
+} from "@/components/Agents/types/agents.types";
 import Slider from "@/components/Common/modules/Slider";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
@@ -10,6 +13,9 @@ import { useAccount } from "wagmi";
 export default function Agents() {
   const [agentSwitcher, setAgentSwitcher] = useState<AgentSwitcher>(
     AgentSwitcher.Gallery
+  );
+  const [createSwitcher, setCreateSwitcher] = useState<CreateSwitcher>(
+    CreateSwitcher.Details
   );
   const { openConnectModal } = useConnectModal();
   const { isConnected } = useAccount();
@@ -20,11 +26,14 @@ export default function Agents() {
         <div
           className="relative w-40 h-10 flex pixel-border-4 bg-[#E14C14] rounded-xl items-center justify-between hover:opacity-70 cursor-pixel flex-row gap-2 px-2"
           title={"Create Agent"}
-          onClick={() =>
-            isConnected
-              ? setAgentSwitcher(AgentSwitcher.Create)
-              : openConnectModal?.()
-          }
+          onClick={() => {
+            if (isConnected) {
+              setAgentSwitcher(AgentSwitcher.Create);
+              setCreateSwitcher(CreateSwitcher.Details);
+            } else {
+              openConnectModal?.();
+            }
+          }}
         >
           <svg
             className="size-6"
@@ -66,6 +75,8 @@ export default function Agents() {
       <AgentSwitch
         agentSwitcher={agentSwitcher}
         setAgentSwitcher={setAgentSwitcher}
+        createSwitcher={createSwitcher}
+        setCreateSwitcher={setCreateSwitcher}
       />
     </>
   );
