@@ -31,7 +31,7 @@ export default function User() {
     handleMoreItems,
   } = useUser(id?.id as string, context?.lensClient!);
   return (
-    <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
+    <div className="relative w-full h-full flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
       <UserInfo userInfo={userInfo} />
       <div className="relative w-full h-fit flex items-center justify-center gap-3 flex-col">
         <div className="relative w-full h-fit flex items-center justify-center gap-1 flex-col">

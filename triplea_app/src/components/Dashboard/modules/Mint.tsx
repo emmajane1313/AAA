@@ -14,9 +14,9 @@ const Mint: FunctionComponent<MintProps> = ({
 }): JSX.Element => {
   return (
     <div className="relative w-full h-full flex flex-col gap-6 items-center justify-between">
-      <div className="relative w-full h-full flex flex-row items-center justify-center gap-4">
-        <div className="relative w-fit h-full flex">
-        <div className="relative w-80 h-full flex items-center justify-center">
+      <div className="relative w-full h-full flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="relative w-full sm:w-fit h-60 sm:h-full flex">
+        <div className="relative w-full sm:w-80 h-full flex items-center justify-center">
           {mintData.image && (
             <Image
               src={URL.createObjectURL(mintData.image)}
@@ -26,7 +26,7 @@ const Mint: FunctionComponent<MintProps> = ({
             />
           )}
         </div></div>
-        <div className="relative w-fit h-full flex flex-col gap-4 items-start justify-start">
+        <div className="relative w-fit h-fit sm:h-full flex flex-col gap-4 items-start justify-start">
           <div className="relative flex w-fit h-10 text-center text-black font-start uppercase text-2xl">
             {mintData.title}
           </div>

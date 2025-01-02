@@ -39,7 +39,7 @@ const UserInfo: FunctionComponent<UserInfoProps> = ({
         )}
       </div>
       {userInfo && (
-        <div className="relative w-full h-fit flex justify-between items-center gap-2 flex-row text-black text-sm font-start uppercase">
+        <div className="relative w-full h-fit flex justify-center sm:justify-between items-center gap-2 flex-wrap sm:flex-row text-black text-xxs sm:text-sm font-start uppercase">
           <div className="relative w-fit h-fit flex flex-row gap-1.5">
             <div className="relative w-fit h-fit flex">Followers: </div>
             <div className="relative w-fit h-fit flex">

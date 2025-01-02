@@ -254,9 +254,9 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
 
     default:
       return (
-        <div className="relative font-jackey2 w-full h-full flex flex-row gap-6 items-center justify-center">
+        <div className="relative font-jackey2 w-full h-full flex flex-col sm:flex-row gap-6 items-center justify-center">
           <label
-            className="relative w-full h-full flex items-center justify-center cursor-pixel"
+            className="relative w-full h-60 sm:h-full flex items-center justify-center cursor-pixel"
             onClick={(e) => {
               e.stopPropagation();
             }}

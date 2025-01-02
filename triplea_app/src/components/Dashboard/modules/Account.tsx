@@ -13,7 +13,7 @@ const Account: FunctionComponent<AccountProps> = ({
   const { accountLoading, setNewAccount, newAccount, handleUpdateAccount } =
     useAccount(lensConnected, setLensConnected, storageClient);
   return (
-    <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
+    <div className="relative w-full h-full flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
       <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
@@ -77,7 +77,7 @@ const Account: FunctionComponent<AccountProps> = ({
               />
             </label>
           </div>
-          <div className="relative w-full h-fit flex items-start justify-start flex-row gap-3 text-black">
+          <div className="relative w-full h-fit flex items-start justify-start flex-col sm:flex-row gap-3 text-black">
             <div className="relative w-full h-fit flex flex-col gap-1.5 items-start justify-start">
               <div className="relative w-fit h-fit flex">Username</div>
               <input

@@ -7,10 +7,10 @@ import { FunctionComponent, JSX } from "react";
 const Footer: FunctionComponent = (): JSX.Element => {
   return (
     <div className="relative w-full h-fit bg-black px-6 pt-6 flex border-4 border-morado flex-col items-center justify-between gap-8">
-      <div className="relative w-full h-fit flex items-center justify-between flex flex-row gap-8">
+      <div className="relative w-full h-fit flex items-center justify-between flex flex-col sm:flex-row gap-8">
         <div className="relative w-full h-full flex items-start justify-between flex-col gap-2">
           <div className="relative w-full h-fit flex items-start justify-start flex-col gap-2">
-            <div className="text-white text-2xl font-jackey flex w-fit h-fit text-left relative">
+            <div className="text-white text-lg sm:text-2xl font-jackey flex w-fit h-fit text-left relative">
               Agents Amplify Artists
             </div>
             <div className="text-[#FFF026] font-start text-xxs flex w-fit h-fit text-left relative">
@@ -57,7 +57,7 @@ const Footer: FunctionComponent = (): JSX.Element => {
       </div>
       <div className="relative w-full h-fit flex items-center gap-6 justify-between flex-row">
         <div className="relative w-fit h-fit flex">
-        <div className="relative w-20 h-20 flex">
+        <div className="relative w-8 h-8 sm:w-20 sm:h-20 flex">
             <Image
               draggable={false}
               src={`${INFURA_GATEWAY}/ipfs/QmVttWALP9AVX1cJp8Es5Wfia26DHE9oByLfSDLxEBTu7X`}
@@ -67,7 +67,7 @@ const Footer: FunctionComponent = (): JSX.Element => {
           </div>
         </div>
         <div className="relative w-fit h-fit flex">
-          <div className="relative w-20 h-20 flex">
+          <div className="relative w-8 h-8 sm:w-20 sm:h-20 flex">
             <Image
               draggable={false}
               src={`${INFURA_GATEWAY}/ipfs/QmP894udssnN9AzxPxyAqDm58qstYxJjKkZaTgcr4nPBMY`}
@@ -77,7 +77,7 @@ const Footer: FunctionComponent = (): JSX.Element => {
           </div>
         </div>
         <div className="relative w-fit h-fit flex">
-          <div className="relative w-28 h-20 flex">
+          <div className="relative w-12 h-8 sm:w-28 sm:h-20 flex">
             <Image
               draggable={false}
               src={`${INFURA_GATEWAY}/ipfs/QmPmvs2swFozQWvAhbV5kB1tz5AryEydhvYfUw2Eyavi5v`}

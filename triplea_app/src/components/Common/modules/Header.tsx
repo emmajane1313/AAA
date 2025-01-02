@@ -9,6 +9,8 @@ import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { AnimationContext, ModalContext } from "@/app/providers";
 import useAgents from "@/components/Common/hooks/useAgents";
+import { NFTData } from "../types/common.types";
+import { Account } from "@lens-protocol/client";
 
 const Header: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
@@ -45,7 +47,7 @@ const Header: FunctionComponent = (): JSX.Element => {
   );
 
   return (
-    <div className="relative w-full h-16 flex flex-col gap-4 sm:flex-row justify-between items-center z-50">
+    <div className="relative w-full h-fit sm:h-16 flex flex-col gap-4 sm:flex-row justify-between items-center z-50">
       <div
         className="relative flex items-center justify-center w-fit h-fit cursor-pixel"
         onClick={() => {
@@ -97,48 +99,108 @@ const Header: FunctionComponent = (): JSX.Element => {
               setSearch(e.target.value);
 
               if (e.target.value?.trim() == "") {
-                setSearchItems([]);
+                setSearchItems({
+                  nfts: [],
+                  handles: [],
+                });
               }
             }}
           />
-          {searchItems?.length > 0 && (
-            <div className="absolute w-full h-fit max-h-60 border-2 border-black flex bg-white right-0 top-10 flex-col gap-3 p-2 overflow-y-scroll">
-              {searchItems?.map((item, key) => {
-                return (
-                  <div
-                    key={key}
-                    className="cursor-pixel relative w-full h-fit flex flex-row gap-2 items-center justify-between hover:opacity-70 cursor-pixel"
-                    onClick={() => {
-                      animationContext?.setPageChange?.(true);
-                      router.push(
-                        `/nft/${item?.profile?.username?.localName}/${item?.id}`
-                      );
-                      setSearch("");
-                      setSearchItems([]);
-                    }}
-                  >
-                    <div className="relative w-fit h-fit flex  items-center justify-center">
-                      <div className="relative w-12 h-12 rounded-md flex items-center justify-center">
-                        <Image
-                          src={`${INFURA_GATEWAY}/ipfs/${
-                            item?.image?.split("ipfs://")?.[1]
-                          }`}
-                          alt="nft"
-                          draggable={false}
-                          objectFit="cover"
-                          layout="fill"
-                          className="rounded-md"
-                        />
-                      </div>
-                    </div>
-                    <div className="text-sm text-black flex w-fit h-fit font-jack">
-                      {item?.title?.slice(0, 20)}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {(searchItems?.handles?.length > 0 ||
+            searchItems?.nfts?.length > 0) &&
+            search?.trim() !== "" && (
+              <div className="absolute w-full h-fit max-h-60 border-2 border-black flex bg-white right-0 top-10 flex-col gap-3 p-2 overflow-y-scroll">
+                {[...searchItems?.handles, ...searchItems?.nfts]
+                  ?.sort(() => Math.random() - 0.5)
+                  ?.map((item, key) => {
+                    return (
+                      <>
+                        {(item as NFTData)?.prices?.length > 0 ? (
+                          <div
+                            key={key}
+                            className="cursor-pixel relative w-full h-fit flex flex-row gap-2 items-center justify-between hover:opacity-70 cursor-pixel"
+                            onClick={() => {
+                              animationContext?.setPageChange?.(true);
+                              router.push(
+                                `/nft/${
+                                  (item as NFTData)?.profile?.username
+                                    ?.localName
+                                }/${(item as NFTData)?.id}`
+                              );
+                              setSearch("");
+                              setSearchItems({
+                                nfts: [],
+                                handles: [],
+                              });
+                            }}
+                          >
+                            <div className="relative w-fit h-fit flex  items-center justify-center">
+                              <div className="relative w-12 h-12 rounded-md flex items-center justify-center">
+                                <Image
+                                  src={`${INFURA_GATEWAY}/ipfs/${
+                                    (item as NFTData)?.image?.split(
+                                      "ipfs://"
+                                    )?.[1]
+                                  }`}
+                                  alt="nft"
+                                  draggable={false}
+                                  objectFit="cover"
+                                  layout="fill"
+                                  className="rounded-md"
+                                />
+                              </div>
+                            </div>
+                            <div className="text-sm text-black flex w-fit h-fit font-jack">
+                              {(item as NFTData)?.title?.slice(0, 20)}
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            key={key}
+                            className="cursor-pixel relative w-full h-fit flex flex-row gap-2 items-center justify-between hover:opacity-70 cursor-pixel"
+                            onClick={() => {
+                              animationContext?.setPageChange?.(true);
+                              router.push(
+                                `/user/${
+                                  (item as Account)?.username?.localName
+                                }`
+                              );
+                              setSearch("");
+                              setSearchItems({
+                                nfts: [],
+                                handles: [],
+                              });
+                            }}
+                          >
+                            <div className="relative w-fit h-fit flex  items-center justify-center">
+                              <div className="relative w-12 h-12 rounded-full flex items-center justify-center bg-morado">
+                                <Image
+                                  src={`${INFURA_GATEWAY}/ipfs/${
+                                    (item as Account)?.metadata?.picture?.split(
+                                      "ipfs://"
+                                    )?.[1]
+                                  }`}
+                                  alt="nft"
+                                  draggable={false}
+                                  objectFit="cover"
+                                  layout="fill"
+                                  className="rounded-full"
+                                />
+                              </div>
+                            </div>
+                            <div className="text-sm text-black flex w-fit h-fit font-jack">
+                              {(item as Account)?.username?.localName?.slice(
+                                0,
+                                10
+                              ) + "..."}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })}
+              </div>
+            )}
         </label>
         <div className="relative flex items-center justify-center w-fit h-fit">
           <div
@@ -196,6 +258,7 @@ const Header: FunctionComponent = (): JSX.Element => {
                   router.push(
                     `/user/${context?.lensConnected?.profile?.username?.localName}`
                   );
+                  setOpenAccount(false);
                 }}
               >
                 <div className="relative w-fit h-fit flex">

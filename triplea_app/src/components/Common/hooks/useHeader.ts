@@ -1,5 +1,11 @@
 import { chains } from "@lens-network/sdk/viem";
-import { Context, evmAddress, PublicClient } from "@lens-protocol/client";
+import {
+  Account,
+  Context,
+  evmAddress,
+  PageSize,
+  PublicClient,
+} from "@lens-protocol/client";
 import { SetStateAction, useEffect, useState } from "react";
 import { createWalletClient, custom } from "viem";
 import { LensConnected, NFTData } from "../types/common.types";
@@ -7,6 +13,7 @@ import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAc
 import { getCollectionSearch } from "../../../../graphql/queries/getCollectionSearch";
 import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import revoke from "../../../../graphql/lens/mutations/revoke";
+import { fetchAccounts } from "@lens-protocol/client/actions";
 
 const useHeader = (
   address: `0x${string}` | undefined,
@@ -22,7 +29,13 @@ const useHeader = (
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [lensLoading, setLensLoading] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
-  const [searchItems, setSearchItems] = useState<NFTData[]>([]);
+  const [searchItems, setSearchItems] = useState<{
+    nfts: NFTData[];
+    handles: Account[];
+  }>({
+    nfts: [],
+    handles: [],
+  });
   const handleSearch = async () => {
     if (search?.trim() == "") return;
     setSearchLoading(true);
@@ -76,7 +89,49 @@ const useHeader = (
         })
       );
 
-      setSearchItems(colls);
+      const res = await fetchAccounts(
+        lensConnected?.sessionClient || lensClient!,
+        {
+          pageSize: PageSize.Ten,
+          filter: {
+            searchBy: {
+              localNameQuery: search,
+            },
+          },
+        }
+      );
+      let handles: Account[] = [];
+
+      if (res.isOk()) {
+        handles = res.value?.items as Account[];
+      }
+
+      handles = await Promise.all(
+        handles?.map(async (han) => {
+          let picture = "";
+          const cadena = await fetch(
+            `${STORAGE_NODE}/${han?.metadata?.picture?.split("lens://")?.[1]}`
+          );
+
+          if (cadena) {
+            const json = await cadena.json();
+            picture = json.item;
+          }
+
+          return {
+            ...han,
+            metadata: {
+              ...han?.metadata,
+              picture,
+            },
+          } as Account;
+        })
+      );
+
+      setSearchItems({
+        nfts: colls,
+        handles,
+      });
     } catch (err: any) {
       console.error(err.message);
     }
@@ -107,7 +162,6 @@ const useHeader = (
             app: "0xe5439696f4057aF073c0FB2dc6e5e755392922e1",
             account: evmAddress((accounts as any)?.[0]?.account?.address),
             owner: signer.account.address?.toLowerCase(),
-            // manager: evmAddress(signer.account.address),
           },
           signMessage: (message) => signer.signMessage({ message }),
         });

@@ -8,7 +8,7 @@ const Slider: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
   const animationContext = useContext(AnimationContext);
   return (
-    <div className="relative w-full h-16 flex gap-4 flex-row justify-between items-center z-0 bg-white pixel-border-2 font-jackey2 text-sm text-black">
+    <div className="relative w-full h-fit sm:h-16 flex gap-4 flex-col sm:flex-row justify-between items-center z-0 bg-white sm:pixel-border-2 font-jackey2 text-sm text-black">
       <MarqueeText
         gradient={false}
         speed={100}
@@ -22,8 +22,9 @@ const Slider: FunctionComponent = (): JSX.Element => {
           }
         </div>
       </MarqueeText>
-      <div className="relative w-fit h-fit flex font-jack">|</div>
-      <div className="relative w-fit h-fit flex flex-row gap-4 p-2 font-start uppercase items-center justify-center">
+      <div className="relative w-fit h-fit hidden sm:flex font-jack">|</div>
+      <div className="relative w-full h-px sm:hidden flex bg-black"></div>
+      <div className="relative w-fit h-fit flex flex-col sm:flex-row gap-4 p-2 font-start uppercase items-center justify-center">
         <div className="relative w-fit h-fit flex">
           {context?.agents?.length}
         </div>

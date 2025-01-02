@@ -9,7 +9,7 @@ export default function DevTreasury() {
   return (
     <>
       <Slider />
-      <div className="relative w-full h-full flex flex-col gap-4 items-start px-20 pb-20 py-10 justify-start">
+      <div className="relative w-full h-full flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
         <div className="relative w-full h-full p-3 pixel-border-2 flex flex-col items-center justify-between gap-6">
           <div className="text-black font-start text-sm relative flex w-fit h-fit text-center text-black">
             Dev Treasury

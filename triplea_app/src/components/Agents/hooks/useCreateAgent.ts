@@ -294,7 +294,6 @@ const useCreateAgent = (
       };
 
       newSocket.onopen = () => {
-        console.log("enviando")
         newSocket.send(JSON.stringify(data));
       };
 

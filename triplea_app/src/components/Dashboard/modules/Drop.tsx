@@ -11,7 +11,7 @@ const Drop: FunctionComponent<DropProps> = ({
   setMintSwitcher,
 }): JSX.Element => {
   return (
-    <div className="relative w-full h-full flex flex-row gap-6 items-center justify-center font-jackey2">
+    <div className="relative w-full h-full flex flex-col sm:flex-row gap-6 items-center justify-center font-jackey2">
       <div className="relative flex w-full h-full items-start justify-between flex-col gap-3">
         <div className="relative w-full h-fit flex items-center justify-center">
           <input
