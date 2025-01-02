@@ -1,12 +1,11 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
-use dotenv::dotenv;
+use dotenv::{dotenv, from_filename, var};
 use reqwest::{
     multipart::{Form, Part},
     Client,
 };
 use serde_json::{from_str, Value};
 use std::{
-    env::{self, var},
     error::Error,
     sync::{Arc, Once},
 };
@@ -29,8 +28,9 @@ pub fn create_client() -> Arc<Client> {
 
 pub fn authentication() -> String {
     dotenv().ok();
-    let id = env::var("INFURA_PROJECT_ID").expect("INFURA_PROJECT_ID isn't configured");
-    let key = env::var("INFURA_PROJECT_SECRET").expect("INFURA_PROJECT_SECRET isn't configured");
+    from_filename(".env").ok();
+    let id = var("INFURA_PROJECT_ID").expect("INFURA_PROJECT_ID isn't configured");
+    let key = var("INFURA_PROJECT_SECRET").expect("INFURA_PROJECT_SECRET isn't configured");
     let aut = format!("{}:{}", id, key);
     STANDARD.encode(aut)
 }

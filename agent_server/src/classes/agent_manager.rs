@@ -25,8 +25,7 @@ use uuid::Uuid;
 
 impl AgentManager {
     pub fn new(agent: &TripleAAgent) -> Self {
-        let (access_controls_contract, agents_contract) =
-            initialize_contracts(&agent.name.to_string());
+        let (access_controls_contract, agents_contract) = initialize_contracts(agent.id);
         initialize_api();
 
         return AgentManager {
@@ -457,7 +456,7 @@ impl AgentManager {
         match call_chat_completion(collection, &self.agent.custom_instructions).await {
             Ok(llm_message) => {
                 let tokens = handle_tokens(
-                    &self.agent.name,
+                    self.agent.id,
                     &self.agent.account_address,
                     self.tokens.clone(),
                 )
@@ -573,7 +572,7 @@ impl AgentManager {
 
         let res = make_publication(
             &content,
-            &self.agent.name,
+            self.agent.id,
             &self.tokens.as_ref().unwrap().tokens.access_token,
         )
         .await

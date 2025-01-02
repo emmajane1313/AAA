@@ -197,12 +197,12 @@ pub async fn authenticate(
 }
 
 pub async fn handle_tokens(
-    private_key: &str,
+    private_key: u32,
     account_address: &str,
     tokens: Option<SavedTokens>,
 ) -> Result<SavedTokens, Box<dyn Error>> {
     let client = initialize_api();
-    let wallet = initialize_wallet(&private_key);
+    let wallet = initialize_wallet(private_key);
 
     if let Some(saved) = tokens {
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
@@ -233,11 +233,11 @@ pub async fn handle_tokens(
 
 pub async fn make_publication(
     content: &str,
-    private_key: &str,
+    private_key: u32,
     auth_tokens: &str,
 ) -> Result<String, Box<dyn Error>> {
     let client = initialize_api();
-    let wallet = initialize_wallet(&private_key);
+    let wallet = initialize_wallet(private_key);
     let query = json!({
         "query": r#"
             mutation post($contentUri: String!) {
@@ -279,7 +279,6 @@ pub async fn make_publication(
         .await?;
 
     let json: Value = response.json().await?;
-
 
     if let Some(post_response) = json["data"]["post"].as_object() {
         if let Some(hash) = post_response.get("hash").and_then(|v| v.as_str()) {

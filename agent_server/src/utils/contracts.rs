@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex, Once};
 
-use crate::utils::constants::{AGENTS, LENS_CHAIN_ID, ACCESS_CONTROLS, LENS_RPC_URL};
-use dotenv::{dotenv, var};
+use crate::utils::constants::{ACCESS_CONTROLS, AGENTS, LENS_CHAIN_ID, LENS_RPC_URL};
+use dotenv::{dotenv, from_filename, var};
 use ethers::{
     abi::{Abi, Address},
     contract::Contract,
@@ -55,8 +55,9 @@ pub fn initialize_api() -> Arc<Client> {
         .expect("Client not initialized")
 }
 
-pub fn initialize_wallet(private_key: &str) -> LocalWallet {
-    let wallet = match var(private_key) {
+pub fn initialize_wallet(private_key: u32) -> LocalWallet {
+    from_filename(".env").ok();
+    let wallet = match var(format!("ID_{}", private_key.to_string())) {
         Ok(key) => match key.parse::<LocalWallet>() {
             Ok(mut wallet) => {
                 let chain_id = *LENS_CHAIN_ID;
@@ -73,7 +74,7 @@ pub fn initialize_wallet(private_key: &str) -> LocalWallet {
 }
 
 pub fn initialize_contracts(
-    private_key: &str,
+    private_key: u32,
 ) -> (
     Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
     Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
@@ -89,11 +90,8 @@ pub fn initialize_contracts(
         .expect("Error in parsing ACCESS_CONTROLS");
     let access_controls_abi: Abi = from_str(include_str!("./../../abis/AccessControls.json"))
         .expect("Error in loading AccessControls ABI");
-    let access_controls_contract = Contract::new(
-        access_controls_address,
-        access_controls_abi,
-        client.clone(),
-    );
+    let access_controls_contract =
+        Contract::new(access_controls_address, access_controls_abi, client.clone());
     *ACCESS_CONTROLS_CONTRACT.lock().unwrap() = Some(Arc::new(access_controls_contract));
 
     let agents_address = AGENTS.parse::<Address>().expect("Error in parsing AGENTS");

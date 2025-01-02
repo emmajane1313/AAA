@@ -1,16 +1,18 @@
 use crate::Collection;
 
 use rand::{thread_rng, Rng};
+use dotenv::{from_filename, var};
 use reqwest::Client;
 use serde_json::{json, Value};
-use std::{env, error::Error, io};
+use std::{ error::Error, io};
 
 pub async fn call_chat_completion(
     collection: &Collection,
     custom_instructions: &str,
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
+    from_filename(".env").ok();
     let open_ai_key: String =
-        env::var("OPEN_AI_SECRET").expect("OPEN_AI_SECRET not configured in .env");
+        var("OPEN_AI_SECRET").expect("OPEN_AI_SECRET not configured in .env");
     let max_completion_tokens = [100, 200, 350][thread_rng().gen_range(0..3)];
     let input_prompt = 
     format!("Write some meta response/insight that could be used as a publication to social media about this collection and it's description {}", collection.description);
