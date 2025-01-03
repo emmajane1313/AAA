@@ -321,7 +321,7 @@ export default function Agent() {
                                 objectFit="cover"
                                 className="rounded-sm"
                                 layout="fill"
-                                src={`${INFURA_GATEWAY}/ipf/${
+                                src={`${INFURA_GATEWAY}/ipfs/${
                                   agent?.collectionIdsHistory
                                     ?.find(
                                       (col) =>
@@ -387,7 +387,7 @@ export default function Agent() {
                                 objectFit="cover"
                                 className="rounded-sm"
                                 layout="fill"
-                                src={`${INFURA_GATEWAY}/ipf/${
+                                src={`${INFURA_GATEWAY}/ipfs/${
                                   collection?.metadata?.image?.split(
                                     "ipfs://"
                                   )?.[1]

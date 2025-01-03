@@ -4,7 +4,7 @@ import { FetchResult, gql } from "@apollo/client";
 const COLLECTIONS = gql`
   query ($skip: Int!) {
     collectionCreateds(
-      first: 20
+      first: 40
       skip: $skip
       orderDirection: desc
       orderBy: blockTimestamp

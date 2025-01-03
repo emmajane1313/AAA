@@ -24,7 +24,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
           hasMore={hasMore}
           loader={<div key={0} />}
           scrollableTarget="scroll"
-          className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
+          className="grid grid-cols-6 gap-10 w-max h-fit pb-10"
         >
           {(galleryLoading || Number(nfts?.length) < 1
             ? [...nfts, ...Array.from({ length: 20 })]
@@ -37,7 +37,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
               >
                 <div className="w-96 h-96 bg-white flex p-4 relative pixel-border-2 gap-2">
                   <div className="relative w-full h-full flex bg-mochi pixel-border-3 rounded-lg">
-                    <div className="relative w-full h-full  rounded-sm bg-mochi p-2">
+                    <div className="relative w-full h-full rounded-sm bg-mochi p-2">
                       <div
                         className="relative w-full h-full flex bg-mochi cursor-pixel"
                         onClick={() => {
@@ -66,7 +66,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
                   </div>
                 </div>
                 <div className="relative w-full h-fit flex text-left font-start text-base">
-                  {(nft as NFTData)?.title}
+                  {(nft as NFTData)?.title?.length > 15 ?(nft as NFTData)?.title?.slice(0,12) + "..." : (nft as NFTData)?.title }
                 </div>
                 <div className="relative h-1 w-full flex bg-black"></div>
                 <div className="relative w-full h-fit flex justify-between flex-row gap-2 font-jackey2">

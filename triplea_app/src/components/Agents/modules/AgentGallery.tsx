@@ -26,7 +26,7 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
           hasMore={hasMore}
           loader={<div key={0} />}
           scrollableTarget="scroll"
-          className="grid grid-cols-8 gap-10 w-max h-fit pb-10"
+          className="grid grid-cols-6 gap-7 w-max h-fit pb-10"
         >
           {(agentGalleryLoading || Number(context?.agents?.length) < 1
             ? [...(context?.agents || []), ...Array.from({ length: 20 })]

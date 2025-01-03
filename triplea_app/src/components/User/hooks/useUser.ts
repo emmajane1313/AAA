@@ -59,6 +59,7 @@ const useUser = (username: string, lensClient: PublicClient) => {
       let ownerPicture = "";
       let ownerProfile: any;
 
+
       if (newAcc) {
         const cadena = await fetch(
           `${STORAGE_NODE}/${
@@ -89,6 +90,8 @@ const useUser = (username: string, lensClient: PublicClient) => {
         };
       }
 
+
+
       if ((newAcc as any)?.owner) {
         setUserInfo(ownerProfile);
       }
@@ -115,13 +118,13 @@ const useUser = (username: string, lensClient: PublicClient) => {
       const agents = await getUserAgentsPaginated(info?.owner, 0);
       const drops = await getDropCollections(info?.owner, 0);
       const collected = await getOrdersPaginated(info?.owner, 0);
-
+   
       setHasMore({
         agents: agents?.data?.agentCreateds?.length == 20 ? true : false,
         collected: collected?.data?.orders?.length == 20 ? true : false,
         drops: drops?.data?.dropCreateds?.length == 20 ? true : false,
       });
-
+ 
       setPaginated({
         agents:
           agents?.data?.agentCreateds?.length == 20

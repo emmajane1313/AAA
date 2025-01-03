@@ -365,6 +365,8 @@ impl AgentManager {
         })
         .await;
 
+        println!("{:?}\n", response);
+
         match response {
             Ok(result) => match result {
                 Ok(result) => {
@@ -557,7 +559,10 @@ impl AgentManager {
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
         let focus = String::from("IMAGE");
         let schema = "https://json-schemas.lens.dev/posts/image/3.0.0.json".to_string();
-        let tags = vec!["tripleA".to_string(), collection.title.to_string()];
+        let tags = vec![
+            "tripleA".to_string(),
+            collection.title.to_string().replace(" ", "").to_lowercase(),
+        ];
 
         let publication = Publication {
             schema,

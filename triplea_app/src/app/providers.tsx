@@ -1,9 +1,7 @@
 "use client";
 
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider, http } from "wagmi";
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { WagmiProvider, createConfig, http } from "wagmi";
 import { createContext, SetStateAction, useEffect, useState } from "react";
 import { chains } from "@lens-network/sdk/viem";
 import { Context, PublicClient, testnet } from "@lens-protocol/client";
@@ -13,19 +11,22 @@ import {
   StorageClient,
   testnet as storageTestnet,
 } from "@lens-protocol/storage-node-client";
+import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 
-export const config = getDefaultConfig({
-  appName: "Triple A",
-  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string,
-  chains: [chains.testnet],
-  transports: {
-    [chains.testnet.id]: http(
-      "https://rpc.testnet.lens.dev"
-      // `https://lens-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_LENS_KEY}`
-    ),
-  },
-  ssr: true,
-});
+export const config = createConfig(
+  getDefaultConfig({
+    appName: "Triple A",
+    walletConnectProjectId: process.env
+      .NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string,
+    appUrl: "https://triplea.agentmeme.xyz",
+    appIcon: "https://triplea.agentmeme.xyz/favicon.ico",
+    chains: [chains.testnet],
+    transports: {
+      [chains.testnet.id]: http("https://rpc.testnet.lens.dev"),
+    },
+    ssr: true,
+  })
+);
 
 const queryClient = new QueryClient();
 
@@ -86,7 +87,12 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
+        <ConnectKitProvider
+          customTheme={{
+            "--ck-font-family": '"Jackey2", cursive',
+          }}
+        
+        >
           <AnimationContext.Provider
             value={{
               pageChange,
@@ -116,7 +122,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
               {children}
             </ModalContext.Provider>
           </AnimationContext.Provider>
-        </RainbowKitProvider>
+        </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

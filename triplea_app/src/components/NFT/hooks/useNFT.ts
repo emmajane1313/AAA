@@ -9,6 +9,7 @@ import { getCollection } from "../../../../graphql/queries/getCollection";
 import {
   evmAddress,
   MainContentFocus,
+  PageSize,
   Post,
   PostType,
   PublicClient,
@@ -92,17 +93,23 @@ const useNFT = (
 
       const postsRes = await fetchPosts(
         {
-          pageSize: "FIFTY",
+          pageSize: PageSize.Fifty,
           filter: {
             metadata: {
               tags: {
-                oneOf: ["tripleA", collection?.metadata?.title],
+                oneOf: [
+                  "tripleA",
+                  collection?.metadata?.title
+                    ?.replaceAll(" ", "")
+                    ?.toLowerCase(),
+                ],
               },
             },
           },
         },
         lensConnected?.sessionClient || lensClient
       );
+
       let posts: Post[] = [];
 
       if ((postsRes as any)?.items?.length > 0) {

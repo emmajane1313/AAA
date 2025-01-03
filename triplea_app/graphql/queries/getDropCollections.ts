@@ -2,8 +2,8 @@ import { aaaClient } from "@/lib/graph/client";
 import { FetchResult, gql } from "@apollo/client";
 
 const DROP_COLLECTIONS = gql`
-  query ($dropId: Int!, $skip: Int!) {
-    dropCreateds(where: { dropId: $dropId }, skip: $skip, first: 20) {
+  query ($artist: String!, $skip: Int!) {
+    dropCreateds(where: { artist: $artist }, skip: $skip, first: 20) {
       metadata {
         title
         cover
@@ -11,7 +11,7 @@ const DROP_COLLECTIONS = gql`
       collections {
         collectionId
         metadata {
-          cover
+          image
         }
       }
       dropId
@@ -25,13 +25,13 @@ const DROP_COLLECTIONS = gql`
 `;
 
 export const getDropCollections = async (
-  dropId: number,
+  artist: string,
   skip: number
 ): Promise<FetchResult | void> => {
   let timeoutId: NodeJS.Timeout | undefined;
   const queryPromise = aaaClient.query({
     query: DROP_COLLECTIONS,
-    variables: { dropId, skip },
+    variables: { artist, skip },
     fetchPolicy: "no-cache",
     errorPolicy: "all",
   });

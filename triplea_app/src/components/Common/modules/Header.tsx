@@ -5,17 +5,16 @@ import Image from "next/legacy/image";
 import { useRouter } from "next/navigation";
 import { FunctionComponent, JSX, useContext } from "react";
 import useHeader from "../hooks/useHeader";
-import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { AnimationContext, ModalContext } from "@/app/providers";
 import useAgents from "@/components/Common/hooks/useAgents";
 import { NFTData } from "../types/common.types";
 import { Account } from "@lens-protocol/client";
+import { useModal } from "connectkit";
 
 const Header: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
-  const { openConnectModal } = useConnectModal();
-  const { openAccountModal } = useAccountModal();
+  const { setOpen, open , openProfile} = useModal();
   const animationContext = useContext(AnimationContext);
   const { isConnected, address } = useAccount();
   const context = useContext(ModalContext);
@@ -333,7 +332,7 @@ const Header: FunctionComponent = (): JSX.Element => {
                 <div
                   className="relative flex w-full h-10 rounded-xl bg-black active:scale-95 items-center justify-center text-center text-sm text-white hover:opacity-80 cursor-pixel pixel-border-4"
                   onClick={() =>
-                    isConnected ? openAccountModal?.() : openConnectModal?.()
+                    isConnected ? openProfile?.() : setOpen?.(!open)
                   }
                 >
                   {isConnected ? "Disconnect" : "Connect"}

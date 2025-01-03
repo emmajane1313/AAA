@@ -1,7 +1,6 @@
 import { FunctionComponent, JSX } from "react";
 import { PurchaseProps } from "../types/nft.types";
 import usePurchase from "../hooks/usePurchase";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { createPublicClient, http } from "viem";
 import { chains } from "@lens-network/sdk/viem";
@@ -13,6 +12,7 @@ import useInteractions from "../hooks/useInteractions";
 import Post from "./Post";
 import Comments from "./Comments";
 import { useRouter } from "next/navigation";
+import { useModal } from "connectkit";
 
 const Purchase: FunctionComponent<PurchaseProps> = ({
   nft,
@@ -30,6 +30,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
 }): JSX.Element => {
   const { isConnected, address } = useAccount();
   const router = useRouter();
+  const { setOpen, open } = useModal();
   const publicClient = createPublicClient({
     chain: chains.testnet,
     transport: http(
@@ -71,7 +72,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
     setNft,
     nft
   );
-  const { openConnectModal } = useConnectModal();
+
   return (
     <div
       className={`relative w-[38rem] h-[40rem] flex flex-col gap-4 items-start justify-start text-left p-3 pixel-border-2 bg-white ${
@@ -135,12 +136,20 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                 {nft?.title}
               </div>
               <div className="relative text-sm text-black flex font-jackey2">
-                Edition — {nft?.amountSold} / {nft?.amount}
+                Edition — {nft?.amountSold || 0} / {nft?.amount}
               </div>
               <div className="relative w-full h-fit flex items-center justify-between flex-row gap-3 font-jackey2">
                 <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
                   {nft?.profile?.metadata?.picture && (
-                    <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado">
+                    <div
+                      className="relative flex rounded-full w-8 h-8 bg-morado border border-morado cursor-pixel"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(
+                          `/user/${nft?.profile?.username?.localName}`
+                        );
+                      }}
+                    >
                       <Image
                         src={`${INFURA_GATEWAY}/ipfs/${
                           nft?.profile?.metadata?.picture?.split("ipfs://")?.[1]
@@ -199,7 +208,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   onClick={() => {
                     if (!purchaseLoading) {
                       if (!isConnected) {
-                        openConnectModal?.();
+                        setOpen?.(!open);
                       } else if (approved) {
                         handlePurchase();
                       } else {
@@ -235,66 +244,74 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
             </>
           ) : screen == 2 ? (
             <div className="relative w-full h-full overflow-y-scroll flex items-start justify-start">
-              <div className="relative w-full h-fit flex flex-col items-start justify-start  gap-3">
-                {nft?.collectors?.map((collector, key) => {
-                  return (
-                    <div
-                      key={key}
-                      className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(
-                          `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
-                        );
-                      }}
-                    >
-                      {collector?.name ? (
-                        <div
-                          className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            router.push(`/user/${collector?.localName}`);
-                          }}
-                        >
-                          {collector?.pfp && (
-                            <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
-                              <Image
-                                src={`${INFURA_GATEWAY}/ipfs/${
-                                  (collector?.pfp || "")?.split("ipfs://")?.[1]
-                                }`}
-                                alt="pfp"
-                                draggable={false}
-                                className="rounded-full"
-                                layout="fill"
-                                objectFit="cover"
-                              />
+              {Number(nft?.collectors?.length || 0) < 1 ? (
+                <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600 font-jack">
+                  No Collectors Yet.
+                </div>
+              ) : (
+                <div className="relative w-full h-fit flex flex-col items-start justify-start  gap-3">
+                  {nft?.collectors?.map((collector, key) => {
+                    return (
+                      <div
+                        key={key}
+                        className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(
+                            `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
+                          );
+                        }}
+                      >
+                        {collector?.name ? (
+                          <div
+                            className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/user/${collector?.localName}`);
+                            }}
+                          >
+                            {collector?.pfp && (
+                              <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
+                                <Image
+                                  src={`${INFURA_GATEWAY}/ipfs/${
+                                    (collector?.pfp || "")?.split(
+                                      "ipfs://"
+                                    )?.[1]
+                                  }`}
+                                  alt="pfp"
+                                  draggable={false}
+                                  className="rounded-full"
+                                  layout="fill"
+                                  objectFit="cover"
+                                />
+                              </div>
+                            )}
+                            <div className="relative w-fit h-fit flex text-black text-sm font-start">
+                              @
+                              {collector?.name?.length > 10
+                                ? collector?.name?.slice(0, 10) + " ..."
+                                : collector?.name}
                             </div>
-                          )}
-                          <div className="relative w-fit h-fit flex text-black text-sm font-start">
-                            @
-                            {collector?.name?.length > 10
-                              ? collector?.name?.slice(0, 10) + " ..."
-                              : collector?.name}
                           </div>
-                        </div>
-                      ) : (
-                        <div className="relative w-fit h-fit flex font-start text-xs">
-                          {collector?.address?.slice(0, 10) + " ..."}
-                        </div>
-                      )}
+                        ) : (
+                          <div className="relative w-fit h-fit flex font-start text-xs">
+                            {collector?.address?.slice(0, 10) + " ..."}
+                          </div>
+                        )}
 
-                      <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2">
-                        X {collector?.amount}
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2">
+                          X {collector?.amount}
+                        </div>
+                        <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2 text-xs">
+                          {moment
+                            .unix(Number(collector?.blockTimestamp))
+                            .fromNow()}
+                        </div>
                       </div>
-                      <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2 text-xs">
-                        {moment
-                          .unix(Number(collector?.blockTimestamp))
-                          .fromNow()}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ) : (
             <div className="relative w-full gap-3 flex flex-col h-full">

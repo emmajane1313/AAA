@@ -290,6 +290,7 @@ const useHeader = (
 
         if (res) {
           setLensConnected?.(undefined);
+          window.localStorage.removeItem("lens.testnet.credentials");
         }
       }
     } catch (err: any) {

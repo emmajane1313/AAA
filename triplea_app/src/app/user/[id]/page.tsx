@@ -79,8 +79,8 @@ export default function User() {
         </div>
       </div>
       {
-        <div className="flex relative w-full h-full items-start justify-center overflow-y-scroll">
-          <div className="relative w-full h-full flex flex-wrap gap-6 items-start justify-center">
+        <div className="flex relative w-full h-full items-start justify-start overflow-y-scroll">
+          <div className="relative w-full h-full flex flex-wrap gap-6 items-start justify-start">
             {itemsLoading ? (
               Array.from({ length: 10 }).map((_, key) => {
                 return (
@@ -166,7 +166,7 @@ export default function User() {
                               className="rounded-md"
                               alt={item?.title}
                               src={`${INFURA_GATEWAY}/ipfs/${
-                                (item as NFTData)?.image?.includes("ipfs")
+                                (item as NFTData)?.image?.includes("ipfs://")
                                   ? (item as NFTData)?.image?.split(
                                       "ipfs://"
                                     )?.[1]
@@ -193,17 +193,22 @@ export default function User() {
                               draggable={false}
                               alt={item?.title}
                               src={`${INFURA_GATEWAY}/ipfs/${
-                                (item as DropInterface)?.cover?.includes("ipfs")
-                                  ? (item as DropInterface)?.cover?.split(
+                                (item as any)?.metadata?.cover?.includes(
+                                  "ipfs://"
+                                )
+                                  ? (item as any)?.metadata?.cover?.split(
                                       "ipfs://"
                                     )?.[1]
-                                  : (item as DropInterface)?.cover
+                                  : (item as any)?.metadata?.cover
                               }`}
                             />
                           </div>
                           <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 pt-4">
                             <div className="relative w-fit h-fit flex text-lg font-start uppercase">
-                              {(item as DropInterface).title}
+                              {(item as any)?.metadata?.title?.length > 12
+                                ? (item as any)?.metadata?.title?.slice(0, 9) +
+                                  "..."
+                                : (item as any)?.metadata?.title}
                             </div>
                           </div>
                           <div className="relative w-full h-full overflow-y-scroll flex items-start justify-between flex-wrap gap-2">
@@ -216,21 +221,28 @@ export default function User() {
                                     onClick={() => {
                                       animationContext?.setPageChange?.(true);
                                       router.push(
-                                        `/nft/${userInfo?.username?.localName}/${col?.id}`
+                                        `/nft/${userInfo?.username?.localName}/${(col as any)?.collectionId}`
                                       );
                                     }}
-                                    title={col?.title}
+                                    title={(col as any)?.metadata?.title}
                                   >
-                                    <div className="relative w-6 h-6 flex rounded-md items-center justify-center">
+                                    <div className="relative w-14 h-14 flex rounded-md items-center justify-center border border-morado">
                                       <Image
                                         objectFit="cover"
                                         layout="fill"
+                                        className="rounded-md"
                                         draggable={false}
-                                        alt={col?.title}
+                                        alt={(col as any)?.metadata?.title}
                                         src={`${INFURA_GATEWAY}/ipfs/${
-                                          col?.image?.includes("ipfs")
-                                            ? col?.image?.split("ipfs://")?.[1]
-                                            : col?.image
+                                          (
+                                            col as any
+                                          )?.metadata?.image?.includes("ipfs")
+                                            ? (
+                                                col as any
+                                              )?.metadata?.image?.split(
+                                                "ipfs://"
+                                              )?.[1]
+                                            : (col as any)?.metadata?.image
                                         }`}
                                       />
                                     </div>

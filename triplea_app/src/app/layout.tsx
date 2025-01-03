@@ -3,7 +3,6 @@ import "./globals.css";
 import Providers from "./providers";
 import Modals from "@/components/Modals/modules/Modals";
 import Header from "@/components/Common/modules/Header";
-import "@rainbow-me/rainbowkit/styles.css";
 import Footer from "@/components/Common/modules/Footer";
 import Animation from "./animation";
 

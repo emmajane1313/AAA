@@ -63,13 +63,12 @@ const useGallery = (lensClient: PublicClient) => {
                 picture,
               },
             },
-            size: getRandomSize(),
           };
         })
       );
 
-      setPage(gallery?.length == 20 ? 20 : 0);
-      setHasMore(gallery?.length == 20 ? true : false);
+      setPage(gallery?.length == 40 ? 40 : 0);
+      setHasMore(gallery?.length == 40 ? true : false);
       setNfts(gallery);
     } catch (err: any) {
       console.error(err.message);
@@ -77,14 +76,6 @@ const useGallery = (lensClient: PublicClient) => {
     setGalleryLoading(false);
   };
 
-  const getRandomSize = () => {
-    const sizes = [
-      "row-[span_20_/_span_20] w-full",
-      "row-[span_30_/_span_30] w-full",
-      "row-[span_35_/span_35_] w-full",
-    ];
-    return sizes[Math.floor(Math.random() * sizes.length)];
-  };
 
   useEffect(() => {
     if (nfts?.length < 1 && lensClient) {
@@ -145,13 +136,12 @@ const useGallery = (lensClient: PublicClient) => {
                 picture,
               },
             },
-            size: getRandomSize(),
           };
         })
       );
 
-      setPage(gallery?.length == 20 ? page + 20 : page);
-      setHasMore(gallery?.length == 20 ? true : false);
+      setPage(gallery?.length == 40 ? page + 40 : page);
+      setHasMore(gallery?.length == 40 ? true : false);
       setNfts([...nfts, ...gallery]);
     } catch (err: any) {
       console.error(err.message);

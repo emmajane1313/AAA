@@ -16,8 +16,9 @@ pub async fn call_chat_completion(
         var("OPEN_AI_SECRET").expect("OPEN_AI_SECRET not configured in .env");
     let max_completion_tokens = [100, 200, 350][thread_rng().gen_range(0..3)];
     let input_prompt = 
-    format!("Write some meta response/insight that could be used as a publication to social media about this collection and it's description {}", collection.description);
-    let combined_instructions = format!("{}\n\nHere are some additional custom instructions to follow according to this specific collection {}", custom_instructions, collection_instructions);
+    format!(    "Create a meta response or insightful comment suitable for publication online that highlights this collection and its description: {}"
+    , collection.description);
+    let combined_instructions = format!("{}\n\nIn addition, incorporate these specific instructions tailored to this collection: {}", custom_instructions, collection_instructions);
 
     let mut messages = vec![];
 

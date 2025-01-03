@@ -275,7 +275,7 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
 
             agent_ids = agents_guard
                 .values()
-                .filter(|agent_manager| should_trigger(&agent_manager.agent))
+                // .filter(|agent_manager| should_trigger(&agent_manager.agent))
                 .map(|agent_manager| agent_manager.agent.id)
                 .collect();
         }

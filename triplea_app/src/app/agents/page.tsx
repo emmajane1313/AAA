@@ -6,9 +6,9 @@ import {
   CreateSwitcher,
 } from "@/components/Agents/types/agents.types";
 import Slider from "@/components/Common/modules/Slider";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useState } from "react";
 import { useAccount } from "wagmi";
+import { useModal } from "connectkit";
 
 export default function Agents() {
   const [agentSwitcher, setAgentSwitcher] = useState<AgentSwitcher>(
@@ -17,7 +17,7 @@ export default function Agents() {
   const [createSwitcher, setCreateSwitcher] = useState<CreateSwitcher>(
     CreateSwitcher.Details
   );
-  const { openConnectModal } = useConnectModal();
+  const { setOpen, open } = useModal();
   const { isConnected } = useAccount();
   return (
     <>
@@ -31,7 +31,7 @@ export default function Agents() {
               setAgentSwitcher(AgentSwitcher.Create);
               setCreateSwitcher(CreateSwitcher.Details);
             } else {
-              openConnectModal?.();
+              setOpen?.(!open);
             }
           }}
         >

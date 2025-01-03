@@ -47,7 +47,7 @@ const GRASS_CONTRACT = "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 
     // const tx_3 = await accessContract.setTokenThreshold(
     //   "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8",
-    //   "100000000000000000000",  {
+    //   "10000000000000000",  {
     //       gasLimit: 1000000,
     //       maxFeePerGas: feeData?.gasPrice,
     //       maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
@@ -66,7 +66,7 @@ const GRASS_CONTRACT = "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 
   // const tx_5 = await accessContract.setTokenThreshold(
   //   GRASS_CONTRACT,
-  //   "10000000000000000000",  {
+  //   "10000000000000000",  {
   //       gasLimit: 1000000,
   //       maxFeePerGas: feeData?.gasPrice,
   //       maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,

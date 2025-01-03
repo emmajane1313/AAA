@@ -23,7 +23,7 @@ const UserInfo: FunctionComponent<UserInfoProps> = ({
                 <div className="relative w-20 rounded-full h-20 flex items-center justify-center border border-black bg-white">
                   {userInfo?.metadata?.picture && (
                     <Image
-                      src={`${INFURA_GATEWAY}/${
+                      src={`${INFURA_GATEWAY}/ipfs/${
                         userInfo?.metadata?.picture?.split("ipfs://")?.[1]
                       }`}
                       objectFit="cover"
