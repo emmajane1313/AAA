@@ -24,7 +24,7 @@ const useMint = (
   const [agentsLoading, setAgentsLoading] = useState<boolean>(false);
   const [id, setId] = useState<string | undefined>();
   const [mintData, setMintData] = useState<MintData>({
-    agentIds: [],
+    agents: [],
     prices: [],
     tokens: [],
     dropId: 0,
@@ -122,9 +122,12 @@ const useMint = (
         chain: chains.testnet,
         args: [
           {
+            customInstructions: mintData?.agents?.map(
+              (ag) => ag?.customInstructions
+            ),
             tokens: mintData?.tokens,
             prices: mintData?.prices?.map((price) => Number(price) * 10 ** 18),
-            agentIds: mintData?.agentIds,
+            agentIds: mintData?.agents?.map((ag) => Number(ag?.agent?.id)),
             metadata: "ipfs://" + responseJSON?.cid,
             amount: Number(mintData?.amount),
           },
@@ -158,7 +161,7 @@ const useMint = (
         .filter((event) => event !== null);
 
       setMintData({
-        agentIds: [],
+        agents: [],
         prices: [],
         tokens: [],
         dropId: 0,
@@ -200,7 +203,9 @@ const useMint = (
           let picture = "";
           const cadena = await fetch(
             `${STORAGE_NODE}/${
-              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
+              (result as any)?.[0]?.account?.metadata?.picture?.split(
+                "lens://"
+              )?.[1]
             }`
           );
 

@@ -26,29 +26,39 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                 <div
                   key={key}
                   className={`relative w-60 pixel-border-4 h-full bg-morado rounded-xl flex flex-col items-center justify-between cursor-pixel p-2 ${
-                    mintData.agentIds.includes(agent.id) &&
-                    "border border-black opacity-70"
+                    mintData.agents
+                      ?.map((ag) => ag?.agent?.id)
+                      .includes(agent?.id) && "border border-black opacity-70"
                   }`}
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setMintData((prev) => {
                       const newMintData = {
                         ...prev,
                       };
 
-                      if (newMintData.agentIds.includes(agent.id)) {
-                        newMintData.agentIds = newMintData.agentIds?.filter(
-                          (ag) => ag !== agent.id
+                      if (
+                        newMintData.agents
+                          ?.map((ag) => ag?.agent?.id)
+                          .includes(agent?.id)
+                      ) {
+                        newMintData.agents = newMintData.agents?.filter(
+                          (ag) => ag?.agent?.id !== agent.id
                         );
                       } else {
-                        newMintData.agentIds = [
-                          ...newMintData.agentIds,
-                          agent.id,
+                        newMintData.agents = [
+                          ...newMintData.agents,
+                          {
+                            agent: agent,
+                            customInstructions: "",
+                          },
                         ];
                       }
 
                       return newMintData;
-                    })
-                  }
+                    });
+                  }}
                 >
                   <div className="relative w-full h-full rounded-md flex">
                     <Image
@@ -68,10 +78,58 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                     <div className="relative w-fit h-fit flex text-lg font-start uppercase">
                       {agent.title}
                     </div>
-                    <div className="relative w-fit overflow-y-scroll font-jackey2 max-h-40 h-fit flex text-sm">
+                    <div
+                      className={`relative w-fit overflow-y-scroll font-jackey2 h-fit flex text-sm ${
+                        mintData.agents
+                          ?.map((ag) => ag?.agent?.id)
+                          .includes(agent?.id)
+                          ? "max-h-20"
+                          : "max-h-40"
+                      }`}
+                    >
                       {agent.description}
                     </div>
                   </div>
+                  {mintData.agents
+                    ?.map((ag) => ag?.agent?.id)
+                    .includes(agent?.id) && (
+                    <div
+                      className="relative w-full h-fit flex pt-4"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <textarea
+                        className="relative w-full h-40 flex overflow-y-scroll p-1 bg-white text-sm text-black font-jackey2 cursor-text focus:outline-none"
+                        placeholder="Add custom instructions for your agent."
+                        style={{
+                          resize: "none",
+                        }}
+                        value={agent?.customInstructions}
+                        onChange={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setMintData((prev) => {
+                            const newMint = { ...prev };
+
+                            let newAgents = [...newMint?.agents];
+                            const newIndex = newAgents?.findIndex(
+                              (ag) => ag?.agent?.id == agent?.id
+                            );
+
+                            newAgents[newIndex] = {
+                              ...newAgents[newIndex],
+                              customInstructions: e.target.value,
+                            };
+
+                            newMint.agents = newAgents;
+                            return newMint;
+                          });
+                        }}
+                      ></textarea>
+                    </div>
+                  )}
                 </div>
               );
             })}

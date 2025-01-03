@@ -11,7 +11,7 @@ export enum Switcher {
   Mint,
   Drops,
   Account,
-  Page
+  Page,
 }
 
 export enum MintSwitcher {
@@ -72,6 +72,14 @@ export type MintProps = {
   allDrops: DropInterface[];
 };
 
+export type CustomiseAgentProps = {
+  chosenAgents: {
+    agent: Agent;
+    customInstructions: string;
+  }[];
+  setMintData: (e: SetStateAction<MintData>) => void;
+};
+
 export type ChooseAgentProps = {
   agents: Agent[];
   agentsLoading: boolean;
@@ -91,10 +99,11 @@ export type AccountProps = {
   lensConnected: LensConnected | undefined;
   setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void;
   storageClient: StorageClient;
+  setSignless: (e: SetStateAction<boolean>) => void;
 };
 
 export type MintData = {
-  agentIds: string[];
+  agents: { agent: Agent; customInstructions: string }[];
   prices: number[];
   tokens: string[];
   dropId: number;
@@ -148,7 +157,7 @@ export interface DropInterface {
   title: string;
   cover: string;
   collectionIds: string[];
-  collections: NFTData[]
+  collections: NFTData[];
 }
 
 export interface Order {

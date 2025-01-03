@@ -110,7 +110,7 @@ const useAgent = (
           filter: {
             metadata: {
               tags: {
-                oneOf: ["tripleA", id],
+                oneOf: ["tripleA"],
               },
             },
             // authors: [(result as any)?.[0]?.account?.address],
@@ -209,7 +209,7 @@ const useAgent = (
           filter: {
             metadata: {
               tags: {
-                oneOf: ["tripleA", id],
+                oneOf: ["tripleA"],
               },
             },
             // authors: [agent?.accountConnected],

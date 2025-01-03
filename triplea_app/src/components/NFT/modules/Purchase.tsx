@@ -3,16 +3,16 @@ import { PurchaseProps } from "../types/nft.types";
 import usePurchase from "../hooks/usePurchase";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { AiOutlineLoading } from "react-icons/ai";
 import { createPublicClient, http } from "viem";
 import { chains } from "@lens-network/sdk/viem";
-import { INFURA_GATEWAY, STORAGE_NODE, TOKENS } from "@/lib/constants";
+import { INFURA_GATEWAY, TOKENS } from "@/lib/constants";
 import Image from "next/legacy/image";
 import moment from "moment";
 import InfiniteScroll from "react-infinite-scroll-component";
 import useInteractions from "../hooks/useInteractions";
 import Post from "./Post";
 import Comments from "./Comments";
+import { useRouter } from "next/navigation";
 
 const Purchase: FunctionComponent<PurchaseProps> = ({
   nft,
@@ -29,6 +29,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
   setIndexer,
 }): JSX.Element => {
   const { isConnected, address } = useAccount();
+  const router = useRouter();
   const publicClient = createPublicClient({
     chain: chains.testnet,
     transport: http(
@@ -240,14 +241,21 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                     <div
                       key={key}
                       className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation();
                         window.open(
                           `https://block-explorer.testnet.lens.dev/tx/${collector?.transactionHash}`
-                        )
-                      }
+                        );
+                      }}
                     >
                       {collector?.name ? (
-                        <div className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center">
+                        <div
+                          className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/user/${collector?.localName}`);
+                          }}
+                        >
                           {collector?.pfp && (
                             <div className="relative rounded-full w-6 h-6 bg-crema border border-morado">
                               <Image
@@ -290,30 +298,37 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
             </div>
           ) : (
             <div className="relative w-full gap-3 flex flex-col h-full">
-              <div
-                className="relative w-full h-[50%] overflow-y-scroll"
-                id="scrollableDiv"
-              >
-                <InfiniteScroll
-                  scrollableTarget="scrollableDiv"
-                  dataLength={nft?.agentActivity?.length || 1}
-                  next={handleMoreActivity}
-                  hasMore={hasMore}
-                  loader={<div key={0}/>}
-                  className="relative w-full"
+              {Number(nft?.agentActivity?.length || 0) < 1 ? (
+                <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600 font-jack">
+                  No Agent Activity Yet.
+                </div>
+              ) : (
+                <div
+                  className="relative w-full h-[50%] overflow-y-scroll"
+                  id="scrollableDiv"
                 >
-                  <Comments
-                    comments={nft?.agentActivity || []}
-                    setImageView={setImageView}
-                    interactionsLoading={interactionsLoading}
-                    handleLike={handleLike}
-                    handleMirror={handleMirror}
-                    setCommentQuote={setCommentQuote}
-                    postLoading={postLoading}
-                    commentQuote={commentQuote}
-                  />
-                </InfiniteScroll>
-              </div>
+                  <InfiniteScroll
+                    scrollableTarget="scrollableDiv"
+                    dataLength={nft?.agentActivity?.length || 1}
+                    next={handleMoreActivity}
+                    hasMore={hasMore}
+                    loader={<div key={0} />}
+                    className="relative w-full"
+                  >
+                    <Comments
+                      comments={nft?.agentActivity || []}
+                      setImageView={setImageView}
+                      interactionsLoading={interactionsLoading}
+                      handleLike={handleLike}
+                      handleMirror={handleMirror}
+                      setCommentQuote={setCommentQuote}
+                      postLoading={postLoading}
+                      commentQuote={commentQuote}
+                    />
+                  </InfiniteScroll>
+                </div>
+              )}
+
               <Post
                 handlePost={handlePost}
                 postLoading={postLoading}

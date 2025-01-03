@@ -31,4 +31,5 @@ export interface Collector {
   transactionHash: string;
   amount: number;
   blockTimestamp: string;
+  localName?: string;
 }

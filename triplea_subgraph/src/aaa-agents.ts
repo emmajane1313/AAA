@@ -26,12 +26,13 @@ import {
   RentPaid,
 } from "../generated/schema";
 import { AgentMetadata as AgentMetadataTemplate } from "../generated/templates";
+import { AAACollectionManager } from "../generated/AAACollectionManager/AAACollectionManager";
 
 export function handleAgentCreated(event: AgentCreatedEvent): void {
   let entity = new AgentCreated(
     Bytes.fromByteArray(ByteArray.fromBigInt(event.params.id))
   );
-  entity.wallets = event.params.wallets.map<Bytes>((target: Bytes) => target);;
+  entity.wallets = event.params.wallets.map<Bytes>((target: Bytes) => target);
   entity.creator = event.params.creator;
   entity.AAAAgents_id = event.params.id;
 
@@ -134,6 +135,9 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
     let agents = AAAAgents.bind(
       Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
     );
+    let collections = AAACollectionManager.bind(
+      Address.fromString("0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a")
+    );
 
     let collectionIdHex = entity.collectionId.toHexString();
     let tokenHex = entity.token.toHexString();
@@ -153,6 +157,10 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
       event.params.token,
       entity.agentId,
       entity.collectionId
+    );
+    newBalance.instructions = collections.getAgentCollectionCustomInstructions(
+      entity.collectionId,
+      entity.agentId
     );
     newBalance.totalBalance = agents.getAgentTotalBalance(
       event.params.token,
@@ -223,6 +231,9 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
     let agents = AAAAgents.bind(
       Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
     );
+    let collections = AAACollectionManager.bind(
+      Address.fromString("0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a")
+    );
 
     let collectionIds: BigInt[] = entity.collectionIds as BigInt[];
     let combinedHexes: string[] = [];
@@ -252,6 +263,11 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
         entity.agentId,
         collectionId
       );
+      newBalance.instructions =
+        collections.getAgentCollectionCustomInstructions(
+          collectionId,
+          entity.agentId
+        );
       newBalance.totalBalance = agents.getAgentTotalBalance(
         token as Address,
         entity.agentId,

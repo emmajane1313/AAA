@@ -9,6 +9,7 @@ use std::{ error::Error, io};
 pub async fn call_chat_completion(
     collection: &Collection,
     custom_instructions: &str,
+    collection_instructions: &str,
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
     from_filename(".env").ok();
     let open_ai_key: String =
@@ -16,12 +17,13 @@ pub async fn call_chat_completion(
     let max_completion_tokens = [100, 200, 350][thread_rng().gen_range(0..3)];
     let input_prompt = 
     format!("Write some meta response/insight that could be used as a publication to social media about this collection and it's description {}", collection.description);
+    let combined_instructions = format!("{}\n\nHere are some additional custom instructions to follow according to this specific collection {}", custom_instructions, collection_instructions);
 
     let mut messages = vec![];
 
     messages.push(json!({
         "role": "system",
-        "content": custom_instructions
+        "content": combined_instructions
     }));
     messages.push(json!({
         "role": "user",

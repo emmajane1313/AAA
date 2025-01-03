@@ -83,8 +83,7 @@ const Gallery: FunctionComponent = (): JSX.Element => {
                       />
                     </svg>
                     <div className="relative w-fit h-fit flex items-center justify-center text-black">
-                      {(Number((nft as NFTData)?.prices?.[0]) / 10 ** 18) *
-                        (nft as NFTData)?.amount}{" "}
+                      {Number((nft as NFTData)?.prices?.[0]) / 10 ** 18}{" "}
                       {
                         TOKENS?.find(
                           (tok) =>

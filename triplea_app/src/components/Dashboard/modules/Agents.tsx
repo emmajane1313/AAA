@@ -55,8 +55,12 @@ const Agents: FunctionComponent<AgentProps> = ({
               </div>
             </div>
             <div className="flex relative w-full h-full items-center justify-start overflow-x-scroll">
-              <div className="relative w-fit h-full flex flex-row gap-6">
-                {agentsLoading || userAgents?.length < 1 ? (
+            <div
+            className={`relative h-full flex flex-row gap-6 ${
+              !agentsLoading && userAgents?.length < 1 ? "w-full" : "w-fit"
+            }`}
+          >
+                {agentsLoading ? (
                   Array.from({ length: 10 }).map((_, key) => {
                     return (
                       <div

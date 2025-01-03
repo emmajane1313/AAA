@@ -33,6 +33,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
           lensConnected={context?.lensConnected}
           setLensConnected={context?.setLensConnected!}
           storageClient={context?.storageClient!}
+          setSignless={context?.setSignless!}
         />
       );
 

@@ -65,12 +65,27 @@ const useNFT = (
           lensConnected?.sessionClient || lensClient
         );
 
+        let picture = "";
+        const cadena = await fetch(
+          `${STORAGE_NODE}/${
+            (accounts as any)?.[0]?.account?.metadata?.picture?.split(
+              "lens://"
+            )?.[1]
+          }`
+        );
+
+        if (cadena) {
+          const json = await cadena.json();
+          picture = json.item;
+        }
+
         collectors.push({
           transactionHash: res?.data?.orders?.[i]?.transactionHash,
           blockTimestamp: res?.data?.orders?.[i]?.blockTimestamp,
           amount: res?.data?.orders?.[i]?.amount,
           address: res?.data?.orders?.[i]?.buyer,
-          pfp: (accounts as any)?.[0]?.account?.metadata?.picture,
+          pfp: picture,
+          localName: (accounts as any)?.[0]?.account?.username?.localName,
           name: (accounts as any)?.[0]?.account?.metadata?.name,
         });
       }
@@ -81,7 +96,7 @@ const useNFT = (
           filter: {
             metadata: {
               tags: {
-                oneOf: ["tripleA", id],
+                oneOf: ["tripleA", collection?.metadata?.title],
               },
             },
           },
@@ -109,7 +124,6 @@ const useNFT = (
           )?.[1]
         }`
       );
-
 
       if (cadena) {
         const json = await cadena.json();
@@ -155,7 +169,7 @@ const useNFT = (
           filter: {
             metadata: {
               tags: {
-                oneOf: ["tripleA", id],
+                oneOf: ["tripleA", nft?.title!],
               },
             },
           },

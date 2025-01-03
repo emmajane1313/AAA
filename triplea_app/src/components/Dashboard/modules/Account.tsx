@@ -9,9 +9,10 @@ const Account: FunctionComponent<AccountProps> = ({
   lensConnected,
   setLensConnected,
   storageClient,
+  setSignless
 }): JSX.Element => {
   const { accountLoading, setNewAccount, newAccount, handleUpdateAccount } =
-    useAccount(lensConnected, setLensConnected, storageClient);
+    useAccount(lensConnected, setLensConnected, storageClient, setSignless);
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
       <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">

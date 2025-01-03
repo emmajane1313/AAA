@@ -46,6 +46,7 @@ pub struct Collection {
     pub image: String,
     pub title: String,
     pub description: String,
+
     pub artist: String,
     pub collection_id: U256,
     pub prices: Vec<U256>,
@@ -59,6 +60,7 @@ pub struct AgentActivity {
     pub active_balance: U256,
     pub total_balance: U256,
     pub collection_id: U256,
+    pub custom_instructions: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

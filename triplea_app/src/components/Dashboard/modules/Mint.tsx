@@ -16,16 +16,17 @@ const Mint: FunctionComponent<MintProps> = ({
     <div className="relative w-full h-full flex flex-col gap-6 items-center justify-between">
       <div className="relative w-full h-full flex flex-col sm:flex-row items-center justify-center gap-4">
         <div className="relative w-full sm:w-fit h-60 sm:h-full flex">
-        <div className="relative w-full sm:w-80 h-full flex items-center justify-center">
-          {mintData.image && (
-            <Image
-              src={URL.createObjectURL(mintData.image)}
-              objectFit="contain"
-              layout="fill"
-              draggable={false}
-            />
-          )}
-        </div></div>
+          <div className="relative w-full sm:w-80 h-full flex items-center justify-center">
+            {mintData.image && (
+              <Image
+                src={URL.createObjectURL(mintData.image)}
+                objectFit="contain"
+                layout="fill"
+                draggable={false}
+              />
+            )}
+          </div>
+        </div>
         <div className="relative w-fit h-fit sm:h-full flex flex-col gap-4 items-start justify-start">
           <div className="relative flex w-fit h-10 text-center text-black font-start uppercase text-2xl">
             {mintData.title}
@@ -48,13 +49,13 @@ const Mint: FunctionComponent<MintProps> = ({
             {mintData.description}
           </div>
           <div className="relative flex w-fit h-fit flex flex-wrap gap-4 font-start">
-            {mintData?.agentIds?.map((agent, index) => {
+            {mintData?.agents?.map((agent, index) => {
               return (
                 <div
                   key={index}
                   className="relative text-xs text-black w-fit h-fit px-2 py-1 rounded-lg bg-morado pixel-border-4"
                 >
-                  {agents?.find((ag) => Number(ag?.id) == Number(agent))?.title}
+                  {agent?.agent?.title}
                 </div>
               );
             })}
@@ -70,16 +71,16 @@ const Mint: FunctionComponent<MintProps> = ({
         >
           {mintLoading ? (
             <svg
-            fill="none"
-            className="size-4 animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
-              fill="currentColor"
-            />{" "}
-          </svg>
+              fill="none"
+              className="size-4 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                fill="currentColor"
+              />{" "}
+            </svg>
           ) : (
             "Mint"
           )}

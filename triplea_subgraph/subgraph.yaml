@@ -53,6 +53,8 @@ dataSources:
       abis:
         - name: AAAAgents
           file: ./abis/AAAAgents.json
+        - name: AAACollectionManager
+          file: ./abis/AAACollectionManager.json
       eventHandlers:
         - event: AgentCreated(address[],address,indexed uint256)
           handler: handleAgentCreated

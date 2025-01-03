@@ -47,7 +47,12 @@ impl AgentManager {
 
         match collections_info {
             Ok(info) => {
-                self.current_queue = info;
+                self.current_queue = info.clone();
+
+                if info.len() < 1 {
+                    println!("No collections for agent this round.");
+                    return Ok(());
+                }
 
                 match self.pay_rent().await {
                     Ok(_) => {
@@ -341,6 +346,7 @@ impl AgentManager {
                         token
                         totalBalance
                         activeBalance
+                        instructions
                     }
                 }
             }
@@ -414,6 +420,10 @@ impl AgentManager {
                                             .filter_map(|v| v.as_str().map(|s| s.to_string()))
                                             .collect(),
                                     },
+                                    custom_instructions: balance["instructions"]
+                                        .as_str()
+                                        .unwrap_or_default()
+                                        .to_string(),
                                     token: balance["token"]
                                         .as_str()
                                         .unwrap_or_default()
@@ -452,8 +462,14 @@ impl AgentManager {
         }
     }
 
-    async fn chat_and_post(&mut self, collection: &Collection) {
-        match call_chat_completion(collection, &self.agent.custom_instructions).await {
+    async fn chat_and_post(&mut self, collection: &Collection, collection_instructions: &str) {
+        match call_chat_completion(
+            collection,
+            &self.agent.custom_instructions,
+            collection_instructions,
+        )
+        .await
+        {
             Ok(llm_message) => {
                 let tokens = handle_tokens(
                     self.agent.id,
@@ -510,9 +526,11 @@ impl AgentManager {
                 let mut self_cloned = self.clone();
                 move || {
                     let rt = tokio::runtime::Handle::current();
-                    rt.block_on(
-                        async move { self_cloned.chat_and_post(&collection.collection).await },
-                    )
+                    rt.block_on(async move {
+                        self_cloned
+                            .chat_and_post(&collection.collection, &collection.custom_instructions)
+                            .await
+                    })
                 }
             })
             .await;
@@ -539,7 +557,7 @@ impl AgentManager {
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
         let focus = String::from("IMAGE");
         let schema = "https://json-schemas.lens.dev/posts/image/3.0.0.json".to_string();
-        let tags = vec!["tripleA".to_string(), collection.collection_id.to_string()];
+        let tags = vec!["tripleA".to_string(), collection.title.to_string()];
 
         let publication = Publication {
             schema,

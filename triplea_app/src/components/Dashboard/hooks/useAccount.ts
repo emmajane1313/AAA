@@ -1,6 +1,5 @@
 import { LensConnected } from "@/components/Common/types/common.types";
 import { SetStateAction, useState } from "react";
-import { Account } from "@lens-protocol/client";
 import pollResult from "@/lib/helpers/pollResult";
 import updateAccount from "../../../../graphql/lens/mutations/updateAccount";
 import { v4 as uuidv4 } from "uuid";
@@ -11,7 +10,8 @@ import { STORAGE_NODE } from "@/lib/constants";
 const useAccount = (
   lensConnected: LensConnected | undefined,
   setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void,
-  storageClient: StorageClient
+  storageClient: StorageClient,
+  setSignless: (e: SetStateAction<boolean>) => void
 ) => {
   const [accountLoading, setAccountLoading] = useState<boolean>(false);
   const [newAccount, setNewAccount] = useState<{
@@ -80,7 +80,9 @@ const useAccount = (
 
           let picture = "";
           const cadena = await fetch(
-            `${STORAGE_NODE}/${(result as any)?.metadata?.picture?.split("lens://")?.[1]}`
+            `${STORAGE_NODE}/${
+              (result as any)?.metadata?.picture?.split("lens://")?.[1]
+            }`
           );
 
           if (cadena) {
@@ -101,6 +103,7 @@ const useAccount = (
             });
           }
         } else {
+          setSignless?.(true);
           console.error(accountResponse);
           setAccountLoading(false);
           return;

@@ -5,7 +5,7 @@
       {
         "name": "_accessControls",
         "type": "address",
-        "internalType": "address"
+        "internalType": "address payable"
       }
     ],
     "stateMutability": "payable"
@@ -238,7 +238,7 @@
       {
         "name": "_accessControls",
         "type": "address",
-        "internalType": "address"
+        "internalType": "address payable"
       }
     ],
     "outputs": [],

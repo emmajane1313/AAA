@@ -83,6 +83,7 @@ type Balance @entity(immutable: false) {
   totalBalance: BigInt!
   collectionId: BigInt!
   collection: CollectionCreated
+  instructions: String
 }
 
 type AgentDeleted @entity(immutable: false) {
