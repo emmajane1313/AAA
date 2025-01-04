@@ -18,6 +18,8 @@ contract AAAAgents {
         private _agentActiveBalances;
     mapping(uint256 => mapping(address => mapping(uint256 => uint256)))
         private _agentTotalBalances;
+    mapping(uint256 => mapping(address => mapping(uint256 => uint256)))
+        private _agentBonusBalances;
 
     event AgentCreated(address[] wallets, address creator, uint256 indexed id);
     event AgentDeleted(uint256 indexed id);
@@ -133,8 +135,16 @@ contract AAAAgents {
         uint256 collectionId,
         bool soldOut
     ) external onlyMarket {
-        _agentActiveBalances[agentId][token][collectionId] += amount;
-        _agentTotalBalances[agentId][token][collectionId] += amount;
+        uint256 _bonus = 0;
+        uint256 _rent = accessControls.getTokenDailyRent(token);
+
+        if (amount > _rent) {
+            _bonus = amount - _rent;
+        }
+
+        _agentBonusBalances[agentId][token][collectionId] += _bonus;
+        _agentActiveBalances[agentId][token][collectionId] += _rent;
+        _agentTotalBalances[agentId][token][collectionId] += _rent;
         _agents[agentId].collectionIdsHistory.push(collectionId);
 
         uint256[] storage activeCollections = _agents[agentId]
@@ -172,6 +182,10 @@ contract AAAAgents {
     ) external {
         bool _isAgent = false;
 
+        if (collectionIds.length != tokens.length) {
+            revert AAAErrors.BadUserInput();
+        }
+
         if (accessControls.isAgent(msg.sender)) {
             for (uint256 i = 0; i < _agents[agentId].wallets.length; i++) {
                 if (_agents[agentId].wallets[i] == msg.sender) {
@@ -199,15 +213,23 @@ contract AAAAgents {
         }
 
         uint256[] memory _amounts = new uint256[](collectionIds.length);
-
+        uint256[] memory _bonuses = new uint256[](collectionIds.length);
         for (uint256 i = 0; i < collectionIds.length; i++) {
             _amounts[i] = accessControls.getTokenDailyRent(tokens[i]);
+            _agentActiveBalances[agentId][tokens[i]][
+                collectionIds[i]
+            ] -= accessControls.getTokenDailyRent(tokens[i]);
+            _bonuses[i] = _agentBonusBalances[agentId][tokens[i]][
+                collectionIds[i]
+            ];
+            _agentBonusBalances[agentId][tokens[i]][collectionIds[i]] = 0;
         }
 
         devTreasury.agentPayRent(
             tokens,
             collectionIds,
             _amounts,
+            _bonuses,
             msg.sender,
             agentId
         );
@@ -248,8 +270,16 @@ contract AAAAgents {
         }
 
         if (
-            IERC20(token).transferFrom(msg.sender, address(devTreasury), amount)
+            !IERC20(token).transferFrom(
+                msg.sender,
+                address(devTreasury),
+                amount
+            )
         ) {
+            revert AAAErrors.PaymentFailed();
+        } else {
+            devTreasury.receiveFunds(msg.sender, token, amount);
+
             _agentActiveBalances[agentId][token][collectionId] += amount;
             _agentTotalBalances[agentId][token][collectionId] += amount;
             _agents[agentId].collectionIdsHistory.push(collectionId);
@@ -307,6 +337,14 @@ contract AAAAgents {
         uint256 collectionId
     ) public view returns (uint256) {
         return _agentTotalBalances[agentId][token][collectionId];
+    }
+
+    function getAgentBonucBalance(
+        address token,
+        uint256 agentId,
+        uint256 collectionId
+    ) public view returns (uint256) {
+        return _agentBonusBalances[agentId][token][collectionId];
     }
 
     function getAgentCollectionIdsHistory(

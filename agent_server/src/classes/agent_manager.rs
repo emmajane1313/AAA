@@ -236,6 +236,7 @@ impl AgentManager {
                                                         .push(H160::from_str(token).unwrap());
                                                     rent_collection_ids
                                                         .push(collection.collection_id);
+                                                    break;
                                                 }
                                             }
                                             Err(err) => {
@@ -349,7 +350,7 @@ impl AgentManager {
             }
         } else {
             self.current_queue = Vec::new();
-
+            println!("No collection Ids with sufficient tokens");
             Ok(())
         }
     }

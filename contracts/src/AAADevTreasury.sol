@@ -12,10 +12,11 @@ contract AAADevTreasury {
     AAAAgents public agents;
     AAAMarket public market;
     uint256 public ownerAmountPercent;
-    uint256 public serviceAmountPercent;
-    uint256 public distributionAmount;
+    uint256 public distributionAmountPercent;
+    uint256 public devAmountPercent;
     mapping(address => uint256) private _balance;
     mapping(address => uint256) private _services;
+    mapping(address => uint256) private _treasury;
     mapping(uint256 => mapping(address => uint256)) private _collectorPayment;
     mapping(address => uint256) private _allTimeBalance;
     mapping(address => uint256) private _allTimeServices;
@@ -32,10 +33,13 @@ contract AAADevTreasury {
         address indexed token,
         uint256 amount
     );
-    event FundsWithdrawn(address indexed token, uint256 amount);
-    event AgentFundsWithdrawn(
+    event FundsWithdrawnTreasury(address indexed token, uint256 amount);
+    event FundsWithdrawnServices(address indexed token, uint256 amount);
+    event FundsWithdrawnStuck(address indexed token, uint256 amount);
+    event AgentPaidRent(
         address[] tokens,
         uint256[] amounts,
+        uint256[] bonuses,
         address indexed agent
     );
     event OrderPayment(address token, address recipient, uint256 amount);
@@ -46,12 +50,13 @@ contract AAADevTreasury {
         uint256 agentId,
         uint256 collectionId
     );
+    event DevTreasuryAdded(address token, uint256 amount);
 
     constructor(address payable _accessControls) payable {
         accessControls = AAAAccessControls(_accessControls);
-        ownerAmountPercent = 20;
-        serviceAmountPercent = 40;
-        distributionAmount = 40;
+        ownerAmountPercent = 30;
+        distributionAmountPercent = 30;
+        devAmountPercent = 40;
     }
 
     function receiveFunds(
@@ -68,12 +73,15 @@ contract AAADevTreasury {
         emit FundsReceived(buyer, paymentToken, amount);
     }
 
-    function withdrawFunds(address token, uint256 amount) external onlyAdmin {
+    function withdrawFundsTreasury(
+        address token,
+        uint256 amount
+    ) external onlyAdmin {
         IERC20(token).transferFrom(address(this), msg.sender, amount);
-
         _balance[token] -= amount;
+        _treasury[token] -= amount;
 
-        emit FundsWithdrawn(token, amount);
+        emit FundsWithdrawnTreasury(token, amount);
     }
 
     function withdrawFundsStuck(
@@ -81,8 +89,9 @@ contract AAADevTreasury {
         uint256 amount
     ) external onlyAdmin {
         IERC20(token).transferFrom(address(this), msg.sender, amount);
+        _balance[token] -= amount;
 
-        emit FundsWithdrawn(token, amount);
+        emit FundsWithdrawnStuck(token, amount);
     }
 
     function withdrawFundsServices(
@@ -90,10 +99,10 @@ contract AAADevTreasury {
         uint256 amount
     ) external onlyAdmin {
         IERC20(token).transferFrom(address(this), msg.sender, amount);
-
+        _balance[token] -= amount;
         _services[token] -= amount;
 
-        emit FundsWithdrawn(token, amount);
+        emit FundsWithdrawnServices(token, amount);
     }
 
     function excessAgent(
@@ -116,6 +125,7 @@ contract AAADevTreasury {
         address[] memory tokens,
         uint256[] memory collectionIds,
         uint256[] memory amounts,
+        uint256[] memory bonuses,
         address agentWallet,
         uint256 agentId
     ) external {
@@ -126,46 +136,55 @@ contract AAADevTreasury {
         address _owner = agents.getAgentOwner(agentId);
 
         for (uint256 i = 0; i < collectionIds.length; i++) {
-            _balance[tokens[i]] -= amounts[i];
+            _services[tokens[i]] += amounts[i];
+            _allTimeServices[tokens[i]] += amounts[i];
 
-            uint256 _ownerAmount = (amounts[i] * ownerAmountPercent) / 100;
-            uint256 _serviceAmount = (amounts[i] * serviceAmountPercent) / 100;
-            uint256 _distributionAmount = (amounts[i] * distributionAmount) /
-                100;
+            if (bonuses[i] > 0) {
+                uint256 _ownerAmount = (bonuses[i] * ownerAmountPercent) / 100;
+                uint256 _devAmount = (bonuses[i] * devAmountPercent) / 100;
+                uint256 _distributionAmount = (bonuses[i] *
+                    distributionAmountPercent) / 100;
 
-            _services[tokens[i]] += _serviceAmount;
-            _allTimeServices[tokens[i]] += _serviceAmount;
+                address[] memory _collectors = market
+                    .getAllCollectorsByCollectionId(collectionIds[i]);
 
-            address[] memory _collectors = market
-                .getAllCollectorsByCollectionId(collectionIds[i]);
+                uint256 totalWeight = 0;
+                for (uint256 j = 1; j <= _collectors.length; j++) {
+                    totalWeight += 1e18 / j;
+                }
 
-            uint256 totalWeight = 0;
-            for (uint256 j = 1; j <= _collectors.length; j++) {
-                totalWeight += 1e18 / j;
-            }
+                for (uint256 j = 0; j < _collectors.length; j++) {
+                    if (_collectors[j] != address(0)) {
+                        uint256 weight = 1e18 / (j + 1);
+                        uint256 payment = (_distributionAmount * weight) /
+                            totalWeight;
 
-            for (uint256 j = 0; j < _collectors.length; j++) {
-                if (_collectors[j] != address(0)) {
-                    uint256 weight = 1e18 / (j + 1);
-                    uint256 payment = (_distributionAmount * weight) /
-                        totalWeight;
+                        _collectorPayment[collectionIds[i]][
+                            _collectors[j]
+                        ] = payment;
 
-                    _collectorPayment[collectionIds[i]][
-                        _collectors[j]
-                    ] = payment;
-
-                    if (IERC20(tokens[i]).transfer(_collectors[j], payment)) {
-                        emit OrderPayment(tokens[i], _collectors[j], payment);
+                        if (
+                            IERC20(tokens[i]).transfer(_collectors[j], payment)
+                        ) {
+                            emit OrderPayment(
+                                tokens[i],
+                                _collectors[j],
+                                payment
+                            );
+                        }
                     }
                 }
-            }
 
-            if (IERC20(tokens[i]).transfer(_owner, _ownerAmount)) {
-                emit AgentOwnerPaid(tokens[i], _owner, _ownerAmount);
+                if (IERC20(tokens[i]).transfer(_owner, _ownerAmount)) {
+                    emit AgentOwnerPaid(tokens[i], _owner, _ownerAmount);
+                }
+
+                _treasury[tokens[i]] += _devAmount;
+                emit DevTreasuryAdded(tokens[i], _devAmount);
             }
         }
 
-        emit AgentFundsWithdrawn(tokens, amounts, agentWallet);
+        emit AgentPaidRent(tokens, amounts, bonuses, agentWallet);
     }
 
     function getBalanceByToken(address token) public view returns (uint256) {
@@ -188,6 +207,10 @@ contract AAADevTreasury {
         return _allTimeServices[token];
     }
 
+    function getTreasuryByToken(address token) public view returns (uint256) {
+        return _treasury[token];
+    }
+
     function setAccessControls(
         address payable _accessControls
     ) external onlyAdmin {
@@ -204,11 +227,11 @@ contract AAADevTreasury {
 
     function setAmounts(
         uint256 _ownerAmountPercent,
-        uint256 _serviceAmountPercent,
-        uint256 _distributionAmount
+        uint256 _distributionAmountPercent,
+        uint256 _devAmountPercent
     ) external onlyAdmin {
         ownerAmountPercent = _ownerAmountPercent;
-        serviceAmountPercent = _serviceAmountPercent;
-        distributionAmount = _distributionAmount;
+        distributionAmountPercent = _distributionAmountPercent;
+        devAmountPercent = _devAmountPercent;
     }
 }
