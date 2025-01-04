@@ -3,7 +3,7 @@ use crate::{
         constants::{AAA_URI, ACCESS_CONTROLS, AGENTS, LENS_CHAIN_ID},
         contracts::{initialize_api, initialize_contracts},
         ipfs::upload_lens_storage,
-        lens::{handle_tokens, make_publication},
+        lens::{handle_lens_account, handle_tokens, make_publication},
         open_ai::call_chat_completion,
         types::{AgentManager, Content, Publication, TripleAAgent},
     },
@@ -20,7 +20,7 @@ use ethers::{
 use reqwest::Client;
 use serde_json::{json, to_string, Value};
 use std::{error::Error, io, str::FromStr, sync::Arc};
-use tokio::time;
+use tokio::{runtime::Runtime, time};
 use uuid::Uuid;
 
 impl AgentManager {
@@ -71,11 +71,7 @@ impl AgentManager {
         Ok(())
     }
 
-    async fn pay_rent(&mut self) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let mut rent_amounts: Vec<U256> = Vec::new();
-        let mut rent_tokens: Vec<H160> = vec![];
-        let mut rent_collection_ids: Vec<U256> = vec![];
-
+    async fn get_faucet_grass(&mut self) -> Result<(), Box<dyn Error + Send + Sync>> {
         let method = self
             .access_controls_contract
             .method::<_, U256>("getNativeGrassBalance", self.agent.wallet.clone());
@@ -149,11 +145,6 @@ impl AgentManager {
                                             self.agent.id, tx_hash
                                         );
 
-                                        for collection in &rent_collection_ids {
-                                            self.current_queue
-                                                .retain(|item| &item.collection_id == collection);
-                                        }
-
                                         return Ok(());
                                     } else {
                                         self.current_queue = Vec::new();
@@ -171,17 +162,28 @@ impl AgentManager {
                                     return Err(Box::new(err));
                                 }
                             }
+                        } else {
+                            return Ok(());
                         }
                     }
                     Err(err) => {
                         eprintln!("Error getting agent GRASS balance: {}", err);
+                        return Err(Box::new(err));
                     }
                 }
             }
             Err(err) => {
                 eprintln!("Error claiming from faucet: {}", err);
+                return Err(Box::new(err));
             }
         }
+    }
+
+    async fn pay_rent(&mut self) -> Result<(), Box<dyn Error + Send + Sync>> {
+        let mut rent_tokens: Vec<H160> = vec![];
+        let mut rent_collection_ids: Vec<U256> = vec![];
+
+        let _ = self.get_faucet_grass().await;
 
         for collection in &self.current_queue {
             for token in &collection.collection.tokens {
@@ -206,10 +208,44 @@ impl AgentManager {
                         match result {
                             Ok(balance) => {
                                 println!("Balance: {}\n", balance);
-                                if balance >= U256::from(10u128.pow(17)) {
-                                    rent_tokens.push(H160::from_str(token).unwrap());
-                                    rent_amounts.push(U256::from(10u128.pow(17)));
-                                    rent_collection_ids.push(collection.collection_id);
+
+                                let rent_method = self.access_controls_contract.method::<_, U256>(
+                                    "getTokenDailyRent",
+                                    (
+                                        H160::from_str(token).unwrap(),
+                                        self.agent.id,
+                                        collection.collection.collection_id,
+                                    ),
+                                );
+
+                                match rent_method {
+                                    Ok(rent_call) => {
+                                        let token_result: Result<
+                                            U256,
+                                            contract::ContractError<
+                                                SignerMiddleware<Arc<Provider<Http>>, LocalWallet>,
+                                            >,
+                                        > = rent_call.call().await;
+
+                                        match token_result {
+                                            Ok(rent_threshold) => {
+                                                if balance
+                                                    >= (rent_threshold * collection.daily_frequency)
+                                                {
+                                                    rent_tokens
+                                                        .push(H160::from_str(token).unwrap());
+                                                    rent_collection_ids
+                                                        .push(collection.collection_id);
+                                                }
+                                            }
+                                            Err(err) => {
+                                                eprintln!("Error calling rent threshold: {}", err);
+                                            }
+                                        }
+                                    }
+                                    Err(err) => {
+                                        eprintln!("Error in rent method: {}", err);
+                                    }
                                 }
                             }
                             Err(err) => {
@@ -225,29 +261,25 @@ impl AgentManager {
         }
 
         println!(
-            "Rent: {:?} {} {:?} {:?}\n",
-            rent_amounts,
-            rent_amounts.len(),
+            "Rent: {:?} {:?}\n",
             rent_collection_ids.clone(),
             rent_tokens
         );
 
-        if rent_amounts.len() > 0 {
+        if rent_collection_ids.len() > 0 {
             println!(
-                "Method data {:?} {:?} {:?} {:?}",
+                "Method data {:?} {:?} {}",
                 rent_tokens,
                 rent_collection_ids.clone(),
-                rent_amounts,
                 self.agent.id
             );
             let method = self
                 .agents_contract
-                .method::<(Vec<Address>, Vec<U256>, Vec<U256>, U256), H256>(
+                .method::<(Vec<Address>, Vec<U256>, U256), H256>(
                     "payRent",
                     (
                         rent_tokens.clone(),
                         rent_collection_ids.clone(),
-                        rent_amounts.clone(),
                         U256::from(self.agent.id as u64),
                     ),
                 );
@@ -347,6 +379,7 @@ impl AgentManager {
                         totalBalance
                         activeBalance
                         instructions
+                        dailyFrequency
                     }
                 }
             }
@@ -374,7 +407,7 @@ impl AgentManager {
                     let agent_createds = result["data"]["agentCreateds"]
                         .as_array()
                         .unwrap_or(&empty_vec);
-
+                    let rt = Runtime::new().unwrap();
                     let activities: Vec<AgentActivity> = agent_createds
                         .iter()
                         .flat_map(|agent_created| {
@@ -382,66 +415,80 @@ impl AgentManager {
                                 .as_array()
                                 .unwrap_or(&vec![])
                                 .iter()
-                                .map(|balance| AgentActivity {
-                                    collection: Collection {
-                                        collection_id: U256::from_dec_str(
-                                            balance["collection"]["collectionId"]
+                                .map(|balance| {
+                                    let artist = balance["collection"]["artist"]
+                                        .as_str()
+                                        .unwrap_or_default()
+                                        .to_string();
+                                    let username = rt
+                                        .block_on(handle_lens_account(&artist))
+                                        .unwrap_or("lens_username".to_string());
+
+                                    AgentActivity {
+                                        collection: Collection {
+                                            collection_id: U256::from_dec_str(
+                                                balance["collection"]["collectionId"]
+                                                    .as_str()
+                                                    .unwrap_or("0"),
+                                            )
+                                            .unwrap_or_default(),
+                                            artist,
+                                            username,
+
+                                            image: balance["collection"]["metadata"]["image"]
                                                 .as_str()
-                                                .unwrap_or("0"),
+                                                .unwrap_or_default()
+                                                .to_string(),
+                                            title: balance["collection"]["metadata"]["title"]
+                                                .as_str()
+                                                .unwrap_or_default()
+                                                .to_string(),
+                                            description: balance["collection"]["metadata"]
+                                                ["description"]
+                                                .as_str()
+                                                .unwrap_or_default()
+                                                .to_string(),
+                                            prices: balance["collection"]["prices"]
+                                                .as_array()
+                                                .unwrap_or(&vec![])
+                                                .iter()
+                                                .filter_map(|v| {
+                                                    v.as_str()
+                                                        .and_then(|s| U256::from_dec_str(s).ok())
+                                                })
+                                                .collect(),
+                                            tokens: balance["collection"]["tokens"]
+                                                .as_array()
+                                                .unwrap_or(&vec![])
+                                                .iter()
+                                                .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                                                .collect(),
+                                        },
+                                        daily_frequency: U256::from_dec_str(
+                                            balance["dailyFrequency"].as_str().unwrap_or("0"),
                                         )
-                                        .unwrap_or_default(),
-                                        artist: balance["collection"]["artist"]
+                                        .unwrap(),
+                                        custom_instructions: balance["instructions"]
                                             .as_str()
                                             .unwrap_or_default()
                                             .to_string(),
-                                        image: balance["collection"]["metadata"]["image"]
+                                        token: balance["token"]
                                             .as_str()
                                             .unwrap_or_default()
                                             .to_string(),
-                                        title: balance["collection"]["metadata"]["title"]
-                                            .as_str()
-                                            .unwrap_or_default()
-                                            .to_string(),
-                                        description: balance["collection"]["metadata"]
-                                            ["description"]
-                                            .as_str()
-                                            .unwrap_or_default()
-                                            .to_string(),
-                                        prices: balance["collection"]["prices"]
-                                            .as_array()
-                                            .unwrap_or(&vec![])
-                                            .iter()
-                                            .filter_map(|v| {
-                                                v.as_str().and_then(|s| U256::from_dec_str(s).ok())
-                                            })
-                                            .collect(),
-                                        tokens: balance["collection"]["tokens"]
-                                            .as_array()
-                                            .unwrap_or(&vec![])
-                                            .iter()
-                                            .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                                            .collect(),
-                                    },
-                                    custom_instructions: balance["instructions"]
-                                        .as_str()
-                                        .unwrap_or_default()
-                                        .to_string(),
-                                    token: balance["token"]
-                                        .as_str()
-                                        .unwrap_or_default()
-                                        .to_string(),
-                                    active_balance: U256::from_dec_str(
-                                        balance["activeBalance"].as_str().unwrap_or("0"),
-                                    )
-                                    .unwrap(),
-                                    total_balance: U256::from_dec_str(
-                                        balance["totalBalance"].as_str().unwrap_or("0"),
-                                    )
-                                    .unwrap(),
-                                    collection_id: U256::from_dec_str(
-                                        balance["collectionId"].as_str().unwrap_or("0"),
-                                    )
-                                    .unwrap(),
+                                        active_balance: U256::from_dec_str(
+                                            balance["activeBalance"].as_str().unwrap_or("0"),
+                                        )
+                                        .unwrap(),
+                                        total_balance: U256::from_dec_str(
+                                            balance["totalBalance"].as_str().unwrap_or("0"),
+                                        )
+                                        .unwrap(),
+                                        collection_id: U256::from_dec_str(
+                                            balance["collectionId"].as_str().unwrap_or("0"),
+                                        )
+                                        .unwrap(),
+                                    }
                                 })
                                 .collect::<Vec<AgentActivity>>()
                         })
@@ -569,7 +616,12 @@ impl AgentManager {
             lens: Content {
                 mainContentFocus: focus,
                 title: llm_message.chars().take(20).collect(),
-                content: llm_message.to_string(),
+                content: format!(
+                    "{}\n\n Collect on TripleA here: https://triplea.agentmeme.xyz/nft/{}/{}/",
+                    llm_message.to_string(),
+                    collection.username,
+                    collection.collection_id
+                ),
                 id: Uuid::new_v4().to_string(),
                 locale: "en".to_string(),
                 tags,

@@ -53,6 +53,12 @@ const useDrops = (
             image: collection?.metadata?.image,
             title: collection?.metadata?.title,
             description: collection?.metadata?.description,
+            tokens: collection?.tokens,
+            prices: collection?.prices,
+            agents: collection?.agents,
+            active: collection?.active,
+            amountSold: collection?.amountSold,
+            amount: collection?.amount,
             profile: {
               ...(result as any)?.[0]?.account,
               metadata: {

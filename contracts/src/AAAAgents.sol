@@ -5,11 +5,13 @@ import "./AAAErrors.sol";
 import "./AAALibrary.sol";
 import "./AAAAccessControls.sol";
 import "./AAADevTreasury.sol";
+import "./AAACollectionManager.sol";
 
 contract AAAAgents {
     uint256 private _agentCounter;
     address public market;
     AAAAccessControls public accessControls;
+    AAACollectionManager public collectionManager;
     AAADevTreasury public devTreasury;
     mapping(uint256 => AAALibrary.Agent) private _agents;
     mapping(uint256 => mapping(address => mapping(uint256 => uint256)))
@@ -31,6 +33,13 @@ contract AAAAgents {
         uint256[] collectionIds,
         uint256[] amounts,
         uint256 agentId
+    );
+    event AgentRecharged(
+        address recharger,
+        address token,
+        uint256 agentId,
+        uint256 collectionId,
+        uint256 amount
     );
 
     modifier onlyAdmin() {
@@ -54,9 +63,14 @@ contract AAAAgents {
         _;
     }
 
-    constructor(address payable _accessControls, address _devTreasury) payable {
+    constructor(
+        address payable _accessControls,
+        address _devTreasury,
+        address _collectionManager
+    ) payable {
         accessControls = AAAAccessControls(_accessControls);
         devTreasury = AAADevTreasury(_devTreasury);
+        collectionManager = AAACollectionManager(_collectionManager);
     }
 
     function createAgent(
@@ -154,7 +168,6 @@ contract AAAAgents {
     function payRent(
         address[] memory tokens,
         uint256[] memory collectionIds,
-        uint256[] memory amounts,
         uint256 agentId
     ) external {
         bool _isAgent = false;
@@ -175,21 +188,93 @@ contract AAAAgents {
         for (uint256 i = 0; i < collectionIds.length; i++) {
             if (
                 _agentActiveBalances[agentId][tokens[i]][collectionIds[i]] <
-                amounts[i]
+                accessControls.getTokenDailyRent(tokens[i])
             ) {
                 revert AAAErrors.InsufficientBalance();
             }
+
+            if (!collectionManager.getCollectionIsActive(collectionIds[i])) {
+                revert AAAErrors.CollectionNotActive();
+            }
+        }
+
+        uint256[] memory _amounts = new uint256[](collectionIds.length);
+
+        for (uint256 i = 0; i < collectionIds.length; i++) {
+            _amounts[i] = accessControls.getTokenDailyRent(tokens[i]);
         }
 
         devTreasury.agentPayRent(
             tokens,
             collectionIds,
-            amounts,
+            _amounts,
             msg.sender,
             agentId
         );
 
-        emit BalanceWithdrawn(tokens, collectionIds, amounts, agentId);
+        emit BalanceWithdrawn(tokens, collectionIds, _amounts, agentId);
+    }
+
+    function rechargeAgentActiveBalance(
+        address token,
+        uint256 agentId,
+        uint256 collectionId,
+        uint256 amount
+    ) public {
+        if (
+            collectionManager.getCollectionAmountSold(collectionId) >=
+            collectionManager.getCollectionAmount(collectionId)
+        ) {
+            revert AAAErrors.CollectionSoldOut();
+        }
+        if (collectionManager.getCollectionAgentIds(collectionId).length < 1) {
+            revert AAAErrors.NoActiveAgents();
+        }
+
+        address[] memory _tokens = collectionManager.getCollectionERC20Tokens(
+            collectionId
+        );
+        bool _exists = false;
+
+        for (uint256 i = 0; i < _tokens.length; i++) {
+            if (_tokens[i] == token) {
+                _exists = true;
+                break;
+            }
+        }
+
+        if (!_exists) {
+            revert AAAErrors.TokenNotActive();
+        }
+
+        if (
+            IERC20(token).transferFrom(msg.sender, address(devTreasury), amount)
+        ) {
+            _agentActiveBalances[agentId][token][collectionId] += amount;
+            _agentTotalBalances[agentId][token][collectionId] += amount;
+            _agents[agentId].collectionIdsHistory.push(collectionId);
+
+            uint256[] storage activeCollections = _agents[agentId]
+                .activeCollectionIds;
+
+            bool isCollectionActive = false;
+            for (uint256 i = 0; i < activeCollections.length; i++) {
+                if (activeCollections[i] == collectionId) {
+                    isCollectionActive = true;
+                    break;
+                }
+            }
+
+            activeCollections.push(collectionId);
+
+            emit AgentRecharged(
+                msg.sender,
+                token,
+                agentId,
+                collectionId,
+                amount
+            );
+        }
     }
 
     function getAgentCounter() public view returns (uint256) {
@@ -252,5 +337,11 @@ contract AAAAgents {
 
     function setMarket(address _market) external onlyAdmin {
         market = _market;
+    }
+
+    function setCollectionManager(
+        address _collectionManager
+    ) external onlyAdmin {
+        collectionManager = AAACollectionManager(_collectionManager);
     }
 }

@@ -19,6 +19,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
   agents,
   allDrops,
   lensConnected,
+  tokenThresholds,
 }): JSX.Element => {
   const { address } = useAccount();
   const router = useRouter();
@@ -47,6 +48,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
           setMintData={setMintData}
           agents={agents}
           agentsLoading={agentsLoading}
+          tokenThresholds={tokenThresholds}
         />
       );
 
@@ -65,10 +67,9 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
       return (
         <Mint
           mintData={mintData}
-          setMintData={setMintData}
+          tokenThresholds={tokenThresholds}
           handleMint={handleMint}
           allDrops={allDrops}
-          agents={agents}
           mintLoading={mintLoading}
         />
       );
@@ -158,6 +159,9 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 value={mintData.title}
                 disabled={mintLoading}
               />
+              <div className="relative text-xs w-fit h-fit flex">
+                {"( Min. of 2 Editions to Activate Agents. )"}
+              </div>
               <input
                 disabled={mintLoading}
                 type="number"
@@ -165,13 +169,23 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 placeholder="1"
                 value={mintData.amount}
                 step={1}
-                className="relative flex w-14 px-1 h-12 pixel-border-2 focus:outline-none text-xl text-left"
-                onChange={(e) =>
+                className={`relative flex w-14 px-1 h-12 pixel-border-2 focus:outline-none text-xl text-left 
+                  
+                  ${
+                    Number(mintData?.amount) >= 2
+                      ? "text-[#00cc00]"
+                      : "text-black"
+                  }`}
+                onChange={(e) => {
+                  if (Number(e.target.value) < 1) {
+                    (e.target.value as any) = 1;
+                  }
+
                   setMintData({
                     ...mintData,
                     amount: Number(e.target.value),
-                  })
-                }
+                  });
+                }}
               />
               <textarea
                 className="relative flex w-full h-1/2 overflow-y-scroll text-left text-black pixel-border-2 p-1.5 focus:outline-none text-lg"
@@ -202,81 +216,132 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                   return (
                     <div
                       key={key}
-                      className="relative w-full h-fit flex flex-row gap-3 items-center justify-center"
+                      className="relative w-full h-fit flex flex-wrap sm:flex-row gap-3 items-center justify-between"
                     >
-                      <div
-                        className={`relative w-10 h-10 rounded-full cursor-pixel ${
-                          !mintData.tokens?.includes(token.contract) &&
-                          "opacity-60"
-                        }`}
-                        title={token.symbol}
-                        onClick={() =>
-                          !mintLoading &&
-                          setMintData((prev) => {
-                            const newMintData = {
-                              ...prev,
-                            };
-
-                            if (newMintData.tokens?.includes(token.contract)) {
-                              newMintData.tokens = newMintData.tokens.filter(
-                                (tok) => tok !== token.contract
-                              );
-                              newMintData.prices = newMintData.prices.filter(
-                                (_, ind) => ind !== key
-                              );
-                            } else {
-                              newMintData.tokens = [
-                                ...newMintData.tokens,
-                                token.contract,
-                              ];
-
-                              newMintData.prices = [...newMintData.prices, 0];
+                      <div className="flex relative w-full h-fit flex-row items-center justify-center gap-2">
+                        <div className="relative w-fit h-fit flex">
+                          <div
+                            className={
+                              `relative w-10 h-10`
+                              //    ${
+                              //   !mintData.tokens?.includes(token.contract) &&
+                              //   "opacity-60"
+                              // }
                             }
+                            title={token.symbol}
+                            // onClick={() =>
+                            //   !mintLoading &&
+                            //   setMintData((prev) => {
+                            //     const newMintData = {
+                            //       ...prev,
+                            //     };
 
-                            return newMintData;
-                          })
-                        }
-                      >
-                        <Image
-                          src={`${INFURA_GATEWAY}/ipfs/${token.image}`}
-                          layout="fill"
-                          objectFit="contain"
-                          draggable={false}
-                          className="rounded-full"
-                          alt={token.symbol}
+                            //     if (newMintData.tokens?.includes(token.contract)) {
+                            //       newMintData.tokens = newMintData.tokens.filter(
+                            //         (tok) => tok !== token.contract
+                            //       );
+                            //       newMintData.prices = newMintData.prices.filter(
+                            //         (_, ind) => ind !== key
+                            //       );
+                            //     } else {
+                            //       newMintData.tokens = [
+                            //         ...newMintData.tokens,
+                            //         token.contract,
+                            //       ];
+
+                            //       newMintData.prices = [...newMintData.prices, 0];
+                            //     }
+
+                            //     return newMintData;
+                            //   })
+                            // }
+                          >
+                            <Image
+                              src={`${INFURA_GATEWAY}/ipfs/${token.image}`}
+                              layout="fill"
+                              objectFit="contain"
+                              draggable={false}
+                              className="rounded-full"
+                              alt={token.symbol}
+                            />
+                          </div>
+                        </div>
+                        <input
+                          disabled={
+                            !mintData.tokens?.includes(token.contract) ||
+                            mintLoading
+                          }
+                          value={mintData?.prices?.[key]}
+                          type="number"
+                          min={1}
+                          placeholder="1"
+                          step={1}
+                          className="relative flex w-full h-10 pixel-border-2 p-1.5 focus:outline-none text-xl text-right"
+                          onChange={(e) =>
+                            setMintData((prev) => {
+                              const newMintData = {
+                                ...prev,
+                              };
+
+                              const index = newMintData.tokens.findIndex(
+                                (tok) => tok == token.contract
+                              );
+
+                              const prices = [...newMintData.prices];
+                              prices[index] = Number(e.target.value);
+
+                              newMintData.prices = prices;
+
+                              return newMintData;
+                            })
+                          }
                         />
+                        <div className="relative w-fit h-fit flex text-gray-600 text-sm">
+                          {token.symbol}
+                        </div>
                       </div>
-                      <input
-                        disabled={
-                          !mintData.tokens?.includes(token.contract) ||
-                          mintLoading
-                        }
-                        value={mintData?.prices?.[key]}
-                        type="number"
-                        min={1}
-                        step={1}
-                        className="relative flex w-full h-10 pixel-border-2 p-1.5 focus:outline-none text-xl text-right"
-                        onChange={(e) =>
-                          setMintData((prev) => {
-                            const newMintData = {
-                              ...prev,
-                            };
-
-                            const index = newMintData.tokens.findIndex(
-                              (tok) => tok == token.contract
-                            );
-
-                            const prices = [...newMintData.prices];
-                            prices[index] = Number(e.target.value);
-
-                            newMintData.prices = prices;
-
-                            return newMintData;
-                          })
-                        }
-                      />
-                      <div className="relative w-fit h-fit flex text-gray-600 text-sm">
-                        {token.symbol}
+                      <div className="flex relative w-full h-fit items-center justify-center gap-2 flex-row font-jackey2 text-sm text-left">
+                        <div className="relative w-full h-fit flex flex-col gap-1 items-start justify-start">
+                          <div className="relative flex w-fit h-fit">
+                            Token Daily Rent
+                          </div>
+                          <div className="relative flex w-fit h-fit">
+                            {tokenThresholds?.find(
+                              (t) =>
+                                t.token?.toLowerCase() ==
+                                token.contract?.toLowerCase()
+                            )?.dailyRent || 0}
+                            {" " + token.symbol}
+                          </div>
+                        </div>
+                        <div
+                          className={`relative w-full h-fit flex flex-col gap-1 items-start justify-start ${
+                            Number(mintData?.prices?.[0]) * 10 ** 18 >=
+                            Number(
+                              tokenThresholds?.find(
+                                (t) =>
+                                  t.token?.toLowerCase() ==
+                                  token.contract?.toLowerCase()
+                              )?.threshold || 0
+                            )
+                              ? "text-[#00cc00]"
+                              : "text-black"
+                          }`}
+                        >
+                          <div className="relative flex w-fit h-fit">
+                            Token Agent Threshold
+                          </div>
+                          <div className="relative flex w-fit h-fit">
+                            {Number(
+                              tokenThresholds?.find(
+                                (t) =>
+                                  t.token?.toLowerCase() ==
+                                  token.contract?.toLowerCase()
+                              )?.threshold || 0
+                            )}
+                            {" " + token.symbol}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );

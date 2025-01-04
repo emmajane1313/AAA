@@ -27,6 +27,7 @@ export default function NFT() {
       />
       <Purchase
         nft={nft!}
+        tokenThresholds={context?.tokenThresholds!}
         setIndexer={context?.setIndexer!}
         nftLoading={nftLoading}
         setNotification={context?.setNotification!}
@@ -38,6 +39,7 @@ export default function NFT() {
         setSignless={context?.setSignless!}
         storageClient={context?.storageClient!}
         setImageView={context?.setImageView!}
+        agents={context?.agents!}
       />
     </div>
   );

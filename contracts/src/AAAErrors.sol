@@ -35,4 +35,11 @@ contract AAAErrors {
     error NotAgentOwner();
     error AgentStillActive();
     error BadUserInput();
+    error NoActiveAgents();
+    error CollectionSoldOut();
+    error TokenNotActive();
+
+    error CollectionAlreadyDeactivated();
+    error CollectionAlreadyActive();
+    error CollectionNotActive();
 }

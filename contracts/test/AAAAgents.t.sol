@@ -7,10 +7,12 @@ import "src/AAAErrors.sol";
 import "src/AAALibrary.sol";
 import "src/AAAAccessControls.sol";
 import "src/AAADevTreasury.sol";
+import "src/AAACollectionManager.sol";
 
 contract AAAAgentsTest is Test {
     AAAAgents private agents;
     AAAAccessControls private accessControls;
+    AAACollectionManager private collectionManager;
     AAADevTreasury private devTreasury;
     address private admin = address(0x123);
     address private market = address(0x456);
@@ -22,7 +24,8 @@ contract AAAAgentsTest is Test {
         devTreasury = new AAADevTreasury(payable(address(accessControls)));
         agents = new AAAAgents(
             payable(address(accessControls)),
-            address(devTreasury)
+            address(devTreasury),
+            address(collectionManager)
         );
 
         accessControls.addAdmin(admin);

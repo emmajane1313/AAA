@@ -10,10 +10,12 @@ import DropsSwitch from "./DropsSwitch";
 import Account from "./Account";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
+import { useModal } from "connectkit";
 
 const DashboardSwitch: FunctionComponent = (): JSX.Element => {
   const { address } = useAccount();
   const router = useRouter();
+  const { setOpen, open } = useModal();
   const context = useContext(ModalContext);
   const animationContext = useContext(AnimationContext);
   const {
@@ -44,6 +46,8 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
           allDrops={allDrops}
           allDropsLoading={allDropsLoading}
           lensClient={context?.lensClient!}
+          agents={context?.agents!}
+          setNotification={context?.setNotification!}
         />
       );
 
@@ -93,6 +97,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
               allDrops={allDrops}
               allDropsLoading={allDropsLoading}
               lensConnected={context?.lensConnected!}
+              tokenThresholds={context?.tokenThresholds!}
             />
             <div className="relative w-full h-fit flex items-end justify-between flex-row gap-4">
               <div
@@ -311,6 +316,16 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
                       backgroundColor: item.color,
                     }}
                     onClick={() => {
+                      if (!address) {
+                        setOpen?.(!open);
+
+                        return;
+                      }
+                      if (!context?.lensConnected?.profile) {
+                        context?.setNotification("Sign in to Lens!");
+                        return;
+                      }
+
                       if (item.switcher == Switcher.Page) {
                         animationContext?.setPageChange?.(true);
                         router.push(

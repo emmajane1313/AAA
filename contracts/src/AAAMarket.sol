@@ -53,6 +53,10 @@ contract AAAMarket {
         uint256 amount,
         address paymentToken
     ) external {
+        if (!collectionManager.getCollectionIsActive(collectionId)) {
+            revert AAAErrors.CollectionNotActive();
+        }
+
         uint256 _amount = collectionManager.getCollectionAmount(collectionId);
         if (
             amount + collectionManager.getCollectionAmountSold(collectionId) >
@@ -225,7 +229,9 @@ contract AAAMarket {
         nft = AAANFT(_nft);
     }
 
-    function setAccessControls(address payable _accessControls) external onlyAdmin {
+    function setAccessControls(
+        address payable _accessControls
+    ) external onlyAdmin {
         accessControls = AAAAccessControls(_accessControls);
     }
 
@@ -276,5 +282,4 @@ contract AAAMarket {
     ) public view returns (address[] memory) {
         return _allCollectorsByCollectionIds[collectionId];
     }
-
 }

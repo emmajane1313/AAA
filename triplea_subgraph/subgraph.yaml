@@ -32,6 +32,10 @@ dataSources:
           handler: handleDropCreated
         - event: DropDeleted(address,indexed uint256)
           handler: handleDropDeleted
+        - event: CollectionActivated(uint256)
+          handler: handleCollectionActivated
+        - event: CollectionDeactivated(uint256)
+          handler: handleCollectionDeactivated
       file: ./src/aaa-collection-manager.ts
   - kind: ethereum
     name: AAAAgents
@@ -121,6 +125,47 @@ dataSources:
         - event: OrderPayment(address,address,uint256)
           handler: handleOrderPayment
       file: ./src/aaa-dev-treasury.ts
+  - kind: ethereum
+    name: AAAAccessControls
+    network: lens-testnet
+    source:
+      address: "0xE67406Beb8de9106D53A437ad230603F62450a96"
+      abi: AAAAccessControls
+      startBlock: 103090
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AcceptedTokenRemoved
+        - AcceptedTokenSet
+        - AdminAdded
+        - AdminRemoved
+        - AgentAdded
+        - AgentRemoved
+        - FaucetUsed
+        - TokenThresholdSet
+      abis:
+        - name: AAAAccessControls
+          file: ./abis/AAAAccessControls.json
+      eventHandlers:
+        - event: AcceptedTokenRemoved(address)
+          handler: handleAcceptedTokenRemoved
+        - event: AcceptedTokenSet(address)
+          handler: handleAcceptedTokenSet
+        - event: AdminAdded(indexed address)
+          handler: handleAdminAdded
+        - event: AdminRemoved(indexed address)
+          handler: handleAdminRemoved
+        - event: AgentAdded(indexed address)
+          handler: handleAgentAdded
+        - event: AgentRemoved(indexed address)
+          handler: handleAgentRemoved
+        - event: FaucetUsed(address,uint256)
+          handler: handleFaucetUsed
+        - event: TokenThresholdSet(address,uint256,uint256)
+          handler: handleTokenThresholdSet
+      file: ./src/aaa-access-controls.ts
 templates:
   - name: AgentMetadata
     kind: file/ipfs

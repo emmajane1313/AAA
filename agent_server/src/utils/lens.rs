@@ -412,3 +412,54 @@ async fn poll(hash: &str, auth_tokens: &str) -> Result<String, Box<dyn Error>> {
         Err(format!("Error: {}", response.status()).into())
     }
 }
+
+
+pub async fn handle_lens_account(wallet: &str) -> Result<String, Box<dyn Error>> {
+    let client = initialize_api();
+    let query = json!({
+        "query": r#"
+            query AccountsAvailable($request: AccountsAvailableRequest!) {
+                accountsAvailable(request: $request) {
+                    account {
+                        address
+                    }
+                }
+            }
+        "#,
+        "variables": {
+            "request": {
+                "managedBy": wallet,
+                "includeOwned": true
+            }
+        }
+    });
+
+    let response = client
+        .post(LENS_API)
+        .header("Content-Type", "application/json")
+        .header("Origin", "http://localhost:3000")
+        .json(&query)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        let json: Value = response.json().await?;
+        if let Some(first_account) = json["data"]["accountsAvailable"]
+            .as_array()
+            .and_then(|array| array.get(0))
+        {
+            if let Some(account_address) = first_account["account"]
+                .get("address")
+                .and_then(|addr| addr.as_str())
+            {
+                return Ok(account_address.to_string());
+            } else {
+                return Err("Unexpected Structure for account address".into());
+            }
+        } else {
+            return Err("Unexpected Structure for account".into());
+        }
+    } else {
+        return Err(format!("Error: {}", response.status()).into());
+    }
+}

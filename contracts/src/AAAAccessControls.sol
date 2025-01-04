@@ -8,6 +8,7 @@ contract AAAAccessControls {
     mapping(address => bool) private _admins;
     mapping(address => bool) private _agents;
     mapping(address => uint256) private _thresholds;
+    mapping(address => uint256) private _dailyRent;
     mapping(address => bool) private _acceptedTokens;
 
     event AdminAdded(address indexed admin);
@@ -16,7 +17,7 @@ contract AAAAccessControls {
     event AgentRemoved(address indexed agent);
     event AcceptedTokenSet(address token);
     event AcceptedTokenRemoved(address token);
-    event TokenThresholdSet(address token, uint256 threshold);
+    event TokenThresholdSet(address token, uint256 threshold, uint256 rent);
     event FaucetUsed(address to, uint256 amount);
 
     modifier onlyAgentOrAdmin() {
@@ -92,14 +93,19 @@ contract AAAAccessControls {
         emit AcceptedTokenSet(token);
     }
 
-    function setTokenThreshold(address token, uint256 threshold) external {
+    function setTokenThresholdAndRent(
+        address token,
+        uint256 threshold,
+        uint256 rent
+    ) external {
         if (!_acceptedTokens[token]) {
             revert AAAErrors.TokenNotAccepted();
         }
 
         _thresholds[token] = threshold;
+        _dailyRent[token] = rent;
 
-        emit TokenThresholdSet(token, threshold);
+        emit TokenThresholdSet(token, threshold, rent);
     }
 
     function removeAcceptedToken(address token) external {
@@ -109,6 +115,7 @@ contract AAAAccessControls {
 
         delete _acceptedTokens[token];
         delete _thresholds[token];
+        delete _dailyRent[token];
 
         emit AcceptedTokenRemoved(token);
     }
@@ -127,6 +134,10 @@ contract AAAAccessControls {
 
     function getTokenThreshold(address token) public view returns (uint256) {
         return _thresholds[token];
+    }
+
+    function getTokenDailyRent(address token) public view returns (uint256) {
+        return _dailyRent[token];
     }
 
     function setAgentsContract(address _agentsContract) public onlyAdmin {

@@ -1,20 +1,18 @@
-import { FunctionComponent, JSX, useContext } from "react";
+import { FunctionComponent, JSX } from "react";
 import { DropSwitcher, CollectionProps } from "../types/dashboard.types";
 import useDrops from "../hooks/useDrops";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
-import { useRouter } from "next/navigation";
-import { AnimationContext } from "@/app/providers";
 
 const Collection: FunctionComponent<CollectionProps> = ({
   setDropSwitcher,
   drop,
   setDrop,
   lensClient,
+  setCollection
 }): JSX.Element => {
   const { allCollections, collectionsLoading } = useDrops(drop, lensClient);
-  const router = useRouter();
-  const animationContext = useContext(AnimationContext);
+
   return (
     <div className="relative w-full h-full flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
       <div className="relative w-full h-full  pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
@@ -57,14 +55,8 @@ const Collection: FunctionComponent<CollectionProps> = ({
                       key={key}
                       className={`relative w-60 h-full bg-morado pixel-border-4 rounded-lg flex flex-col items-center justify-between cursor-pixel p-2`}
                       onClick={() => {
-                        animationContext?.setPageChange?.(true);
-                        router.push(
-                          `/nft/${
-                            collection?.profile?.username?.value?.split(
-                              "lens/"
-                            )?.[1]
-                          }/${collection.id}`
-                        );
+                        setCollection(collection);
+                        setDropSwitcher(DropSwitcher.AgentsCollection);
                       }}
                     >
                       <div className="relative w-full h-full rounded-md flex pixel-border-4">
@@ -81,7 +73,10 @@ const Collection: FunctionComponent<CollectionProps> = ({
                       </div>
                       <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 text-black pt-4">
                         <div className="relative w-fit h-fit flex text-sm font-start uppercase">
-                          {collection.title}
+                          {collection?.title?.length > 12
+                                ? collection?.title?.slice(0, 9) +
+                                  "..."
+                                : collection?.title}
                         </div>
                         <div className="relative w-fit overflow-y-scroll font-jackey2 max-h-40 h-fit flex text-sm">
                           {collection.description}

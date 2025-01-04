@@ -13,6 +13,7 @@ import Post from "./Post";
 import Comments from "./Comments";
 import { useRouter } from "next/navigation";
 import { useModal } from "connectkit";
+import useAgentRecharge from "../hooks/useAgentRecharge";
 
 const Purchase: FunctionComponent<PurchaseProps> = ({
   nft,
@@ -27,6 +28,8 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
   setImageView,
   storageClient,
   setIndexer,
+  tokenThresholds,
+  agents,
 }): JSX.Element => {
   const { isConnected, address } = useAccount();
   const router = useRouter();
@@ -48,6 +51,20 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
     screen,
     setScreen,
   } = usePurchase(nft, setNft, address, publicClient, setNotification);
+  const {
+    rechargeLoading,
+    handleRecharge,
+    setRechargeAmount,
+    rechargeAmount,
+    handleApproveRecharge,
+    approvedRecharge,
+  } = useAgentRecharge(
+    nft?.agents,
+    publicClient,
+    address,
+    setNotification,
+    nft?.id
+  );
   const {
     handlePost,
     postLoading,
@@ -89,7 +106,15 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
             <div className="relative w-full h-fit flex flex-row justify-between items-center">
               <div
                 className="relative w-fit h-fit flex items-center justiy-center cursor-pixel"
-                onClick={() => setScreen(screen > 0 ? screen - 1 : 2)}
+                onClick={() =>
+                  setScreen(
+                    screen > 0
+                      ? screen - 1
+                      : Number(nft?.agents?.length || 0) > 0
+                      ? 3
+                      : 1
+                  )
+                }
               >
                 <svg
                   className="size-6"
@@ -105,15 +130,27 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                 </svg>
               </div>
               <div className="text-black font-start text-sm relative flex w-fit h-fit text-center text-black">
-                {screen < 1
+                {Number(nft?.agents?.length || 0) > 0
+                  ? screen < 1
+                    ? "Collect"
+                    : screen == 1
+                    ? "Collectors"
+                    : screen == 2
+                    ? "Agents On Lens"
+                    : "Agent Recharge Station"
+                  : screen < 1
                   ? "Collect"
-                  : screen == 1
-                  ? "Agent Activity"
                   : "Collectors"}
               </div>
               <div
                 className="relative w-fit h-fit flex items-center justiy-center cursor-pixel"
-                onClick={() => setScreen(screen < 2 ? screen + 1 : 0)}
+                onClick={() =>
+                  setScreen(
+                    screen < (Number(nft?.agents?.length || 0) > 0 ? 3 : 1)
+                      ? screen + 1
+                      : 0
+                  )
+                }
               >
                 <svg
                   fill="none"
@@ -181,7 +218,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   placeholder={"1"}
                   value={collectData.amount}
                   step={1}
-                  className="relative flex w-20 px-1 h-10 text-black focus:outline-none text-xl text-left text-lg"
+                  className="relative flex w-20 px-1 h-10 text-black focus:outline-none text-xl text-left text-lg pixel-border-3"
                   onChange={(e) =>
                     setCollectData({
                       ...collectData,
@@ -199,6 +236,33 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                     )?.symbol
                   }
                 </div>
+              </div>
+              <div className="relative w-full h-fit flex font-start text-xxs text-[#e14c14] items-start justify-start text-left">
+                {Number(nft?.agents?.length || 0) <= 0
+                  ? "No Agents Assigned To this Collection."
+                  : Number(nft?.amountSold || 0) >= 2 &&
+                    Number(nft?.agents?.length || 0) > 0 &&
+                    Number(nft?.prices?.[0]) >=
+                      Number(
+                        tokenThresholds?.find(
+                          (t) =>
+                            t?.token?.toLowerCase() ==
+                            nft?.tokens?.[0]?.toLowerCase()
+                        )?.threshold
+                      )
+                  ? "Agents Activated!"
+                  : Number(nft?.amountSold || 0) == 1 &&
+                    Number(nft?.agents?.length || 0) > 0 &&
+                    Number(nft?.prices?.[0]) >=
+                      Number(
+                        tokenThresholds?.find(
+                          (t) =>
+                            t?.token?.toLowerCase() ==
+                            nft?.tokens?.[0]?.toLowerCase()
+                        )?.threshold
+                      )
+                  ? "Agents Not Yet Activated for this Collection. One more sale needed! Or recharge now!"
+                  : "Agents Not Yet Activated for this Collection. Two more sales needed! Or recharge now!"}
               </div>
               <div className="relative w-full h-fit flex">
                 <div
@@ -242,7 +306,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                 </div>
               </div>
             </>
-          ) : screen == 2 ? (
+          ) : screen == 1 ? (
             <div className="relative w-full h-full overflow-y-scroll flex items-start justify-start">
               {Number(nft?.collectors?.length || 0) < 1 ? (
                 <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600 font-jack">
@@ -264,7 +328,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                       >
                         {collector?.name ? (
                           <div
-                            className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center cursor-pointer"
+                            className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center cursor-pixel"
                             onClick={(e) => {
                               e.stopPropagation();
                               router.push(`/user/${collector?.localName}`);
@@ -313,7 +377,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                 </div>
               )}
             </div>
-          ) : (
+          ) : screen == 2 ? (
             <div className="relative w-full gap-3 flex flex-col h-full">
               {Number(nft?.agentActivity?.length || 0) < 1 ? (
                 <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600 font-jack">
@@ -357,6 +421,195 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                 handleQuote={handleQuote}
                 success={success}
               />
+            </div>
+          ) : (
+            <div className="relative w-full h-full overflow-y-scroll flex items-start justify-start">
+              <div className="relative w-full h-fit flex flex-col items-start justify-start  gap-3">
+                {agents
+                  ?.filter((ag) => nft?.agents?.includes(ag?.id))
+                  ?.map((agent, key) => {
+                    return (
+                      <div
+                        key={key}
+                        className="relative w-full h-fit flex justify-between items-center flex-col gap-2"
+                      >
+                        <div className="relative w-full h-px flex bg-black"></div>
+                        <div className="relative w-full h-fit flex flex-row gap-2 justify-between items-center">
+                          <div
+                            className="relative w-fit h-fit flex cursor-pixel"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/agent/${agent?.id}`);
+                            }}
+                          >
+                            <div className="relative w-20 h-20 flex">
+                              <Image
+                                src={`${INFURA_GATEWAY}/ipfs/${
+                                  agent?.cover?.split("ipfs://")?.[1]
+                                }`}
+                                alt="pfp"
+                                draggable={false}
+                                layout="fill"
+                                objectFit="contain"
+                              />
+                            </div>
+                          </div>
+                          <input
+                            className="relative w-full h-full p-1 bg-white text-sm text-black font-jackey2 focus:outline-none pixel-border-3"
+                            placeholder="1"
+                            type="number"
+                            disabled={rechargeLoading[key]}
+                            min={1}
+                            max={3}
+                            step={1}
+                            value={rechargeAmount[key]}
+                            onChange={(e) => {
+                              let value = Number(e.target.value);
+                              if (value > 3) {
+                                value = 3;
+                              }
+                              (e.target.value as any) = value;
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setRechargeAmount((prev) => {
+                                const newR = { ...prev };
+
+                                newR[key] = Number(e.target.value);
+
+                                return newR;
+                              });
+                            }}
+                          />
+                          <div className="relative w-fit h-fit flex text-sm font-jackey2">
+                            {
+                              TOKENS?.find(
+                                (tok) =>
+                                  tok.contract?.toLowerCase() ==
+                                  nft?.tokens?.[0]?.toLowerCase()
+                              )?.symbol
+                            }
+                          </div>
+                          <div className="relative w-full h-fit flex">
+                            <div
+                              className={`relative w-full h-8 pixel-border-2 text-black flex items-center justify-center text-xxs font-start ${
+                                !purchaseLoading ? "cursor-pixel" : "opacity-70"
+                              }`}
+                              onClick={() => {
+                                if (!rechargeLoading[key]) {
+                                  if (!isConnected) {
+                                    setOpen?.(!open);
+                                  } else if (approvedRecharge[key]) {
+                                    handleRecharge(agent, nft?.tokens?.[0]);
+                                  } else {
+                                    handleApproveRecharge(agent);
+                                  }
+                                }
+                              }}
+                            >
+                              {rechargeLoading[key] ? (
+                                <svg
+                                  fill="none"
+                                  className="size-4 animate-spin"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                                    fill="currentColor"
+                                  />{" "}
+                                </svg>
+                              ) : approvedRecharge[key] || !isConnected ? (
+                                "Recharge"
+                              ) : (
+                                "Approve"
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="relative w-full h-fit flex items-start justify-between gap-2 text-xs font-jackey2">
+                          <div className="relative w-full h-fit flex items-start justify-between flex-col gap-1">
+                            <div className="relative w-fit h-fit flex">
+                              Active Collection Balance:
+                            </div>
+                            <div className="relative w-fit h-fit flex">
+                              {Number(
+                                agent?.balance?.find(
+                                  (bal) =>
+                                    Number(bal?.collectionId) == Number(nft?.id)
+                                )?.activeBalance || 0
+                              )}
+                            </div>
+                          </div>
+                          <div className="relative w-full h-fit flex items-start justify-between flex-col gap-1">
+                            <div className="relative w-fit h-fit flex">
+                              Daily Collection Rate:
+                            </div>
+                            <div className="relative w-fit h-fit flex">
+                              {Number(
+                                agent?.balance?.find(
+                                  (bal) =>
+                                    Number(bal?.collectionId) == Number(nft?.id)
+                                )?.dailyFrequency || 0
+                              ) *
+                                Number(
+                                  tokenThresholds?.find(
+                                    (thr) =>
+                                      thr?.token?.toLowerCase() ==
+                                      nft?.tokens?.[0]?.toLowerCase()
+                                  )?.dailyRent || 0
+                                )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="relative w-full h-fit text-[#e14c14] font-jackey2 text-sm break-all flex">
+                          {Number(
+                            agent?.balance?.find(
+                              (bal) =>
+                                Number(bal?.collectionId) == Number(nft?.id)
+                            )?.activeBalance || 0
+                          ) /
+                            (Number(
+                              agent?.balance?.find(
+                                (bal) =>
+                                  Number(bal?.collectionId) == Number(nft?.id)
+                              )?.dailyFrequency || 0
+                            ) *
+                              Number(
+                                tokenThresholds?.find(
+                                  (thr) =>
+                                    thr?.token?.toLowerCase() ==
+                                    nft?.tokens?.[0]?.toLowerCase()
+                                )?.dailyRent || 0
+                              )) || 0 > 0
+                            ? `If not recharged, Agent will run out in ${
+                                Number(
+                                  agent?.balance?.find(
+                                    (bal) =>
+                                      Number(bal?.collectionId) ==
+                                      Number(nft?.id)
+                                  )?.activeBalance || 0
+                                ) /
+                                  (Number(
+                                    agent?.balance?.find(
+                                      (bal) =>
+                                        Number(bal?.collectionId) ==
+                                        Number(nft?.id)
+                                    )?.dailyFrequency || 0
+                                  ) *
+                                    Number(
+                                      tokenThresholds?.find(
+                                        (thr) =>
+                                          thr?.token?.toLowerCase() ==
+                                          nft?.tokens?.[0]?.toLowerCase()
+                                      )?.dailyRent || 0
+                                    )) || 0
+                              } days!!`
+                            : "Agent needs to be recharged to start activity!"}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           )}
         </>

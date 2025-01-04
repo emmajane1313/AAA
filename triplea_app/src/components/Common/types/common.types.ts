@@ -15,7 +15,8 @@ export interface NFTData {
   amount: number;
   profile: Account;
   collectors?: Collector[];
-  agentActivity?: Post[]
+  agentActivity?: Post[];
+  active: boolean;
 }
 
 export interface LensConnected {
@@ -31,4 +32,10 @@ export interface Collector {
   amount: number;
   blockTimestamp: string;
   localName?: string;
+}
+
+export interface TokenThreshold {
+  token: string;
+  threshold: string;
+  dailyRent: string;
 }

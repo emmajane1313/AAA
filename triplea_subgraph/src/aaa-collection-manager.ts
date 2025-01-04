@@ -12,17 +12,62 @@ import {
   CollectionCreated as CollectionCreatedEvent,
   DropCreated as DropCreatedEvent,
   DropDeleted as DropDeletedEvent,
+  CollectionDeactivated as CollectionDeactivatedEvent,
+  CollectionActivated as CollectionActivatedEvent,
 } from "../generated/AAACollectionManager/AAACollectionManager";
 import {
   CollectionDeleted,
   CollectionCreated,
   DropCreated,
   DropDeleted,
+  CollectionActivated,
+  CollectionDeactivated,
 } from "../generated/schema";
 import {
   CollectionMetadata as CollectionMetadataTemplate,
   DropMetadata as DropMetadataTemplate,
 } from "../generated/templates";
+
+export function handleCollectionActivated(
+  event: CollectionActivatedEvent
+): void {
+  let entity = new CollectionActivated(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.collectionId = event.params.collectionId;
+
+  entity.save();
+
+  let entityCollection = CollectionCreated.load(
+    Bytes.fromByteArray(ByteArray.fromBigInt(event.params.collectionId))
+  );
+
+  if (entityCollection) {
+    entityCollection.active = true;
+    entityCollection.save();
+  }
+}
+
+
+export function handleCollectionDeactivated(
+  event: CollectionDeactivatedEvent
+): void {
+  let entity = new CollectionDeactivated(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.collectionId = event.params.collectionId;
+
+  entity.save();
+
+  let entityCollection = CollectionCreated.load(
+    Bytes.fromByteArray(ByteArray.fromBigInt(event.params.collectionId))
+  );
+
+  if (entityCollection) {
+    entityCollection.active = false;
+    entityCollection.save();
+  }
+}
 
 export function handleCollectionDeleted(event: CollectionDeletedEvent): void {
   let entity = new CollectionDeleted(
@@ -44,8 +89,6 @@ export function handleCollectionDeleted(event: CollectionDeletedEvent): void {
   // drops
 
   if (entityCollection) {
-    entity.collectionId;
-
     let entityDrop = DropCreated.load(
       Bytes.fromByteArray(ByteArray.fromBigInt(entityCollection.dropId))
     );
@@ -106,7 +149,7 @@ export function handleCollectionCreated(event: CollectionCreatedEvent): void {
     .getCollectionERC20Tokens(entity.collectionId)
     .map<Bytes>((target: Bytes) => target);
   entity.uri = collectionManager.getCollectionMetadata(entity.collectionId);
-
+  entity.active = true;
   let ipfsHash = (entity.uri as String).split("/").pop();
   if (ipfsHash != null) {
     entity.metadata = ipfsHash;

@@ -42,7 +42,9 @@ const Header: FunctionComponent = (): JSX.Element => {
   const { agentsLoading } = useAgents(
     context?.agents!,
     context?.setAgents!,
-    context?.lensClient!
+    context?.lensClient!,
+    context?.tokenThresholds!,
+    context?.setTokenThresholds!
   );
 
   return (

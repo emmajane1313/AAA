@@ -32,8 +32,8 @@ use tokio_tungstenite::{
 };
 use tungstenite::http::method;
 use utils::{
-    constants::{AAA_URI, AGENT_INTERFACE_URL, LENS_API},
-    contracts::initialize_api,
+    constants::{AAA_URI, AGENT_INTERFACE_URL},
+    lens::handle_lens_account,
     types::*,
 };
 mod classes;
@@ -449,55 +449,5 @@ async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + S
                 format!("Timeout: {:?}", err),
             )))
         }
-    }
-}
-
-async fn handle_lens_account(agent_wallet: &str) -> Result<String, Box<dyn Error>> {
-    let client = initialize_api();
-    let query = json!({
-        "query": r#"
-            query AccountsAvailable($request: AccountsAvailableRequest!) {
-                accountsAvailable(request: $request) {
-                    account {
-                        address
-                    }
-                }
-            }
-        "#,
-        "variables": {
-            "request": {
-                "managedBy": agent_wallet,
-                "includeOwned": true
-            }
-        }
-    });
-
-    let response = client
-        .post(LENS_API)
-        .header("Content-Type", "application/json")
-        .header("Origin", "http://localhost:3000")
-        .json(&query)
-        .send()
-        .await?;
-
-    if response.status().is_success() {
-        let json: Value = response.json().await?;
-        if let Some(first_account) = json["data"]["accountsAvailable"]
-            .as_array()
-            .and_then(|array| array.get(0))
-        {
-            if let Some(account_address) = first_account["account"]
-                .get("address")
-                .and_then(|addr| addr.as_str())
-            {
-                return Ok(account_address.to_string());
-            } else {
-                return Err("Unexpected Structure for account address".into());
-            }
-        } else {
-            return Err("Unexpected Structure for account".into());
-        }
-    } else {
-        return Err(format!("Error: {}", response.status()).into());
     }
 }

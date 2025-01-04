@@ -164,6 +164,7 @@ const usePurchase = (
   };
 
   const handlePurchase = async () => {
+    if (collectData?.amount < 1) return;
     setPurchaseLoading(true);
     try {
       const clientWallet = createWalletClient({

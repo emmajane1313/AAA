@@ -4,6 +4,7 @@ import {
   COLLECTION_MANAGER_CONTRACT,
   INFURA_GATEWAY,
   STORAGE_NODE,
+  TOKENS,
 } from "@/lib/constants";
 import CollectionManagerAbi from "@abis/CollectionManagerAbi.json";
 import { createWalletClient, custom, decodeEventLog, PublicClient } from "viem";
@@ -26,7 +27,9 @@ const useMint = (
   const [mintData, setMintData] = useState<MintData>({
     agents: [],
     prices: [],
-    tokens: [],
+    tokens: [
+      TOKENS[0].contract
+    ],
     dropId: 0,
     dropCover: undefined,
     dropTitle: "",
@@ -128,6 +131,9 @@ const useMint = (
             tokens: mintData?.tokens,
             prices: mintData?.prices?.map((price) => Number(price) * 10 ** 18),
             agentIds: mintData?.agents?.map((ag) => Number(ag?.agent?.id)),
+            dailyFrequency: mintData?.agents?.map(
+              (ag) => Number(ag?.dailyFrequency)
+            ),
             metadata: "ipfs://" + responseJSON?.cid,
             amount: Number(mintData?.amount),
           },

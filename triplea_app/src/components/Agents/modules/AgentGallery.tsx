@@ -17,8 +17,8 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
   );
   const router = useRouter();
   return (
-    <div className="relative w-full h-full overflow-scroll pt-4">
-      <div id="scroll" className="relative w-fit h-full">
+    <div id="scroll" className="relative w-full h-full overflow-scroll pt-4">
+      <div className="relative w-fit h-full">
         <InfiniteScroll
           key={"agentGallery"}
           dataLength={context?.agents?.length || 1}

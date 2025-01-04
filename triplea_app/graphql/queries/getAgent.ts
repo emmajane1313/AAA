@@ -20,6 +20,8 @@ const AGENT = gql`
         totalBalance
         collectionId
         token
+        dailyFrequency
+        instructions
       }
       owner
       activeCollectionIds {

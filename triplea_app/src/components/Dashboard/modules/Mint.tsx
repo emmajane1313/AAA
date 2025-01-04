@@ -8,9 +8,8 @@ const Mint: FunctionComponent<MintProps> = ({
   handleMint,
   mintLoading,
   mintData,
-  setMintData,
-  agents,
   allDrops,
+  tokenThresholds,
 }): JSX.Element => {
   return (
     <div className="relative w-full h-full flex flex-col gap-6 items-center justify-between">
@@ -48,18 +47,45 @@ const Mint: FunctionComponent<MintProps> = ({
           <div className="relative flex w-fit h-fit max-h-60 overflow-y-scroll text-left text-black text-base font-jack">
             {mintData.description}
           </div>
-          <div className="relative flex w-fit h-fit flex flex-wrap gap-4 font-start">
-            {mintData?.agents?.map((agent, index) => {
-              return (
-                <div
-                  key={index}
-                  className="relative text-xs text-black w-fit h-fit px-2 py-1 rounded-lg bg-morado pixel-border-4"
-                >
-                  {agent?.agent?.title}
-                </div>
-              );
-            })}
-          </div>
+          {mintData?.agents?.length > 0 && (
+            <div className="relative flex w-fit h-fit flex flex-col gap-2 font-start items-start justify-start">
+              <div className="relative flex w-fit h-fit max-h-60 overflow-y-scroll text-left text-black text-base font-jack">
+                Daily Agent Costs
+              </div>
+              {mintData?.agents?.map((agent, index) => {
+                return (
+                  <div
+                    key={index}
+                    className="relative text-xxs text-black w-fit h-fit px-2 py-1 rounded-lg bg-morado pixel-border-4 flex flex-row gap-2 items-center justify-center"
+                  >
+                    <div className="relative w-fit h-fit flex">
+                      {" "}
+                      {agent?.agent?.title}
+                    </div>
+                    <div className="relative w-fit h-fit flex">
+                      {" "}
+                      {Number(
+                        tokenThresholds?.find(
+                          (t) =>
+                            t.token?.toLowerCase() ==
+                            mintData?.tokens?.[0]?.toLowerCase()
+                        )?.dailyRent || 0
+                      ) * Number(agent?.dailyFrequency || 0)}
+                    </div>
+                    <div className="relative w-fit h-fit flex">
+                      {
+                        TOKENS.find(
+                          (t) =>
+                            t?.contract?.toLowerCase() ==
+                            mintData?.tokens?.[0]?.toLowerCase()
+                        )?.symbol
+                      }
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
       <div className="relative w-full h-fit flex items-center justify-center">

@@ -28,7 +28,9 @@ contract AAACollectionManagerTest is Test {
 
     function setUp() public {
         accessControls = new AAAAccessControls();
-        collectionManager = new AAACollectionManager(payable(address(accessControls)));
+        collectionManager = new AAACollectionManager(
+            payable(address(accessControls))
+        );
         token1 = new MockERC20("Token1", "TK1");
         token2 = new MockERC20("Token2", "TK2");
         accessControls.addAdmin(admin);
@@ -45,6 +47,7 @@ contract AAACollectionManagerTest is Test {
                 prices: new uint256[](2),
                 agentIds: new uint256[](3),
                 customInstructions: new string[](3),
+                dailyFrequency: new uint256[](1),
                 metadata: "Metadata 1",
                 amount: 1
             });
@@ -66,6 +69,7 @@ contract AAACollectionManagerTest is Test {
                 agentIds: new uint256[](1),
                 metadata: "Metadata 2",
                 customInstructions: new string[](1),
+                dailyFrequency: new uint256[](1),
                 amount: 10
             });
 
@@ -163,7 +167,7 @@ contract AAACollectionManagerTest is Test {
             ),
             "custom5"
         );
-          assertEq(
+        assertEq(
             collectionManager.getAgentCollectionCustomInstructions(
                 collectionIds[1],
                 1
@@ -184,6 +188,7 @@ contract AAACollectionManagerTest is Test {
                 prices: new uint256[](2),
                 agentIds: new uint256[](3),
                 customInstructions: new string[](3),
+                dailyFrequency: new uint256[](1),
                 metadata: "Metadata 2",
                 amount: 1
             });
@@ -204,6 +209,7 @@ contract AAACollectionManagerTest is Test {
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
                 customInstructions: new string[](1),
+                dailyFrequency: new uint256[](1),
                 metadata: "Metadata 3",
                 amount: 10
             });
@@ -282,7 +288,9 @@ contract AAACollectionManagerTest is Test {
     function testSetAccessControls() public {
         AAAAccessControls newAccessControls = new AAAAccessControls();
         vm.startPrank(admin);
-        collectionManager.setAccessControls(payable(address(newAccessControls)));
+        collectionManager.setAccessControls(
+            payable(address(newAccessControls))
+        );
         assertEq(
             address(collectionManager.accessControls()),
             address(newAccessControls)

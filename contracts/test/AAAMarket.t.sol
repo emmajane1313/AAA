@@ -47,7 +47,8 @@ contract AAAMarketTest is Test {
         devTreasury = new AAADevTreasury(payable(address(accessControls)));
         agents = new AAAAgents(
             payable(address(accessControls)),
-            address(devTreasury)
+            address(devTreasury),
+            address(collectionManager)
         );
         market = new AAAMarket(
             address(nft),
@@ -68,11 +69,16 @@ contract AAAMarketTest is Test {
         market.setDevTreasury(address(devTreasury));
         agents.setMarket(address(market));
         accessControls.setAcceptedToken(address(token1));
-        accessControls.setTokenThreshold(address(token1), 60000000000000000000);
+        accessControls.setTokenThresholdAndRent(
+            address(token1),
+            60000000000000000000,
+            1000000000
+        );
         accessControls.setAcceptedToken(address(token2));
-        accessControls.setTokenThreshold(
+        accessControls.setTokenThresholdAndRent(
             address(token2),
-            100000000000000000000
+            100000000000000000000,
+            100000000
         );
         devTreasury.setMarket(address(market));
         vm.stopPrank();
@@ -86,6 +92,7 @@ contract AAAMarketTest is Test {
                 tokens: new address[](1),
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
+                dailyFrequency: new uint256[](1),
                 customInstructions: new string[](1),
                 metadata: "Metadata 1",
                 amount: 5
@@ -129,6 +136,7 @@ contract AAAMarketTest is Test {
                 tokens: new address[](1),
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
+                dailyFrequency: new uint256[](1),
                 customInstructions: new string[](1),
                 metadata: "Metadata 2",
                 amount: 5
@@ -172,6 +180,7 @@ contract AAAMarketTest is Test {
                 prices: new uint256[](1),
                 agentIds: new uint256[](1),
                 customInstructions: new string[](1),
+                dailyFrequency: new uint256[](1),
                 metadata: "Metadata Over Threshold",
                 amount: 10
             });

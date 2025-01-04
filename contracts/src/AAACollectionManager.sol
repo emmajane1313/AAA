@@ -11,6 +11,8 @@ contract AAACollectionManager {
     mapping(uint256 => AAALibrary.Drop) private _drops;
     mapping(uint256 => mapping(uint256 => string))
         private _agentCustomInstructions;
+    mapping(uint256 => mapping(uint256 => uint256))
+        private _agentDailyFrequency;
 
     uint256 private _collectionCounter;
     uint256 private _dropCounter;
@@ -22,13 +24,21 @@ contract AAACollectionManager {
         uint256 collectionId,
         uint256 indexed dropId
     );
+    event CollectionPriceAdjusted(
+        address token,
+        uint256 collectionId,
+        uint256 newPrice
+    );
     event DropCreated(address artist, uint256 indexed dropId);
     event DropDeleted(address artist, uint256 indexed dropId);
     event CollectionDeleted(address artist, uint256 indexed collectionId);
-    event CustomInstructionsUpdated(
+    event AgentDetailsUpdated(
         string[] customInstructions,
+        uint256[] dailyFrequency,
         uint256 collectionId
     );
+    event CollectionDeactivated(uint256 collectionId);
+    event CollectionActivated(uint256 collectionId);
 
     modifier onlyMarket() {
         if (market != msg.sender) {
@@ -41,6 +51,14 @@ contract AAACollectionManager {
         if (!accessControls.isAdmin(msg.sender)) {
             revert AAAErrors.NotAdmin();
         }
+        _;
+    }
+
+    modifier onlyArtist(uint256 collectionId) {
+        if (_collections[collectionId].artist != msg.sender) {
+            revert AAAErrors.NotArtist();
+        }
+
         _;
     }
 
@@ -92,21 +110,27 @@ contract AAACollectionManager {
             artist: msg.sender,
             amount: collectionInput.amount,
             tokenIds: new uint256[](0),
-            amountSold: 0
+            amountSold: 0,
+            active: true
         });
 
         for (uint256 i = 0; i < collectionInput.agentIds.length; i++) {
             _agentCustomInstructions[_collectionCounter][
                 collectionInput.agentIds[i]
             ] = collectionInput.customInstructions[i];
+
+            _agentDailyFrequency[_collectionCounter][
+                collectionInput.agentIds[i]
+            ] = collectionInput.dailyFrequency[i];
         }
 
         _drops[_dropValue].collectionIds.push(_collectionCounter);
         emit CollectionCreated(msg.sender, _collectionCounter, _dropValue);
     }
 
-    function updateCustomInstructions(
+    function updateAgentCollectionDetails(
         string[] memory customInstructions,
+        uint256[] memory dailyFrequency,
         uint256 collectionId
     ) external {
         if (_collections[collectionId].artist != msg.sender) {
@@ -115,29 +139,90 @@ contract AAACollectionManager {
 
         uint256[] memory _agents = _collections[collectionId].agentIds;
 
-        if (_agents.length != customInstructions.length) {
+        if (
+            _agents.length != customInstructions.length &&
+            customInstructions.length != dailyFrequency.length
+        ) {
             revert AAAErrors.BadUserInput();
         }
         for (uint256 i = 0; i < _agents.length; i++) {
             _agentCustomInstructions[collectionId][
                 _agents[i]
             ] = customInstructions[i];
+
+            _agentDailyFrequency[collectionId][_agents[i]] = dailyFrequency[i];
         }
 
-        emit CustomInstructionsUpdated(customInstructions, collectionId);
+        emit AgentDetailsUpdated(
+            customInstructions,
+            dailyFrequency,
+            collectionId
+        );
     }
 
-    function deleteCollection(uint256 collectionId) external {
-        if (_collections[collectionId].artist != msg.sender) {
-            revert AAAErrors.NotArtist();
+    function adjustCollectionPrice(
+        address token,
+        uint256 collectionId,
+        uint256 newPrice
+    ) external onlyArtist(collectionId) {
+        uint256 _index = 0;
+        bool _tokenFound = false;
+
+        for (
+            uint256 i = 0;
+            i < _collections[collectionId].erc20Tokens.length;
+            i++
+        ) {
+            if (_collections[collectionId].erc20Tokens[i] == token) {
+                _index = i;
+                _tokenFound = true;
+                break;
+            }
         }
 
+        if (_tokenFound) {
+            _collections[collectionId].prices[_index] = newPrice;
+
+            emit CollectionPriceAdjusted(token, collectionId, newPrice);
+        }
+    }
+
+    function deactivateCollection(
+        uint256 collectionId
+    ) external onlyArtist(collectionId) {
+        if (!_collections[collectionId].active) {
+            revert AAAErrors.CollectionAlreadyDeactivated();
+        }
+
+        _collections[collectionId].active = false;
+
+        emit CollectionDeactivated(collectionId);
+    }
+
+    function activateCollection(
+        uint256 collectionId
+    ) external onlyArtist(collectionId) {
+        if (_collections[collectionId].active) {
+            revert AAAErrors.CollectionAlreadyActive();
+        }
+
+        _collections[collectionId].active = true;
+
+        emit CollectionActivated(collectionId);
+    }
+
+    function deleteCollection(
+        uint256 collectionId
+    ) external onlyArtist(collectionId) {
         for (
             uint256 i = 0;
             i < _collections[collectionId].agentIds.length;
             i++
         ) {
             delete _agentCustomInstructions[collectionId][
+                _collections[collectionId].agentIds[i]
+            ];
+            delete _agentDailyFrequency[collectionId][
                 _collections[collectionId].agentIds[i]
             ];
         }
@@ -296,6 +381,12 @@ contract AAACollectionManager {
         return _collections[collectionId].amountSold;
     }
 
+    function getCollectionIsActive(
+        uint256 collectionId
+    ) public view returns (bool) {
+        return _collections[collectionId].active;
+    }
+
     function getAgentCollectionCustomInstructions(
         uint256 collectionId,
         uint256 agentId
@@ -303,11 +394,20 @@ contract AAACollectionManager {
         return _agentCustomInstructions[collectionId][agentId];
     }
 
+    function getAgentCollectionDailyFrequency(
+        uint256 collectionId,
+        uint256 agentId
+    ) public view returns (uint256) {
+        return _agentDailyFrequency[collectionId][agentId];
+    }
+
     function setMarket(address _market) external onlyAdmin {
         market = _market;
     }
 
-    function setAccessControls(address payable _accessControls) external onlyAdmin {
+    function setAccessControls(
+        address payable _accessControls
+    ) external onlyAdmin {
         accessControls = AAAAccessControls(_accessControls);
     }
 }

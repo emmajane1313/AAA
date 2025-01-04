@@ -3,7 +3,7 @@ import { FetchResult, gql } from "@apollo/client";
 
 const AGENTS = gql`
   query {
-    agentCreateds {
+    agentCreateds(first: 50) {
       metadata {
         title
         description
@@ -16,6 +16,8 @@ const AGENTS = gql`
         totalBalance
         collectionId
         token
+        dailyFrequency
+        instructions
       }
       rentPaid {
         transactionHash

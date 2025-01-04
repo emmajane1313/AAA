@@ -124,7 +124,7 @@ contract AAAAccessControlsTest is Test {
 
     function testSetTokenThreshold() public {
         accessControls.setAcceptedToken(token1);
-        accessControls.setTokenThreshold(token1, 100);
+        accessControls.setTokenThresholdAndRent(token1, 100, 10);
         assertEq(accessControls.getTokenThreshold(token1), 100);
     }
 
@@ -132,7 +132,7 @@ contract AAAAccessControlsTest is Test {
         vm.expectRevert(
             abi.encodeWithSelector(AAAErrors.TokenNotAccepted.selector)
         );
-        accessControls.setTokenThreshold(token1, 100);
+        accessControls.setTokenThresholdAndRent(token1, 100, 10);
     }
 
     function testSetAgentContract() public {

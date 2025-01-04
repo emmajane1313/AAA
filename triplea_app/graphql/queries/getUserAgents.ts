@@ -18,6 +18,8 @@ const USER_AGENTS = gql`
         totalBalance
         collectionId
         token
+        dailyFrequency
+        instructions
       }
       activeCollectionIds {
         collectionId

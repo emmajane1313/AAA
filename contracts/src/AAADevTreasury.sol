@@ -11,6 +11,9 @@ contract AAADevTreasury {
     AAAAccessControls public accessControls;
     AAAAgents public agents;
     AAAMarket public market;
+    uint256 public ownerAmountPercent;
+    uint256 public serviceAmountPercent;
+    uint256 public distributionAmount;
     mapping(address => uint256) private _balance;
     mapping(address => uint256) private _services;
     mapping(uint256 => mapping(address => uint256)) private _collectorPayment;
@@ -37,9 +40,18 @@ contract AAADevTreasury {
     );
     event OrderPayment(address token, address recipient, uint256 amount);
     event AgentOwnerPaid(address token, address owner, uint256 amount);
+    event ExcessAgent(
+        address token,
+        uint256 amount,
+        uint256 agentId,
+        uint256 collectionId
+    );
 
     constructor(address payable _accessControls) payable {
         accessControls = AAAAccessControls(_accessControls);
+        ownerAmountPercent = 20;
+        serviceAmountPercent = 40;
+        distributionAmount = 40;
     }
 
     function receiveFunds(
@@ -84,6 +96,22 @@ contract AAADevTreasury {
         emit FundsWithdrawn(token, amount);
     }
 
+    function excessAgent(
+        address token,
+        uint256 agentId,
+        uint256 collectionId
+    ) external onlyAdmin {
+        uint256 _amount = agents.getAgentActiveBalance(
+            token,
+            agentId,
+            collectionId
+        );
+        _services[token] += _amount;
+        _allTimeServices[token] += _amount;
+
+        emit ExcessAgent(token, _amount, agentId, collectionId);
+    }
+
     function agentPayRent(
         address[] memory tokens,
         uint256[] memory collectionIds,
@@ -100,9 +128,10 @@ contract AAADevTreasury {
         for (uint256 i = 0; i < collectionIds.length; i++) {
             _balance[tokens[i]] -= amounts[i];
 
-            uint256 _ownerAmount = (amounts[i] * 20) / 100;
-            uint256 _serviceAmount = (amounts[i] * 40) / 100;
-            uint256 _distributionAmount = (amounts[i] * 40) / 100;
+            uint256 _ownerAmount = (amounts[i] * ownerAmountPercent) / 100;
+            uint256 _serviceAmount = (amounts[i] * serviceAmountPercent) / 100;
+            uint256 _distributionAmount = (amounts[i] * distributionAmount) /
+                100;
 
             _services[tokens[i]] += _serviceAmount;
             _allTimeServices[tokens[i]] += _serviceAmount;
@@ -136,11 +165,7 @@ contract AAADevTreasury {
             }
         }
 
-        emit AgentFundsWithdrawn(
-            tokens,
-            amounts,
-            agentWallet
-        );
+        emit AgentFundsWithdrawn(tokens, amounts, agentWallet);
     }
 
     function getBalanceByToken(address token) public view returns (uint256) {
@@ -163,7 +188,9 @@ contract AAADevTreasury {
         return _allTimeServices[token];
     }
 
-    function setAccessControls(address payable _accessControls) external onlyAdmin {
+    function setAccessControls(
+        address payable _accessControls
+    ) external onlyAdmin {
         accessControls = AAAAccessControls(_accessControls);
     }
 
@@ -173,5 +200,15 @@ contract AAADevTreasury {
 
     function setMarket(address _market) external onlyAdmin {
         market = AAAMarket(_market);
+    }
+
+    function setAmounts(
+        uint256 _ownerAmountPercent,
+        uint256 _serviceAmountPercent,
+        uint256 _distributionAmount
+    ) external onlyAdmin {
+        ownerAmountPercent = _ownerAmountPercent;
+        serviceAmountPercent = _serviceAmountPercent;
+        distributionAmount = _distributionAmount;
     }
 }

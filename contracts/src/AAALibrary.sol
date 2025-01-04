@@ -13,6 +13,7 @@ contract AAALibrary {
         uint256 dropId;
         uint256 amount;
         uint256 amountSold;
+        bool active;
     }
 
     struct Drop {
@@ -27,6 +28,7 @@ contract AAALibrary {
         address[] tokens;
         uint256[] prices;
         uint256[] agentIds;
+        uint256[] dailyFrequency;
         string metadata;
         uint256 amount;
     }

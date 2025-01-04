@@ -7,6 +7,12 @@ const DROP = gql`
       collectionId
       artist
       uri
+      tokens
+      prices
+      agents
+      active
+      amountSold
+      amount
       metadata {
         image
         title

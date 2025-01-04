@@ -1,4 +1,8 @@
-import { LensConnected, NFTData } from "@/components/Common/types/common.types";
+import {
+  LensConnected,
+  NFTData,
+  TokenThreshold,
+} from "@/components/Common/types/common.types";
 import { Account, Post, PublicClient } from "@lens-protocol/client";
 import { SetStateAction } from "react";
 import { StorageClient } from "@lens-protocol/storage-node-client";
@@ -25,6 +29,7 @@ export enum MintSwitcher {
 export enum DropSwitcher {
   Drops,
   Collection,
+  AgentsCollection,
 }
 
 export type MintSwitchProps = {
@@ -35,6 +40,7 @@ export type MintSwitchProps = {
   allDrops: DropInterface[];
   allDropsLoading: boolean;
   lensConnected: LensConnected;
+  tokenThresholds: TokenThreshold[];
 };
 
 export type DropsProps = {
@@ -67,9 +73,8 @@ export type MintProps = {
   handleMint: () => Promise<void>;
   mintLoading: boolean;
   mintData: MintData;
-  setMintData: (e: SetStateAction<MintData>) => void;
-  agents: Agent[];
   allDrops: DropInterface[];
+  tokenThresholds: TokenThreshold[];
 };
 
 export type CustomiseAgentProps = {
@@ -85,6 +90,7 @@ export type ChooseAgentProps = {
   agentsLoading: boolean;
   mintData: MintData;
   setMintData: (e: SetStateAction<MintData>) => void;
+  tokenThresholds: TokenThreshold[];
 };
 
 export type AgentProps = {
@@ -103,7 +109,11 @@ export type AccountProps = {
 };
 
 export type MintData = {
-  agents: { agent: Agent; customInstructions: string }[];
+  agents: {
+    agent: Agent;
+    customInstructions: string;
+    dailyFrequency: number;
+  }[];
   prices: number[];
   tokens: string[];
   dropId: number;
@@ -119,7 +129,6 @@ export interface Agent {
   id: string;
   cover: string;
   title: string;
-  customInstructions: string;
   description: string;
   wallet: string;
   balance: Balances[];
@@ -149,7 +158,9 @@ export interface Balances {
   token: string;
   activeBalance: number;
   totalBalance: number;
+  dailyFrequency: number;
   collectionId: number;
+  instructions: string
 }
 
 export interface DropInterface {
@@ -178,6 +189,8 @@ export type DropsSwitchProps = {
   allDropsLoading: boolean;
   setSwitcher: (e: SetStateAction<Switcher>) => void;
   lensClient: PublicClient;
+  agents: Agent[];
+  setNotification: (e: SetStateAction<string | undefined>) => void;
 };
 
 export type CollectionProps = {
@@ -185,4 +198,14 @@ export type CollectionProps = {
   drop: DropInterface | undefined;
   setDrop: (e: SetStateAction<DropInterface | undefined>) => void;
   lensClient: PublicClient;
+  setCollection: (e: SetStateAction<NFTData | undefined>) => void;
+};
+
+export type AgentsCollectionProps = {
+  setDropSwitcher: (e: SetStateAction<DropSwitcher>) => void;
+  agents: Agent[];
+  setDrop: (e: SetStateAction<DropInterface | undefined>) => void;
+  collection: NFTData;
+  setCollection: (e: SetStateAction<NFTData | undefined>) => void;
+  setNotification: (e: SetStateAction<string | undefined>) => void;
 };

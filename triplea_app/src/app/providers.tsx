@@ -6,7 +6,10 @@ import { createContext, SetStateAction, useEffect, useState } from "react";
 import { chains } from "@lens-network/sdk/viem";
 import { Context, PublicClient, testnet } from "@lens-protocol/client";
 import { Agent } from "@/components/Dashboard/types/dashboard.types";
-import { LensConnected } from "@/components/Common/types/common.types";
+import {
+  LensConnected,
+  TokenThreshold,
+} from "@/components/Common/types/common.types";
 import {
   StorageClient,
   testnet as storageTestnet,
@@ -56,6 +59,8 @@ export const ModalContext = createContext<
       lensConnected: LensConnected | undefined;
       setLensConnected: (e: SetStateAction<LensConnected | undefined>) => void;
       storageClient: StorageClient;
+      tokenThresholds: TokenThreshold[];
+      setTokenThresholds: (e: SetStateAction<TokenThreshold[]>) => void;
     }
   | undefined
 >(undefined);
@@ -67,6 +72,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const [indexer, setIndexer] = useState<string | undefined>();
   const [imageView, setImageView] = useState<string | undefined>();
   const [notification, setNotification] = useState<string | undefined>();
+  const [tokenThresholds, setTokenThresholds] = useState<TokenThreshold[]>([]);
   const [pageChange, setPageChange] = useState<boolean>(false);
   const [signless, setSignless] = useState<boolean>(false);
   const [createAccount, setCreateAccount] = useState<boolean>(false);
@@ -91,7 +97,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           customTheme={{
             "--ck-font-family": '"Jackey2", cursive',
           }}
-        
         >
           <AnimationContext.Provider
             value={{
@@ -117,6 +122,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 storageClient,
                 signless,
                 setSignless,
+                tokenThresholds,
+                setTokenThresholds,
               }}
             >
               {children}

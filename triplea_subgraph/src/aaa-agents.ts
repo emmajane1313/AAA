@@ -162,6 +162,10 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
       entity.collectionId,
       entity.agentId
     );
+    newBalance.dailyFrequency = collections.getAgentCollectionDailyFrequency(
+      entity.collectionId,
+      entity.agentId
+    );
     newBalance.totalBalance = agents.getAgentTotalBalance(
       event.params.token,
       entity.agentId,
@@ -268,6 +272,10 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
           collectionId,
           entity.agentId
         );
+      newBalance.dailyFrequency = collections.getAgentCollectionDailyFrequency(
+        collectionId,
+        entity.agentId
+      );
       newBalance.totalBalance = agents.getAgentTotalBalance(
         token as Address,
         entity.agentId,

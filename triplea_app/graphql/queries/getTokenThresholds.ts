@@ -1,42 +1,20 @@
 import { aaaClient } from "@/lib/graph/client";
 import { FetchResult, gql } from "@apollo/client";
 
-const AGENTS_PAGINATED = gql`
-  query ($skip: Int!) {
-    agentCreateds(first: 20, skip: $skip) {
-      metadata {
-        title
-        description
-        cover
-      }
-      creator
-      blockTimestamp
-      balances {
-        activeBalance
-        totalBalance
-        collectionId
-        token
-        dailyFrequency
-        instructions
-      }
-      blockNumber
-      AAAAgents_id
-      transactionHash
-      uri
-      wallets
+const TOKEN_THRESHOLDS = gql`
+  query {
+    tokenThresholdSets {
+     token
+     threshold
+     rent
     }
   }
 `;
 
-export const getAgentsPaginated = async (
-  skip: number
-): Promise<FetchResult | void> => {
+export const getTokenThresholds = async (): Promise<FetchResult | void> => {
   let timeoutId: NodeJS.Timeout | undefined;
   const queryPromise = aaaClient.query({
-    query: AGENTS_PAGINATED,
-    variables: {
-      skip,
-    },
+    query: TOKEN_THRESHOLDS,
     fetchPolicy: "no-cache",
     errorPolicy: "all",
   });

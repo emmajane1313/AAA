@@ -4,11 +4,15 @@ import { getAgents } from "../../../../graphql/queries/getAgents";
 import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 import { evmAddress, PublicClient, SessionClient } from "@lens-protocol/client";
+import { TokenThreshold } from "../types/common.types";
+import { getTokenThresholds } from "../../../../graphql/queries/getTokenThresholds";
 
 const useAgents = (
   agents: Agent[],
   setAgents: (e: SetStateAction<Agent[]>) => void,
-  lensClient: SessionClient | PublicClient
+  lensClient: SessionClient | PublicClient,
+  tokenThresholds: TokenThreshold[],
+  setTokenThresholds: (e: SetStateAction<TokenThreshold[]>) => void,
 ) => {
   const [agentsLoading, setAgentsLoading] = useState<boolean>(false);
 
@@ -34,15 +38,20 @@ const useAgents = (
             lensClient
           );
           let picture = "";
-          const cadena = await fetch(
-            `${STORAGE_NODE}/${
-              (result as any)?.[0]?.account?.metadata?.picture?.split("lens://")?.[1]
-            }`
-          );
 
-          if (cadena) {
-            const json = await cadena.json();
-            picture = json.item;
+          if ((result as any)?.[0]?.account?.metadata?.picture) {
+            const cadena = await fetch(
+              `${STORAGE_NODE}/${
+                (result as any)?.[0]?.account?.metadata?.picture?.split(
+                  "lens://"
+                )?.[1]
+              }`
+            );
+
+            if (cadena) {
+              const json = await cadena.json();
+              picture = json.item;
+            }
           }
 
           return {
@@ -62,16 +71,30 @@ const useAgents = (
           };
         })
       );
-      setAgents(allAgents);
+      setAgents?.(allAgents);
     } catch (err: any) {
       console.error(err.message);
     }
     setAgentsLoading(false);
   };
 
+  const loadThresholdsAndRent = async () => {
+    try {
+      const data = await getTokenThresholds();
+
+      setTokenThresholds?.(data?.data?.setTokenThresholdAndRents);
+    } catch(err:any){
+      console.error(err.message)
+    }
+  }
+
   useEffect(() => {
     if (!agents || (agents?.length < 1 && lensClient)) {
       loadAgents();
+    }
+
+    if (tokenThresholds?.length < 1) {
+      loadThresholdsAndRent();
     }
   }, [lensClient]);
 

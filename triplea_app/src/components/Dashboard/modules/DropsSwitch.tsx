@@ -6,17 +6,22 @@ import {
 } from "../types/dashboard.types";
 import Drops from "./Drops";
 import Collection from "./Collection";
+import AgentsCollection from "./AgentsCollection";
+import { NFTData } from "@/components/Common/types/common.types";
 
 const DropsSwitch: FunctionComponent<DropsSwitchProps> = ({
   allDropsLoading,
   setSwitcher,
   allDrops,
   lensClient,
+  setNotification,
+  agents
 }): JSX.Element => {
   const [dropSwitcher, setDropSwitcher] = useState<DropSwitcher>(
     DropSwitcher.Drops
   );
   const [drop, setDrop] = useState<DropInterface | undefined>();
+  const [collection, setCollection] = useState<NFTData | undefined>();
 
   switch (dropSwitcher) {
     case DropSwitcher.Collection:
@@ -26,6 +31,19 @@ const DropsSwitch: FunctionComponent<DropsSwitchProps> = ({
           setDropSwitcher={setDropSwitcher}
           drop={drop}
           lensClient={lensClient}
+          setCollection={setCollection}
+        />
+      );
+
+    case DropSwitcher.AgentsCollection:
+      return (
+        <AgentsCollection
+          setCollection={setCollection}
+          setDrop={setDrop}
+          setDropSwitcher={setDropSwitcher}
+          collection={collection!}
+          setNotification={setNotification}
+          agents={agents}
         />
       );
 

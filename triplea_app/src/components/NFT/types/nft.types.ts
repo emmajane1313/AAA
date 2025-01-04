@@ -1,7 +1,12 @@
-import { LensConnected, NFTData } from "@/components/Common/types/common.types";
+import {
+  LensConnected,
+  NFTData,
+  TokenThreshold,
+} from "@/components/Common/types/common.types";
 import { ImageMetadata, Post, TextOnlyMetadata } from "@lens-protocol/client";
 import { SetStateAction } from "react";
 import { StorageClient } from "@lens-protocol/storage-node-client";
+import { Agent } from "@/components/Dashboard/types/dashboard.types";
 
 export type DataProps = {
   url: string;
@@ -12,6 +17,7 @@ export type DataProps = {
 export type PurchaseProps = {
   nft: NFTData;
   nftLoading: boolean;
+  tokenThresholds: TokenThreshold[];
   setNotification: (e: SetStateAction<string | undefined>) => void;
   setIndexer: (e: SetStateAction<string | undefined>) => void;
   setNft: (e: SetStateAction<NFTData | undefined>) => void;
@@ -22,6 +28,7 @@ export type PurchaseProps = {
   setSignless: (e: SetStateAction<boolean>) => void;
   storageClient: StorageClient;
   setImageView: (e: SetStateAction<string | undefined>) => void;
+  agents: Agent[];
 };
 
 export interface CollectData {
@@ -62,7 +69,7 @@ export type PostProps = {
   handleComment: () => Promise<void>;
   handleQuote: () => Promise<void>;
   postLoading: boolean;
-  success: boolean
+  success: boolean;
   setPost: (e: SetStateAction<string>) => void;
   post: string;
   commentQuote:
