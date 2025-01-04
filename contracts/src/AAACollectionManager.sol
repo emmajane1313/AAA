@@ -256,6 +256,7 @@ contract AAACollectionManager {
             delete _drops[_dropId];
         }
 
+
         delete _collections[collectionId];
 
         emit CollectionDeleted(msg.sender, collectionId);
@@ -272,6 +273,7 @@ contract AAACollectionManager {
             if (_collections[collectionId].amountSold > 0) {
                 revert AAAErrors.CantDeleteSoldCollection();
             }
+        
             delete _collections[collectionId];
         }
 

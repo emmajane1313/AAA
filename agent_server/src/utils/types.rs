@@ -9,7 +9,7 @@ use ethers::{
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct TripleAAgent {
     pub id: u32,
     pub name: String,
@@ -41,7 +41,7 @@ pub struct AgentManager {
     pub tokens: Option<SavedTokens>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Collection {
     pub image: String,
     pub title: String,
@@ -53,7 +53,7 @@ pub struct Collection {
     pub tokens: Vec<String>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct AgentActivity {
     pub collection: Collection,
     pub token: String,

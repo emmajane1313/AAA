@@ -10,6 +10,7 @@ import "./../src/AAACollectionManager.sol";
 import "./../src/AAAAccessControls.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "forge-std/console.sol";
 
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
@@ -81,6 +82,7 @@ contract AAAMarketTest is Test {
             100000000
         );
         devTreasury.setMarket(address(market));
+        devTreasury.setAgents(address(agents));
         vm.stopPrank();
     }
 
@@ -102,7 +104,7 @@ contract AAAMarketTest is Test {
         inputs_1.prices[0] = 10 ether;
         inputs_1.agentIds[0] = 1;
         inputs_1.customInstructions[0] = "custom";
-
+        inputs_1.dailyFrequency[0] = 1;
         collectionManager.create(inputs_1, "some drop uri", 0);
         vm.stopPrank();
 
@@ -146,6 +148,7 @@ contract AAAMarketTest is Test {
         inputs_1.prices[0] = 10 ether;
         inputs_1.agentIds[0] = 1;
         inputs_1.customInstructions[0] = "custom";
+        inputs_1.dailyFrequency[0] = 1;
         collectionManager.create(inputs_1, "some 2 drop", 0);
         vm.stopPrank();
 
@@ -189,6 +192,7 @@ contract AAAMarketTest is Test {
         inputs_1.prices[0] = 70 ether;
         inputs_1.agentIds[0] = 1;
         inputs_1.customInstructions[0] = "custom";
+        inputs_1.dailyFrequency[0] = 1;
 
         collectionManager.create(inputs_1, "some 3 drop", 0);
         vm.stopPrank();
@@ -214,7 +218,6 @@ contract AAAMarketTest is Test {
         uint256 totalPrice = 70 ether * 2;
         uint256 agentShare = (totalPrice * 10) / 100;
         uint256 artistShare = totalPrice - agentShare;
-        uint256 perAgentShare = agentShare;
 
         uint256 buyerExpectedBalance = buyerInitialBalance - totalPrice;
         uint256 artistExpectedBalance = artistInitialBalance + artistShare;
@@ -233,7 +236,14 @@ contract AAAMarketTest is Test {
             1,
             1
         );
-        assertEq(agentBalance, perAgentShare);
+        uint256 bonusBalance = agents.getAgentBonusBalance(
+            address(token1),
+            1,
+            1
+        );
+        uint256 rent = accessControls.getTokenDailyRent(address(token1));
+        assertEq(agentBalance, rent);
+        assertEq(bonusBalance, agentShare - rent);
 
         uint256 amountSold = collectionManager.getCollectionAmountSold(1);
         assertEq(amountSold, 3);

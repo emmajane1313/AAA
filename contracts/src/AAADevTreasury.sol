@@ -28,6 +28,14 @@ contract AAADevTreasury {
         _;
     }
 
+    modifier onlyAgents() {
+        if (msg.sender != address(agents)) {
+            revert AAAErrors.OnlyAgentsContract();
+        }
+
+        _;
+    }
+
     event FundsReceived(
         address indexed buyer,
         address indexed token,
@@ -35,7 +43,7 @@ contract AAADevTreasury {
     );
     event FundsWithdrawnTreasury(address indexed token, uint256 amount);
     event FundsWithdrawnServices(address indexed token, uint256 amount);
-    event FundsWithdrawnStuck(address indexed token, uint256 amount);
+    event FundsWithdrawnWithoutReceive(address indexed token, uint256 amount);
     event AgentPaidRent(
         address[] tokens,
         uint256[] amounts,
@@ -44,12 +52,7 @@ contract AAADevTreasury {
     );
     event OrderPayment(address token, address recipient, uint256 amount);
     event AgentOwnerPaid(address token, address owner, uint256 amount);
-    event ExcessAgent(
-        address token,
-        uint256 amount,
-        uint256 agentId,
-        uint256 collectionId
-    );
+    event AddToServices(address token, uint256 amount);
     event DevTreasuryAdded(address token, uint256 amount);
 
     constructor(address payable _accessControls) payable {
@@ -64,9 +67,10 @@ contract AAADevTreasury {
         address paymentToken,
         uint256 amount
     ) external {
-        if (msg.sender != address(market)) {
-            revert AAAErrors.OnlyMarketContract();
+        if (msg.sender != address(market) && msg.sender != address(agents)) {
+            revert AAAErrors.OnlyMarketOrAgentContract();
         }
+
         _balance[paymentToken] += amount;
         _allTimeBalance[paymentToken] += amount;
 
@@ -77,48 +81,46 @@ contract AAADevTreasury {
         address token,
         uint256 amount
     ) external onlyAdmin {
-        IERC20(token).transferFrom(address(this), msg.sender, amount);
+
+        if (amount > _treasury[token]) {
+            revert AAAErrors.InsufficientBalance();
+        }
+        IERC20(token).transfer(msg.sender, amount);
         _balance[token] -= amount;
         _treasury[token] -= amount;
 
         emit FundsWithdrawnTreasury(token, amount);
     }
 
-    function withdrawFundsStuck(
+    function withdrawFundsWithoutReceive(
         address token,
         uint256 amount
     ) external onlyAdmin {
-        IERC20(token).transferFrom(address(this), msg.sender, amount);
-        _balance[token] -= amount;
+        IERC20(token).transfer(msg.sender, amount);
 
-        emit FundsWithdrawnStuck(token, amount);
+        emit FundsWithdrawnWithoutReceive(token, amount);
     }
 
     function withdrawFundsServices(
         address token,
         uint256 amount
     ) external onlyAdmin {
-        IERC20(token).transferFrom(address(this), msg.sender, amount);
+        if (amount > _services[token]) {
+            revert AAAErrors.InsufficientBalance();
+        }
+
+        IERC20(token).transfer(msg.sender, amount);
         _balance[token] -= amount;
         _services[token] -= amount;
 
         emit FundsWithdrawnServices(token, amount);
     }
 
-    function excessAgent(
-        address token,
-        uint256 agentId,
-        uint256 collectionId
-    ) external onlyAdmin {
-        uint256 _amount = agents.getAgentActiveBalance(
-            token,
-            agentId,
-            collectionId
-        );
-        _services[token] += _amount;
-        _allTimeServices[token] += _amount;
+    function addToServices(address token, uint256 amount) external onlyAgents {
+        _services[token] += amount;
+        _allTimeServices[token] += amount;
 
-        emit ExcessAgent(token, _amount, agentId, collectionId);
+        emit AddToServices(token, amount);
     }
 
     function agentPayRent(
@@ -128,11 +130,7 @@ contract AAADevTreasury {
         uint256[] memory bonuses,
         address agentWallet,
         uint256 agentId
-    ) external {
-        if (msg.sender != address(agents)) {
-            revert AAAErrors.OnlyAgentsContract();
-        }
-
+    ) external onlyAgents {
         address _owner = agents.getAgentOwner(agentId);
 
         for (uint256 i = 0; i < collectionIds.length; i++) {
@@ -140,51 +138,51 @@ contract AAADevTreasury {
             _allTimeServices[tokens[i]] += amounts[i];
 
             if (bonuses[i] > 0) {
-                uint256 _ownerAmount = (bonuses[i] * ownerAmountPercent) / 100;
-                uint256 _devAmount = (bonuses[i] * devAmountPercent) / 100;
-                uint256 _distributionAmount = (bonuses[i] *
-                    distributionAmountPercent) / 100;
-
-                address[] memory _collectors = market
-                    .getAllCollectorsByCollectionId(collectionIds[i]);
-
-                uint256 totalWeight = 0;
-                for (uint256 j = 1; j <= _collectors.length; j++) {
-                    totalWeight += 1e18 / j;
-                }
-
-                for (uint256 j = 0; j < _collectors.length; j++) {
-                    if (_collectors[j] != address(0)) {
-                        uint256 weight = 1e18 / (j + 1);
-                        uint256 payment = (_distributionAmount * weight) /
-                            totalWeight;
-
-                        _collectorPayment[collectionIds[i]][
-                            _collectors[j]
-                        ] = payment;
-
-                        if (
-                            IERC20(tokens[i]).transfer(_collectors[j], payment)
-                        ) {
-                            emit OrderPayment(
-                                tokens[i],
-                                _collectors[j],
-                                payment
-                            );
-                        }
-                    }
-                }
-
-                if (IERC20(tokens[i]).transfer(_owner, _ownerAmount)) {
-                    emit AgentOwnerPaid(tokens[i], _owner, _ownerAmount);
-                }
-
-                _treasury[tokens[i]] += _devAmount;
-                emit DevTreasuryAdded(tokens[i], _devAmount);
+                _handleBonus(tokens[i], _owner, bonuses[i], collectionIds[i]);
             }
         }
 
         emit AgentPaidRent(tokens, amounts, bonuses, agentWallet);
+    }
+
+    function _handleBonus(
+        address token,
+        address owner,
+        uint256 bonus,
+        uint256 collectionId
+    ) internal {
+        uint256 _ownerAmount = (bonus * ownerAmountPercent) / 100;
+        uint256 _devAmount = (bonus * devAmountPercent) / 100;
+        uint256 _distributionAmount = (bonus * distributionAmountPercent) / 100;
+
+        address[] memory _collectors = market.getAllCollectorsByCollectionId(
+            collectionId
+        );
+
+        uint256 totalWeight = 0;
+        for (uint256 j = 1; j <= _collectors.length; j++) {
+            totalWeight += 1e18 / j;
+        }
+
+        for (uint256 j = 0; j < _collectors.length; j++) {
+            if (_collectors[j] != address(0)) {
+                uint256 weight = 1e18 / (j + 1);
+                uint256 payment = (_distributionAmount * weight) / totalWeight;
+
+                _collectorPayment[collectionId][_collectors[j]] = payment;
+
+                if (IERC20(token).transfer(_collectors[j], payment)) {
+                    emit OrderPayment(token, _collectors[j], payment);
+                }
+            }
+        }
+
+        if (IERC20(token).transfer(owner, _ownerAmount)) {
+            emit AgentOwnerPaid(token, owner, _ownerAmount);
+        }
+
+        _treasury[token] += _devAmount;
+        emit DevTreasuryAdded(token, _devAmount);
     }
 
     function getBalanceByToken(address token) public view returns (uint256) {
@@ -230,6 +228,12 @@ contract AAADevTreasury {
         uint256 _distributionAmountPercent,
         uint256 _devAmountPercent
     ) external onlyAdmin {
+        if (
+            ownerAmountPercent + distributionAmountPercent + devAmountPercent !=
+            100
+        ) {
+            revert AAAErrors.BadUserInput();
+        }
         ownerAmountPercent = _ownerAmountPercent;
         distributionAmountPercent = _distributionAmountPercent;
         devAmountPercent = _devAmountPercent;

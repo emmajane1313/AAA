@@ -43,6 +43,12 @@ contract AAAAgents {
         uint256 collectionId,
         uint256 amount
     );
+    event ExcessAgent(
+        address token,
+        uint256 amount,
+        uint256 agentId,
+        uint256 collectionId
+    );
 
     modifier onlyAdmin() {
         if (!accessControls.isAdmin(msg.sender)) {
@@ -111,7 +117,7 @@ contract AAAAgents {
             activeCollectionIds: _agents[agentId].activeCollectionIds
         });
 
-        emit AgentEdited(_agentCounter);
+        emit AgentEdited(agentId);
     }
 
     function deleteAgent(uint256 agentId) external onlyAgentOwner(agentId) {
@@ -119,13 +125,15 @@ contract AAAAgents {
             revert AAAErrors.AgentStillActive();
         }
 
-        for (uint256 i = 0; i < _agents[agentId].wallets.length; i++) {
-            accessControls.removeAgent(_agents[agentId].wallets[i]);
+        address[] memory _wallets = _agents[agentId].wallets;
+
+        for (uint256 i = 0; i < _wallets.length; i++) {
+            accessControls.removeAgent(_wallets[i]);
         }
 
         delete _agents[agentId];
 
-        emit AgentDeleted(_agentCounter);
+        emit AgentDeleted(agentId);
     }
 
     function addBalance(
@@ -145,7 +153,6 @@ contract AAAAgents {
         _agentBonusBalances[agentId][token][collectionId] += _bonus;
         _agentActiveBalances[agentId][token][collectionId] += _rent;
         _agentTotalBalances[agentId][token][collectionId] += _rent;
-        _agents[agentId].collectionIdsHistory.push(collectionId);
 
         uint256[] storage activeCollections = _agents[agentId]
             .activeCollectionIds;
@@ -170,6 +177,22 @@ contract AAAAgents {
                     break;
                 }
             }
+        }
+
+        bool existsInHistory = false;
+        for (
+            uint256 i = 0;
+            i < _agents[agentId].collectionIdsHistory.length;
+            i++
+        ) {
+            if (_agents[agentId].collectionIdsHistory[i] == collectionId) {
+                existsInHistory = true;
+                break;
+            }
+        }
+
+        if (!existsInHistory) {
+            _agents[agentId].collectionIdsHistory.push(collectionId);
         }
 
         emit BalanceAdded(token, agentId, amount, collectionId);
@@ -200,6 +223,7 @@ contract AAAAgents {
         }
 
         for (uint256 i = 0; i < collectionIds.length; i++) {
+         
             if (
                 _agentActiveBalances[agentId][tokens[i]][collectionIds[i]] <
                 accessControls.getTokenDailyRent(tokens[i])
@@ -209,6 +233,23 @@ contract AAAAgents {
 
             if (!collectionManager.getCollectionIsActive(collectionIds[i])) {
                 revert AAAErrors.CollectionNotActive();
+            }
+
+            uint256[] memory _ids = _agents[agentId].activeCollectionIds;
+            if (_ids.length < 1) {
+                revert AAAErrors.NoActiveAgents();
+            } else {
+                bool _notCollection = false;
+
+                for (uint256 j = 0; j < _ids.length; j++) {
+                    if (_ids[j] == collectionIds[i]) {
+                        _notCollection = true;
+                    }
+                }
+
+                if (!_notCollection) {
+                    revert AAAErrors.NoActiveAgents();
+                }
             }
         }
 
@@ -223,6 +264,7 @@ contract AAAAgents {
                 collectionIds[i]
             ];
             _agentBonusBalances[agentId][tokens[i]][collectionIds[i]] = 0;
+
         }
 
         devTreasury.agentPayRent(
@@ -249,8 +291,24 @@ contract AAAAgents {
         ) {
             revert AAAErrors.CollectionSoldOut();
         }
-        if (collectionManager.getCollectionAgentIds(collectionId).length < 1) {
+        uint256[] memory _ids = collectionManager.getCollectionAgentIds(
+            collectionId
+        );
+
+        if (_ids.length < 1) {
             revert AAAErrors.NoActiveAgents();
+        } else {
+            bool _notAgent = false;
+
+            for (uint256 i = 0; i < _ids.length; i++) {
+                if (_ids[i] == agentId) {
+                    _notAgent = true;
+                }
+            }
+
+            if (!_notAgent) {
+                revert AAAErrors.NoActiveAgents();
+            }
         }
 
         address[] memory _tokens = collectionManager.getCollectionERC20Tokens(
@@ -264,9 +322,8 @@ contract AAAAgents {
                 break;
             }
         }
-
         if (!_exists) {
-            revert AAAErrors.TokenNotActive();
+            revert AAAErrors.TokenNotAccepted();
         }
 
         if (
@@ -282,7 +339,6 @@ contract AAAAgents {
 
             _agentActiveBalances[agentId][token][collectionId] += amount;
             _agentTotalBalances[agentId][token][collectionId] += amount;
-            _agents[agentId].collectionIdsHistory.push(collectionId);
 
             uint256[] storage activeCollections = _agents[agentId]
                 .activeCollectionIds;
@@ -297,6 +353,22 @@ contract AAAAgents {
 
             activeCollections.push(collectionId);
 
+            bool existsInHistory = false;
+            for (
+                uint256 i = 0;
+                i < _agents[agentId].collectionIdsHistory.length;
+                i++
+            ) {
+                if (_agents[agentId].collectionIdsHistory[i] == collectionId) {
+                    existsInHistory = true;
+                    break;
+                }
+            }
+
+            if (!existsInHistory) {
+                _agents[agentId].collectionIdsHistory.push(collectionId);
+            }
+
             emit AgentRecharged(
                 msg.sender,
                 token,
@@ -305,6 +377,19 @@ contract AAAAgents {
                 amount
             );
         }
+    }
+
+    function excessAgent(
+        address token,
+        uint256 agentId,
+        uint256 collectionId
+    ) external onlyAdmin {
+        uint256 _amount = _agentActiveBalances[agentId][token][collectionId];
+        _agentActiveBalances[agentId][token][collectionId] = 0;
+
+        devTreasury.addToServices(token, _amount);
+
+        emit ExcessAgent(token, _amount, agentId, collectionId);
     }
 
     function getAgentCounter() public view returns (uint256) {
@@ -339,7 +424,7 @@ contract AAAAgents {
         return _agentTotalBalances[agentId][token][collectionId];
     }
 
-    function getAgentBonucBalance(
+    function getAgentBonusBalance(
         address token,
         uint256 agentId,
         uint256 collectionId

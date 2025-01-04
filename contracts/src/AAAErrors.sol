@@ -19,6 +19,7 @@ contract AAAErrors {
     error DropInvalid();
 
     error OnlyMarketContract();
+    error OnlyMarketOrAgentContract();
     error ZeroAddress();
     error InvalidAmount();
     error NotArtist();
@@ -37,7 +38,6 @@ contract AAAErrors {
     error BadUserInput();
     error NoActiveAgents();
     error CollectionSoldOut();
-    error TokenNotActive();
 
     error CollectionAlreadyDeactivated();
     error CollectionAlreadyActive();
