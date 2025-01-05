@@ -62,6 +62,14 @@ type AgentCreated @entity(immutable: false) {
   activeCollectionIds: [AgentCollection!]
   collectionIdsHistory: [AgentCollection!]
   rentPaid: [RentPaid!]
+  details: [AgentDetails!]
+}
+
+type AgentDetails @entity(immutable: false) {
+  id: Bytes!
+  collectionId: BigInt!
+  instructions: String
+  dailyFrequency: BigInt!
 }
 
 type RentPaid @entity(immutable: false) {
@@ -327,4 +335,12 @@ type AgentRecharged @entity(immutable: false) {
   agentId: BigInt!
   collectionId: BigInt!
   amount: BigInt!
+}
+
+type AgentDetailsUpdated @entity(immutable: false) {
+  id: Bytes!
+  customInstructions: [String!]
+  dailyFrequency: [BigInt!]
+
+  collectionId: BigInt!
 }

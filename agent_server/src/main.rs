@@ -414,7 +414,7 @@ async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + S
                     .and_then(|w| w.as_str())
                     .unwrap_or("")
                     .to_string();
-                let account_address = handle_lens_account(&wallet).await.unwrap_or_default();
+                let account_address = handle_lens_account(&wallet, false).await.unwrap_or_default();
 
                 let manager = AgentManager::new(&TripleAAgent {
                     id: new_id,

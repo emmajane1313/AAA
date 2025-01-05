@@ -20,6 +20,7 @@ dataSources:
         - CollectionCreated
         - DropCreated
         - DropDeleted
+        - AgentDetailsUpdated
       abis:
         - name: AAACollectionManager
           file: ./abis/AAACollectionManager.json
@@ -36,6 +37,8 @@ dataSources:
           handler: handleCollectionActivated
         - event: CollectionDeactivated(uint256)
           handler: handleCollectionDeactivated
+        - event: AgentDetailsUpdated(string[],uint256[],uint256)
+          handler: handleAgentDetailsUpdated
       file: ./src/aaa-collection-manager.ts
   - kind: ethereum
     name: AAAAgents

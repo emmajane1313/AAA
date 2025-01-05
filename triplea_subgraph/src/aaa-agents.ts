@@ -12,7 +12,7 @@ import {
   AgentEdited as AgentEditedEvent,
   BalanceAdded as BalanceAddedEvent,
   BalanceWithdrawn as BalanceWithdrawnEvent,
-  AgentRecharged as AgentRechargedEvent
+  AgentRecharged as AgentRechargedEvent,
 } from "../generated/AAAAgents/AAAAgents";
 import {
   AgentCreated,
@@ -25,7 +25,7 @@ import {
   AgentCollection,
   CollectionCreated,
   RentPaid,
-  AgentRecharged
+  AgentRecharged,
 } from "../generated/schema";
 import { AgentMetadata as AgentMetadataTemplate } from "../generated/templates";
 import { AAACollectionManager } from "../generated/AAACollectionManager/AAACollectionManager";
@@ -114,7 +114,6 @@ export function handleAgentEdited(event: AgentEditedEvent): void {
   }
 }
 
-
 export function handleAgentRecharged(event: AgentRechargedEvent): void {
   let entity = new AgentRecharged(
     event.transaction.hash.concatI32(event.logIndex.toI32())
@@ -125,7 +124,6 @@ export function handleAgentRecharged(event: AgentRechargedEvent): void {
   entity.agentId = event.params.agentId;
   entity.amount = event.params.amount;
   entity.collectionId = event.params.collectionId;
-  
 
   entity.save();
 
@@ -143,9 +141,16 @@ export function handleAgentRecharged(event: AgentRechargedEvent): void {
 
     let collectionIdHex = entity.collectionId.toHexString();
     let tokenHex = entity.token.toHexString();
-    let combinedHex = collectionIdHex + tokenHex;
+    let agentHex = entity.agentId.toHexString();
+    let combinedHex = collectionIdHex + tokenHex + agentHex;
     if (combinedHex.length % 2 !== 0) {
       combinedHex = "0" + combinedHex;
+    }
+
+    let balances = entityAgent.balances;
+
+    if (!balances) {
+      balances = [];
     }
 
     let newBalance = Balance.load(Bytes.fromHexString(combinedHex));
@@ -153,6 +158,7 @@ export function handleAgentRecharged(event: AgentRechargedEvent): void {
       newBalance = new Balance(Bytes.fromHexString(combinedHex));
       newBalance.collectionId = entity.collectionId;
       newBalance.token = entity.token;
+      balances.push(Bytes.fromHexString(combinedHex));
     }
 
     newBalance.activeBalance = agents.getAgentActiveBalance(
@@ -178,13 +184,6 @@ export function handleAgentRecharged(event: AgentRechargedEvent): void {
     );
 
     newBalance.save();
-
-    let balances = entityAgent.balances;
-
-    if (!balances) {
-      balances = [];
-      balances.push(Bytes.fromHexString(combinedHex));
-    }
 
     entityAgent.balances = balances;
 
@@ -243,16 +242,23 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
 
     let collectionIdHex = entity.collectionId.toHexString();
     let tokenHex = entity.token.toHexString();
-    let combinedHex = collectionIdHex + tokenHex;
+    let agentHex = entity.agentId.toHexString();
+    let combinedHex = collectionIdHex + tokenHex + agentHex;
     if (combinedHex.length % 2 !== 0) {
       combinedHex = "0" + combinedHex;
     }
 
+    let balances = entityAgent.balances;
+
+    if (!balances) {
+      balances = [];
+    }
     let newBalance = Balance.load(Bytes.fromHexString(combinedHex));
     if (!newBalance) {
       newBalance = new Balance(Bytes.fromHexString(combinedHex));
       newBalance.collectionId = entity.collectionId;
       newBalance.token = entity.token;
+      balances.push(Bytes.fromHexString(combinedHex));
     }
 
     newBalance.activeBalance = agents.getAgentActiveBalance(
@@ -278,13 +284,6 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
     );
 
     newBalance.save();
-
-    let balances = entityAgent.balances;
-
-    if (!balances) {
-      balances = [];
-      balances.push(Bytes.fromHexString(combinedHex));
-    }
 
     entityAgent.balances = balances;
 
@@ -350,7 +349,8 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
 
       let collectionIdHex = collectionId.toHexString();
       let tokenHex = token.toHexString();
-      let combinedHex = collectionIdHex + tokenHex;
+      let agentHex = entity.agentId.toHexString();
+      let combinedHex = collectionIdHex + tokenHex + agentHex;
       if (combinedHex.length % 2 !== 0) {
         combinedHex = "0" + combinedHex;
       }

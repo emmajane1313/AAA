@@ -146,13 +146,17 @@ contract AAAAgents {
         uint256 _bonus = 0;
         uint256 _rent = accessControls.getTokenDailyRent(token);
 
-        if (amount > _rent) {
+        // if (soldOut) {
+        //     _bonus = amount;
+        // } else
+        if (amount >= _rent) {
             _bonus = amount - _rent;
         }
-
-        _agentBonusBalances[agentId][token][collectionId] += _bonus;
         _agentActiveBalances[agentId][token][collectionId] += _rent;
         _agentTotalBalances[agentId][token][collectionId] += _rent;
+        // }
+
+        _agentBonusBalances[agentId][token][collectionId] += _bonus;
 
         uint256[] storage activeCollections = _agents[agentId]
             .activeCollectionIds;

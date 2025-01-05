@@ -422,7 +422,7 @@ async fn poll(hash: &str, auth_tokens: &str) -> Result<String, Box<dyn Error>> {
     }
 }
 
-pub async fn handle_lens_account(wallet: &str) -> Result<String, Box<dyn Error>> {
+pub async fn handle_lens_account(wallet: &str, username: bool) -> Result<String, Box<dyn Error>> {
     let client = initialize_api();
     let query = json!({
         "query": r#"
@@ -432,11 +432,17 @@ pub async fn handle_lens_account(wallet: &str) -> Result<String, Box<dyn Error>>
                       ... on AccountOwned { 
                         account {
                             address
+                            username {     
+                                localName
+                            }
                         }
                     }
                     ... on AccountManaged { 
                         account {
                             address
+                            username {
+                                localName
+                            }
                         }
                       }
                     }
@@ -464,11 +470,21 @@ pub async fn handle_lens_account(wallet: &str) -> Result<String, Box<dyn Error>>
 
         if let Some(items) = json["data"]["accountsAvailable"]["items"].as_array() {
             for item in items {
-                if let Some(account_address) = item["account"]
-                    .get("address")
-                    .and_then(|addr| addr.as_str())
-                {
-                    return Ok(account_address.to_string());
+                if username {
+                    if let Some(account_username) = item["account"]
+                        .get("username")
+                        .and_then(|username| username.get("localName"))
+                        .and_then(|local_name| local_name.as_str())
+                    {
+                        return Ok(account_username.to_string());
+                    }
+                } else {
+                    if let Some(account_address) = item["account"]
+                        .get("address")
+                        .and_then(|addr| addr.as_str())
+                    {
+                        return Ok(account_address.to_string());
+                    }
                 }
             }
         }

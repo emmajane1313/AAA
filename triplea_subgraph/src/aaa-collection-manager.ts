@@ -14,6 +14,7 @@ import {
   DropDeleted as DropDeletedEvent,
   CollectionDeactivated as CollectionDeactivatedEvent,
   CollectionActivated as CollectionActivatedEvent,
+  AgentDetailsUpdated as AgentDetailsUpdatedEvent,
 } from "../generated/AAACollectionManager/AAACollectionManager";
 import {
   CollectionDeleted,
@@ -22,6 +23,9 @@ import {
   DropDeleted,
   CollectionActivated,
   CollectionDeactivated,
+  AgentCreated,
+  AgentDetails,
+  AgentDetailsUpdated,
 } from "../generated/schema";
 import {
   CollectionMetadata as CollectionMetadataTemplate,
@@ -47,7 +51,6 @@ export function handleCollectionActivated(
     entityCollection.save();
   }
 }
-
 
 export function handleCollectionDeactivated(
   event: CollectionDeactivatedEvent
@@ -156,6 +159,55 @@ export function handleCollectionCreated(event: CollectionCreatedEvent): void {
     CollectionMetadataTemplate.create(ipfsHash);
   }
 
+  for (let i = 0; i < (entity.agents as BigInt[]).length; i++) {
+    let current_agent = AgentCreated.load(
+      Bytes.fromByteArray(ByteArray.fromBigInt((entity.agents as BigInt[])[i]))
+    );
+
+    if (current_agent) {
+      let collectionIdHex = entity.collectionId.toHexString();
+      let agentHex = (entity.agents as BigInt[])[i].toHexString();
+      let agentWalletHex = (current_agent.wallets as Bytes[])[0].toHexString();
+      let combinedHex = collectionIdHex + agentHex + agentWalletHex;
+      if (combinedHex.length % 2 !== 0) {
+        combinedHex = "0" + combinedHex;
+      }
+
+      let new_details = current_agent.details;
+
+      if (!new_details) {
+        new_details = [];
+      }
+
+      let agent_details = AgentDetails.load(Bytes.fromHexString(combinedHex));
+
+      if (!agent_details) {
+        agent_details = new AgentDetails(Bytes.fromHexString(combinedHex));
+
+        new_details.push(Bytes.fromHexString(combinedHex));
+      }
+      agent_details.collectionId = entity.collectionId;
+      agent_details.dailyFrequency =
+        collectionManager.getAgentCollectionDailyFrequency(
+          entity.collectionId,
+          (entity.agents as BigInt[])[i]
+        );
+      agent_details.instructions =
+        collectionManager.getAgentCollectionCustomInstructions(
+          entity.collectionId,
+          (entity.agents as BigInt[])[i]
+        );
+      agent_details.save();
+
+      if (!new_details.includes(Bytes.fromHexString(combinedHex))) {
+        new_details.push(Bytes.fromHexString(combinedHex));
+      }
+
+      current_agent.details = new_details;
+      current_agent.save();
+    }
+  }
+
   entity.prices = collectionManager.getCollectionPrices(entity.collectionId);
 
   entity.save();
@@ -256,4 +308,75 @@ export function handleDropDeleted(event: DropDeletedEvent): void {
   }
 
   entity.save();
+}
+
+export function handleAgentDetailsUpdated(
+  event: AgentDetailsUpdatedEvent
+): void {
+  let entity = new AgentDetailsUpdated(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.collectionId = event.params.collectionId;
+  entity.customInstructions = event.params.customInstructions;
+  entity.dailyFrequency = event.params.dailyFrequency;
+
+  entity.save();
+
+  let entityCollection = CollectionCreated.load(
+    Bytes.fromByteArray(ByteArray.fromBigInt(event.params.collectionId))
+  );
+
+  if (entityCollection) {
+    let collectionManager = AAACollectionManager.bind(
+      Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
+    );
+    let agents = entityCollection.agents;
+    if (!agents) {
+      agents = [];
+    }
+
+    for (let i = 0; i < agents.length; i++) {
+      let current_agent = AgentCreated.load(
+        Bytes.fromByteArray(ByteArray.fromBigInt(agents[i]))
+      );
+
+      if (current_agent) {
+        let collectionIdHex = entityCollection.collectionId.toHexString();
+        let agentHex = agents[i].toHexString();
+        let agentWalletHex = (current_agent.wallets as Bytes[])[0].toHexString();
+        let combinedHex = collectionIdHex + agentHex + agentWalletHex;
+        if (combinedHex.length % 2 !== 0) {
+          combinedHex = "0" + combinedHex;
+        }
+
+        let details = current_agent.details;
+
+        if (!details) {
+          details = [];
+        }
+
+        let agent_details = AgentDetails.load(Bytes.fromHexString(combinedHex));
+
+        if (!agent_details) {
+          agent_details = new AgentDetails(Bytes.fromHexString(combinedHex));
+          details.push(Bytes.fromHexString(combinedHex));
+        }
+        agent_details.collectionId = entity.collectionId;
+        agent_details.dailyFrequency =
+          collectionManager.getAgentCollectionDailyFrequency(
+            entity.collectionId,
+            agents[i]
+          );
+        agent_details.instructions =
+          collectionManager.getAgentCollectionCustomInstructions(
+            entity.collectionId,
+            agents[i]
+          );
+        agent_details.save();
+
+        current_agent.details = details;
+        current_agent.save();
+      }
+    }
+  }
 }

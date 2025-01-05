@@ -436,7 +436,7 @@ impl AgentManager {
                                 .unwrap_or_default()
                                 .to_string();
 
-                            let username = handle_lens_account(&artist).await.unwrap_or_default();
+                            let username = handle_lens_account(&artist, true).await.unwrap_or_default();
 
                             activities.push(AgentActivity {
                                 collection: Collection {
@@ -616,7 +616,7 @@ impl AgentManager {
                 mainContentFocus: focus,
                 title: llm_message.chars().take(20).collect(),
                 content: format!(
-                    "{}\n\n Collect on TripleA here: https://triplea.agentmeme.xyz/nft/{}/{}/",
+                    "{}\n\n Collect on TripleA here:\nhttps://triplea.agentmeme.xyz/nft/{}/{}/",
                     llm_message.to_string(),
                     collection.username,
                     collection.collection_id

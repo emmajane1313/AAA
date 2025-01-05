@@ -30,12 +30,24 @@ const collectionAddress = "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
   //   treasuryAbi,
   //   wallet
   // );
-  // const collectionContract = new ethers.Contract(
-  //   collectionAddress,
-  //   collectionAbi,
-  //   wallet
-  // );
+  const collectionContract = new ethers.Contract(
+    collectionAddress,
+    collectionAbi,
+    wallet
+  );
 
+  const value1 = await collectionContract.getAgentCollectionDailyFrequency(2,7);
+  const value2 = await collectionContract.getAgentCollectionDailyFrequency(3,7);
+  const value3 = await collectionContract.getAgentCollectionCustomInstructions(2,7);
+  const value4 = await collectionContract.getAgentCollectionCustomInstructions(3,7);
+  console.log({value1, value2, value3, value4})
+
+
+  const value5 = await collectionContract.getAgentCollectionDailyFrequency(2,8);
+  const value6 = await collectionContract.getAgentCollectionDailyFrequency(3,8);
+  const value7 = await collectionContract.getAgentCollectionCustomInstructions(2,8);
+  const value8 = await collectionContract.getAgentCollectionCustomInstructions(3,8);
+  console.log({value5, value6, value7, value8})
   // const errores = [
   //   "NotAdmin()",
   //   "AlreadyAdmin()",
@@ -115,7 +127,7 @@ const collectionAddress = "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
   //   meta4,
   // });
 
-  const accountContract = new ethers.Contract("0xd7aB6216A46e6Ec8A311ee3bdEf78Fff4227AAb5", accountsAbi, wallet);
+  // const accountContract = new ethers.Contract("0xd7aB6216A46e6Ec8A311ee3bdEf78Fff4227AAb5", accountsAbi, wallet);
 
   // const tx = await accountContract.updateAccountManagerPermissions(wallet.address, {
   //   canExecuteTransactions: true,
@@ -124,7 +136,7 @@ const collectionAddress = "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
   //   canTransferTokens: true,
   // });
   // const data = await accountContract.getAccountManagerPermissions(wallet.address);
-  const data_before = await accountContract.getAccountManagerPermissions("0x6391a36492904dff87d6bFd47C96D5dD920AFA7a");
+  // const data_before = await accountContract.getAccountManagerPermissions("0x6391a36492904dff87d6bFd47C96D5dD920AFA7a");
   // const acc1 = await accountContract.addAccountManager("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053", {
   //   canExecuteTransactions: true,
   //   canSetMetadataURI: true,
@@ -132,7 +144,7 @@ const collectionAddress = "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
   //   canTransferTokens: true,
   // });
   // const data = await accountContract.getAccountManagerPermissions("0xeC7b764AA9e05D2Ec3F7793c8f70697D2e51c053");
-console.log({data_before,})
+// console.log({data_before,})
 // const owner = await accountContract.owner();
 
 

@@ -74,6 +74,7 @@ contract AAAMarket {
 
         if (
             collectionManager.getCollectionAmountSold(collectionId) >= 1 &&
+            collectionManager.getCollectionAmount(collectionId) > 2 &&
             collectionManager.getCollectionPrices(collectionId)[0] >
             accessControls.getTokenThreshold(paymentToken) &&
             collectionManager.getCollectionAgentIds(collectionId).length > 0
