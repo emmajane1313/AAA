@@ -23,7 +23,7 @@ async fn refresh(
     client: Arc<Client>,
     refresh_tokens: &str,
     auth_tokens: &str,
-) -> Result<LensTokens, Box<dyn Error>> {
+) -> Result<LensTokens, Box<dyn Error + Send + Sync>> {
     let query = json!({
         "query": r#"
             mutation Refresh($request: RefreshRequest!) {
@@ -82,7 +82,7 @@ pub async fn authenticate(
     client: Arc<Client>,
     wallet: &LocalWallet,
     account_address: &str,
-) -> Result<LensTokens, Box<dyn Error>> {
+) -> Result<LensTokens, Box<dyn Error + Send + Sync>> {
     let mutation = json!({
         "query": r#"
         mutation Challenge($request: ChallengeRequest!) {
@@ -104,95 +104,102 @@ pub async fn authenticate(
         }
     });
 
-    let response = client
+    let res = client
         .post(LENS_API)
         .header("Content-Type", "application/json")
         .header("Origin", "http://localhost:3000")
         .json(&mutation)
         .send()
-        .await?;
+        .await;
 
-    if response.status().is_success() {
-        let json: Value = response.json().await?;
-
-        if let Some(challenge) = json["data"]["challenge"].as_object() {
-            let text = challenge
-                .get("text")
-                .and_then(|v| v.as_str())
-                .unwrap_or_default();
-            let signature = wallet.sign_message(text).await?;
-
-            let authenticate_mutation = json!({
-                "query": r#"
-                mutation Authenticate($request: SignedAuthChallenge!) {
-                    authenticate(request: $request) {
-                        ... on AuthenticationTokens {
-                            accessToken
-                            refreshToken
-                            idToken
-                        }
-                        ... on WrongSignerError {
-                            reason
-                        }
-                        ... on ExpiredChallengeError {
-                            reason
-                        }
-                        ... on ForbiddenError {
-                            reason
-                        }
-                    }
-                }
-            "#,
-                "variables": {
-                    "request": {
-                        "id": challenge
-                            .get("id")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or_default(),
-                        "signature": format!("0x{}", hex::encode(signature.to_vec())),
-                    }
-                }
-            });
-
-            let response = client
-                .post(LENS_API)
-                .header("Content-Type", "application/json")
-                .header("Origin", "http://localhost:3000")
-                .json(&authenticate_mutation)
-                .send()
-                .await?;
-
+    match res {
+        Ok(response) => {
             if response.status().is_success() {
                 let json: Value = response.json().await?;
-                if let Some(authentication) = json["data"]["authenticate"].as_object() {
-                    return Ok(LensTokens {
-                        access_token: authentication
-                            .get("accessToken")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or_default()
-                            .to_string(),
-                        refresh_token: authentication
-                            .get("refreshToken")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or_default()
-                            .to_string(),
-                        id_token: authentication
-                            .get("idToken")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or_default()
-                            .to_string(),
+
+                if let Some(challenge) = json["data"]["challenge"].as_object() {
+                    let text = challenge
+                        .get("text")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or_default();
+                    let signature = wallet.sign_message(text).await?;
+
+                    let authenticate_mutation = json!({
+                        "query": r#"
+                        mutation Authenticate($request: SignedAuthChallenge!) {
+                            authenticate(request: $request) {
+                                ... on AuthenticationTokens {
+                                    accessToken
+                                    refreshToken
+                                    idToken
+                                }
+                                ... on WrongSignerError {
+                                    reason
+                                }
+                                ... on ExpiredChallengeError {
+                                    reason
+                                }
+                                ... on ForbiddenError {
+                                    reason
+                                }
+                            }
+                        }
+                    "#,
+                        "variables": {
+                            "request": {
+                                "id": challenge
+                                    .get("id")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or_default(),
+                                "signature": format!("0x{}", hex::encode(signature.to_vec())),
+                            }
+                        }
                     });
+
+                    let response = client
+                        .post(LENS_API)
+                        .header("Content-Type", "application/json")
+                        .header("Origin", "http://localhost:3000")
+                        .json(&authenticate_mutation)
+                        .send()
+                        .await?;
+
+                    if response.status().is_success() {
+                        let json: Value = response.json().await?;
+                        if let Some(authentication) = json["data"]["authenticate"].as_object() {
+                            return Ok(LensTokens {
+                                access_token: authentication
+                                    .get("accessToken")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or_default()
+                                    .to_string(),
+                                refresh_token: authentication
+                                    .get("refreshToken")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or_default()
+                                    .to_string(),
+                                id_token: authentication
+                                    .get("idToken")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or_default()
+                                    .to_string(),
+                            });
+                        } else {
+                            return Err("Authentication failed.".into());
+                        }
+                    } else {
+                        return Err(format!("Error: {}", response.status()).into());
+                    }
                 } else {
-                    return Err("Authentication failed.".into());
+                    return Err("Challenge response structure invalid.".into());
                 }
             } else {
                 return Err(format!("Error: {}", response.status()).into());
             }
-        } else {
-            return Err("Challenge response structure invalid.".into());
         }
-    } else {
-        return Err(format!("Error: {}", response.status()).into());
+        Err(err) => {
+            return Err(format!("Error: {}", err).into());
+        }
     }
 }
 
@@ -200,7 +207,7 @@ pub async fn handle_tokens(
     private_key: u32,
     account_address: &str,
     tokens: Option<SavedTokens>,
-) -> Result<SavedTokens, Box<dyn Error>> {
+) -> Result<SavedTokens, Box<dyn Error + Send + Sync>> {
     let client = initialize_api();
     let wallet = initialize_wallet(private_key);
 
@@ -224,6 +231,7 @@ pub async fn handle_tokens(
         }
     } else {
         let new_tokens = authenticate(client, &wallet, account_address).await?;
+
         return Ok(SavedTokens {
             expiry: (SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 30 * 60) as i64,
             tokens: new_tokens,
@@ -282,6 +290,7 @@ pub async fn make_publication(
 
     if let Some(post_response) = json["data"]["post"].as_object() {
         if let Some(hash) = post_response.get("hash").and_then(|v| v.as_str()) {
+            println!("Post Hash: {:?}", hash);
             return poll(hash, auth_tokens).await;
         }
 
@@ -413,15 +422,23 @@ async fn poll(hash: &str, auth_tokens: &str) -> Result<String, Box<dyn Error>> {
     }
 }
 
-
 pub async fn handle_lens_account(wallet: &str) -> Result<String, Box<dyn Error>> {
     let client = initialize_api();
     let query = json!({
         "query": r#"
             query AccountsAvailable($request: AccountsAvailableRequest!) {
                 accountsAvailable(request: $request) {
-                    account {
-                        address
+                    items {
+                      ... on AccountOwned { 
+                        account {
+                            address
+                        }
+                    }
+                    ... on AccountManaged { 
+                        account {
+                            address
+                        }
+                      }
                     }
                 }
             }
@@ -444,21 +461,18 @@ pub async fn handle_lens_account(wallet: &str) -> Result<String, Box<dyn Error>>
 
     if response.status().is_success() {
         let json: Value = response.json().await?;
-        if let Some(first_account) = json["data"]["accountsAvailable"]
-            .as_array()
-            .and_then(|array| array.get(0))
-        {
-            if let Some(account_address) = first_account["account"]
-                .get("address")
-                .and_then(|addr| addr.as_str())
-            {
-                return Ok(account_address.to_string());
-            } else {
-                return Err("Unexpected Structure for account address".into());
+
+        if let Some(items) = json["data"]["accountsAvailable"]["items"].as_array() {
+            for item in items {
+                if let Some(account_address) = item["account"]
+                    .get("address")
+                    .and_then(|addr| addr.as_str())
+                {
+                    return Ok(account_address.to_string());
+                }
             }
-        } else {
-            return Err("Unexpected Structure for account".into());
         }
+        return Err("No valid accounts found in the response.".into());
     } else {
         return Err(format!("Error: {}", response.status()).into());
     }

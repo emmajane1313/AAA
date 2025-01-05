@@ -223,7 +223,6 @@ contract AAAAgents {
         }
 
         for (uint256 i = 0; i < collectionIds.length; i++) {
-         
             if (
                 _agentActiveBalances[agentId][tokens[i]][collectionIds[i]] <
                 accessControls.getTokenDailyRent(tokens[i])
@@ -264,7 +263,6 @@ contract AAAAgents {
                 collectionIds[i]
             ];
             _agentBonusBalances[agentId][tokens[i]][collectionIds[i]] = 0;
-
         }
 
         devTreasury.agentPayRent(
@@ -272,7 +270,6 @@ contract AAAAgents {
             collectionIds,
             _amounts,
             _bonuses,
-            msg.sender,
             agentId
         );
 

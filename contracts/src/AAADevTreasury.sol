@@ -48,7 +48,7 @@ contract AAADevTreasury {
         address[] tokens,
         uint256[] amounts,
         uint256[] bonuses,
-        address indexed agent
+        uint256 indexed agentId
     );
     event OrderPayment(address token, address recipient, uint256 amount);
     event AgentOwnerPaid(address token, address owner, uint256 amount);
@@ -128,7 +128,6 @@ contract AAADevTreasury {
         uint256[] memory collectionIds,
         uint256[] memory amounts,
         uint256[] memory bonuses,
-        address agentWallet,
         uint256 agentId
     ) external onlyAgents {
         address _owner = agents.getAgentOwner(agentId);
@@ -142,7 +141,7 @@ contract AAADevTreasury {
             }
         }
 
-        emit AgentPaidRent(tokens, amounts, bonuses, agentWallet);
+        emit AgentPaidRent(tokens, amounts, bonuses, agentId);
     }
 
     function _handleBonus(

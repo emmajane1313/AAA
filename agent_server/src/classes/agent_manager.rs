@@ -19,8 +19,8 @@ use ethers::{
 };
 use reqwest::Client;
 use serde_json::{json, to_string, Value};
-use std::{error::Error, io, str::FromStr, sync::Arc};
-use tokio::{runtime::Runtime, time};
+use std::{error::Error, io, str::FromStr, sync::Arc, time::Duration};
+use tokio::time;
 use uuid::Uuid;
 
 impl AgentManager {
@@ -56,7 +56,7 @@ impl AgentManager {
 
                 match self.pay_rent().await {
                     Ok(_) => {
-                        self.queue_lens_activity().await;
+                        let _ = self.queue_lens_activity().await;
                     }
                     Err(err) => {
                         eprintln!("Error paying rent: {:?}", err);
@@ -211,11 +211,7 @@ impl AgentManager {
 
                                 let rent_method = self.access_controls_contract.method::<_, U256>(
                                     "getTokenDailyRent",
-                                    (
-                                        H160::from_str(token).unwrap(),
-                                        self.agent.id,
-                                        collection.collection.collection_id,
-                                    ),
+                                    H160::from_str(token).unwrap(),
                                 );
 
                                 match rent_method {
@@ -417,16 +413,12 @@ impl AgentManager {
             }
         });
 
-        let timeout_duration = std::time::Duration::from_secs(60);
-
-        let response = time::timeout(timeout_duration, async {
+        let response = time::timeout(Duration::from_secs(60), async {
             let res = client.post(AAA_URI).json(&query).send().await?;
 
             res.json::<Value>().await
         })
         .await;
-
-        println!("{:?}\n", response);
 
         match response {
             Ok(result) => match result {
@@ -435,92 +427,78 @@ impl AgentManager {
                     let agent_createds = result["data"]["agentCreateds"]
                         .as_array()
                         .unwrap_or(&empty_vec);
-                    let rt = Runtime::new().unwrap();
-                    let activities: Vec<AgentActivity> = agent_createds
-                        .iter()
-                        .flat_map(|agent_created| {
-                            agent_created["balances"]
-                                .as_array()
-                                .unwrap_or(&vec![])
-                                .iter()
-                                .map(|balance| {
-                                    let artist = balance["collection"]["artist"]
+                    let mut activities = Vec::new();
+
+                    for agent_created in agent_createds {
+                        for balance in agent_created["balances"].as_array().unwrap_or(&vec![]) {
+                            let artist = balance["collection"]["artist"]
+                                .as_str()
+                                .unwrap_or_default()
+                                .to_string();
+
+                            let username = handle_lens_account(&artist).await.unwrap_or_default();
+
+                            activities.push(AgentActivity {
+                                collection: Collection {
+                                    collection_id: U256::from_dec_str(
+                                        balance["collection"]["collectionId"]
+                                            .as_str()
+                                            .unwrap_or("0"),
+                                    )
+                                    .unwrap_or_default(),
+                                    artist,
+                                    username,
+                                    image: balance["collection"]["metadata"]["image"]
                                         .as_str()
                                         .unwrap_or_default()
-                                        .to_string();
-                                    let username = rt
-                                        .block_on(handle_lens_account(&artist))
-                                        .unwrap_or("lens_username".to_string());
-
-                                    AgentActivity {
-                                        collection: Collection {
-                                            collection_id: U256::from_dec_str(
-                                                balance["collection"]["collectionId"]
-                                                    .as_str()
-                                                    .unwrap_or("0"),
-                                            )
-                                            .unwrap_or_default(),
-                                            artist,
-                                            username,
-
-                                            image: balance["collection"]["metadata"]["image"]
-                                                .as_str()
-                                                .unwrap_or_default()
-                                                .to_string(),
-                                            title: balance["collection"]["metadata"]["title"]
-                                                .as_str()
-                                                .unwrap_or_default()
-                                                .to_string(),
-                                            description: balance["collection"]["metadata"]
-                                                ["description"]
-                                                .as_str()
-                                                .unwrap_or_default()
-                                                .to_string(),
-                                            prices: balance["collection"]["prices"]
-                                                .as_array()
-                                                .unwrap_or(&vec![])
-                                                .iter()
-                                                .filter_map(|v| {
-                                                    v.as_str()
-                                                        .and_then(|s| U256::from_dec_str(s).ok())
-                                                })
-                                                .collect(),
-                                            tokens: balance["collection"]["tokens"]
-                                                .as_array()
-                                                .unwrap_or(&vec![])
-                                                .iter()
-                                                .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                                                .collect(),
-                                        },
-                                        daily_frequency: U256::from_dec_str(
-                                            balance["dailyFrequency"].as_str().unwrap_or("0"),
-                                        )
-                                        .unwrap(),
-                                        custom_instructions: balance["instructions"]
-                                            .as_str()
-                                            .unwrap_or_default()
-                                            .to_string(),
-                                        token: balance["token"]
-                                            .as_str()
-                                            .unwrap_or_default()
-                                            .to_string(),
-                                        active_balance: U256::from_dec_str(
-                                            balance["activeBalance"].as_str().unwrap_or("0"),
-                                        )
-                                        .unwrap(),
-                                        total_balance: U256::from_dec_str(
-                                            balance["totalBalance"].as_str().unwrap_or("0"),
-                                        )
-                                        .unwrap(),
-                                        collection_id: U256::from_dec_str(
-                                            balance["collectionId"].as_str().unwrap_or("0"),
-                                        )
-                                        .unwrap(),
-                                    }
-                                })
-                                .collect::<Vec<AgentActivity>>()
-                        })
-                        .collect();
+                                        .to_string(),
+                                    title: balance["collection"]["metadata"]["title"]
+                                        .as_str()
+                                        .unwrap_or_default()
+                                        .to_string(),
+                                    description: balance["collection"]["metadata"]["description"]
+                                        .as_str()
+                                        .unwrap_or_default()
+                                        .to_string(),
+                                    prices: balance["collection"]["prices"]
+                                        .as_array()
+                                        .unwrap_or(&vec![])
+                                        .iter()
+                                        .filter_map(|v| {
+                                            v.as_str().and_then(|s| U256::from_dec_str(s).ok())
+                                        })
+                                        .collect(),
+                                    tokens: balance["collection"]["tokens"]
+                                        .as_array()
+                                        .unwrap_or(&vec![])
+                                        .iter()
+                                        .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                                        .collect(),
+                                },
+                                daily_frequency: U256::from_dec_str(
+                                    balance["dailyFrequency"].as_str().unwrap_or("0"),
+                                )
+                                .unwrap_or_default(),
+                                custom_instructions: balance["instructions"]
+                                    .as_str()
+                                    .unwrap_or_default()
+                                    .to_string(),
+                                token: balance["token"].as_str().unwrap_or_default().to_string(),
+                                active_balance: U256::from_dec_str(
+                                    balance["activeBalance"].as_str().unwrap_or("0"),
+                                )
+                                .unwrap_or_default(),
+                                total_balance: U256::from_dec_str(
+                                    balance["totalBalance"].as_str().unwrap_or("0"),
+                                )
+                                .unwrap_or_default(),
+                                collection_id: U256::from_dec_str(
+                                    balance["collectionId"].as_str().unwrap_or("0"),
+                                )
+                                .unwrap_or_default(),
+                            });
+                        }
+                    }
 
                     Ok(activities)
                 }
@@ -539,7 +517,12 @@ impl AgentManager {
         }
     }
 
-    async fn chat_and_post(&mut self, collection: &Collection, collection_instructions: &str) {
+    async fn chat_and_post(
+        &mut self,
+
+        collection: &Collection,
+        collection_instructions: &str,
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
         match call_chat_completion(
             collection,
             &self.agent.custom_instructions,
@@ -558,29 +541,34 @@ impl AgentManager {
                 match tokens {
                     Ok(new_tokens) => {
                         self.tokens = Some(new_tokens);
+
                         match self.format_publication(&llm_message, &collection).await {
                             Ok(_) => {
                                 self.current_queue
                                     .retain(|item| item.collection_id != collection.collection_id);
+                                Ok(())
                             }
                             Err(err) => {
                                 eprintln!("Error in making lens post: {:?}", err);
+                                Ok(())
                             }
                         }
                     }
 
                     Err(err) => {
                         eprintln!("Error renewing Lens tokens: {:?}", err);
+                        Ok(())
                     }
                 }
             }
             Err(err) => {
                 eprintln!("Error with OpenAI completion: {:?}", err);
+                Ok(())
             }
         }
     }
 
-    async fn queue_lens_activity(&mut self) {
+    async fn queue_lens_activity(&mut self) -> Result<(), Box<dyn Error + Send + Sync>> {
         let current_time = Utc::now().num_seconds_from_midnight() as i64;
         let remaining_time = self.agent.clock as i64 - current_time;
 
@@ -599,32 +587,15 @@ impl AgentManager {
         };
 
         for collection in queue {
-            let result = tokio::task::spawn_blocking({
-                let mut self_cloned = self.clone();
-                move || {
-                    let rt = tokio::runtime::Handle::current();
-                    rt.block_on(async move {
-                        self_cloned
-                            .chat_and_post(&collection.collection, &collection.custom_instructions)
-                            .await
-                    })
-                }
-            })
-            .await;
-
-            match result {
-                Ok(_) => {
-                    eprintln!("Success post\n");
-                }
-                Err(err) => {
-                    eprintln!("Failed to execute task: {:?}", err);
-                }
-            }
+            let _ = self
+                .chat_and_post(&collection.collection, &collection.custom_instructions)
+                .await;
 
             if interval > 0 {
                 time::sleep(std::time::Duration::from_secs(interval as u64)).await;
             }
         }
+        Ok(())
     }
 
     async fn format_publication(

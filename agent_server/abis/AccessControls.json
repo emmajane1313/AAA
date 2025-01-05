@@ -48,6 +48,15 @@
   },
   {
     "type": "function",
+    "name": "getTokenDailyRent",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getTokenThreshold",
     "inputs": [
       { "name": "token", "type": "address", "internalType": "address" }
@@ -133,10 +142,11 @@
   },
   {
     "type": "function",
-    "name": "setTokenThreshold",
+    "name": "setTokenThresholdAndRent",
     "inputs": [
       { "name": "token", "type": "address", "internalType": "address" },
-      { "name": "threshold", "type": "uint256", "internalType": "uint256" }
+      { "name": "threshold", "type": "uint256", "internalType": "uint256" },
+      { "name": "rent", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -250,6 +260,12 @@
       },
       {
         "name": "threshold",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "rent",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"

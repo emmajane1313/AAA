@@ -144,10 +144,7 @@ contract AAAAccessControls {
         agentsContract = _agentsContract;
     }
 
-    function faucet(
-        address payable to,
-        uint256 amount
-    ) external onlyAgentOrAdmin {
+    function faucet(address payable to, uint256 amount) external {
         if (address(this).balance < amount) {
             revert AAAErrors.InsufficientFunds();
         }

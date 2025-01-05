@@ -11,7 +11,7 @@
       {
         "name": "_accessControls",
         "type": "address",
-        "internalType": "address"
+        "internalType": "address payable"
       },
       { "name": "_agents", "type": "address", "internalType": "address" }
     ],
@@ -168,7 +168,7 @@
       {
         "name": "_accessControls",
         "type": "address",
-        "internalType": "address"
+        "internalType": "address payable"
       }
     ],
     "outputs": [],
@@ -251,6 +251,7 @@
     ],
     "anonymous": false
   },
+  { "type": "error", "name": "CollectionNotActive", "inputs": [] },
   { "type": "error", "name": "InsufficientBalance", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
   { "type": "error", "name": "NotAvailable", "inputs": [] },

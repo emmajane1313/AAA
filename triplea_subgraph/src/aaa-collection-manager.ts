@@ -139,7 +139,7 @@ export function handleCollectionCreated(event: CollectionCreatedEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   let collectionManager = AAACollectionManager.bind(
-    Address.fromString("0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a")
+    Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
   );
 
   entity.amount = collectionManager.getCollectionAmount(entity.collectionId);
@@ -173,7 +173,7 @@ export function handleDropCreated(event: DropCreatedEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   let collectionManager = AAACollectionManager.bind(
-    Address.fromString("0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a")
+    Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
   );
   let uriResult = collectionManager.try_getDropMetadata(entity.dropId);
   if (uriResult.reverted) {

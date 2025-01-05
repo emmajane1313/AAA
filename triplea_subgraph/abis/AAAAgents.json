@@ -100,6 +100,17 @@
   },
   {
     "type": "function",
+    "name": "excessAgent",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "getAgentActiveBalance",
     "inputs": [
       { "name": "token", "type": "address", "internalType": "address" },
@@ -118,6 +129,17 @@
     "outputs": [
       { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAgentBonusBalance",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -202,6 +224,18 @@
   },
   {
     "type": "function",
+    "name": "rechargeAgentActiveBalance",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "setAccessControls",
     "inputs": [
       {
@@ -240,18 +274,6 @@
     "name": "setMarket",
     "inputs": [
       { "name": "_market", "type": "address", "internalType": "address" }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "topUpAgentActiveBalance",
-    "inputs": [
-      { "name": "token", "type": "address", "internalType": "address" },
-      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
-      { "name": "collectionId", "type": "uint256", "internalType": "uint256" },
-      { "name": "amount", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -309,10 +331,10 @@
   },
   {
     "type": "event",
-    "name": "AgentTopUp",
+    "name": "AgentRecharged",
     "inputs": [
       {
-        "name": "executor",
+        "name": "recharger",
         "type": "address",
         "indexed": false,
         "internalType": "address"
@@ -406,7 +428,39 @@
     ],
     "anonymous": false
   },
+  {
+    "type": "event",
+    "name": "ExcessAgent",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "agentId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
   { "type": "error", "name": "AgentStillActive", "inputs": [] },
+  { "type": "error", "name": "BadUserInput", "inputs": [] },
   { "type": "error", "name": "CollectionNotActive", "inputs": [] },
   { "type": "error", "name": "CollectionSoldOut", "inputs": [] },
   { "type": "error", "name": "InsufficientBalance", "inputs": [] },
@@ -415,5 +469,6 @@
   { "type": "error", "name": "NotAgent", "inputs": [] },
   { "type": "error", "name": "NotAgentOwner", "inputs": [] },
   { "type": "error", "name": "OnlyMarketContract", "inputs": [] },
-  { "type": "error", "name": "TokenNotActive", "inputs": [] }
+  { "type": "error", "name": "PaymentFailed", "inputs": [] },
+  { "type": "error", "name": "TokenNotAccepted", "inputs": [] }
 ]

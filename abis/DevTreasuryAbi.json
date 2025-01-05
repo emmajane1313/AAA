@@ -25,6 +25,16 @@
   },
   {
     "type": "function",
+    "name": "addToServices",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "agentPayRent",
     "inputs": [
       { "name": "tokens", "type": "address[]", "internalType": "address[]" },
@@ -34,6 +44,7 @@
         "internalType": "uint256[]"
       },
       { "name": "amounts", "type": "uint256[]", "internalType": "uint256[]" },
+      { "name": "bonuses", "type": "uint256[]", "internalType": "uint256[]" },
       { "name": "agentWallet", "type": "address", "internalType": "address" },
       { "name": "agentId", "type": "uint256", "internalType": "uint256" }
     ],
@@ -47,6 +58,20 @@
     "outputs": [
       { "name": "", "type": "address", "internalType": "contract AAAAgents" }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "devAmountPercent",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "distributionAmountPercent",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -87,11 +112,27 @@
   },
   {
     "type": "function",
+    "name": "getTreasuryByToken",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "market",
     "inputs": [],
     "outputs": [
       { "name": "", "type": "address", "internalType": "contract AAAMarket" }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ownerAmountPercent",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -129,19 +170,32 @@
   },
   {
     "type": "function",
-    "name": "setMarket",
+    "name": "setAmounts",
     "inputs": [
-      { "name": "_market", "type": "address", "internalType": "address" }
+      {
+        "name": "_ownerAmountPercent",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_distributionAmountPercent",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "_devAmountPercent",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
   },
   {
     "type": "function",
-    "name": "withdrawFunds",
+    "name": "setMarket",
     "inputs": [
-      { "name": "token", "type": "address", "internalType": "address" },
-      { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      { "name": "_market", "type": "address", "internalType": "address" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -158,7 +212,17 @@
   },
   {
     "type": "function",
-    "name": "withdrawFundsStuck",
+    "name": "withdrawFundsTreasury",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawFundsWithoutReceive",
     "inputs": [
       { "name": "token", "type": "address", "internalType": "address" },
       { "name": "amount", "type": "uint256", "internalType": "uint256" }
@@ -168,25 +232,19 @@
   },
   {
     "type": "event",
-    "name": "AgentFundsWithdrawn",
+    "name": "AddToServices",
     "inputs": [
       {
-        "name": "tokens",
-        "type": "address[]",
-        "indexed": false,
-        "internalType": "address[]"
-      },
-      {
-        "name": "amounts",
-        "type": "uint256[]",
-        "indexed": false,
-        "internalType": "uint256[]"
-      },
-      {
-        "name": "agent",
+        "name": "token",
         "type": "address",
-        "indexed": true,
+        "indexed": false,
         "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
       }
     ],
     "anonymous": false
@@ -203,6 +261,56 @@
       },
       {
         "name": "owner",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AgentPaidRent",
+    "inputs": [
+      {
+        "name": "tokens",
+        "type": "address[]",
+        "indexed": false,
+        "internalType": "address[]"
+      },
+      {
+        "name": "amounts",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "bonuses",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "agentId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "DevTreasuryAdded",
+    "inputs": [
+      {
+        "name": "token",
         "type": "address",
         "indexed": false,
         "internalType": "address"
@@ -243,7 +351,45 @@
   },
   {
     "type": "event",
-    "name": "FundsWithdrawn",
+    "name": "FundsWithdrawnServices",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "FundsWithdrawnTreasury",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "FundsWithdrawnWithoutReceive",
     "inputs": [
       {
         "name": "token",
@@ -285,7 +431,9 @@
     ],
     "anonymous": false
   },
+  { "type": "error", "name": "BadUserInput", "inputs": [] },
+  { "type": "error", "name": "InsufficientBalance", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
   { "type": "error", "name": "OnlyAgentsContract", "inputs": [] },
-  { "type": "error", "name": "OnlyMarketContract", "inputs": [] }
+  { "type": "error", "name": "OnlyMarketOrAgentContract", "inputs": [] }
 ]

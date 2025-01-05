@@ -55,6 +55,24 @@ pub fn initialize_api() -> Arc<Client> {
         .expect("Client not initialized")
 }
 
+pub fn initialize_access_wallet() -> LocalWallet {
+    from_filename(".env").ok();
+    let wallet = match var("FAUCET_KEY") {
+        Ok(key) => match key.parse::<LocalWallet>() {
+            Ok(mut wallet) => {
+                let chain_id = *LENS_CHAIN_ID;
+                wallet = wallet.with_chain_id(chain_id);
+                wallet
+            }
+            Err(e) => panic!("Error in parsing faucet private key: {:?}", e),
+        },
+        Err(e) => panic!("FAUCET_KEY not found: {:?}", e),
+    };
+
+    *WALLET.lock().unwrap() = Some(wallet.clone());
+    wallet
+}
+
 pub fn initialize_wallet(private_key: u32) -> LocalWallet {
     from_filename(".env").ok();
     let wallet = match var(format!("ID_{}", private_key.to_string())) {
@@ -85,13 +103,19 @@ pub fn initialize_contracts(
     let wallet = initialize_wallet(private_key);
     let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
 
+    let access_wallet = initialize_access_wallet();
+    let access_client = Arc::new(SignerMiddleware::new(provider.clone(), access_wallet));
+
     let access_controls_address = ACCESS_CONTROLS
         .parse::<Address>()
         .expect("Error in parsing ACCESS_CONTROLS");
     let access_controls_abi: Abi = from_str(include_str!("./../../abis/AccessControls.json"))
         .expect("Error in loading AccessControls ABI");
-    let access_controls_contract =
-        Contract::new(access_controls_address, access_controls_abi, client.clone());
+    let access_controls_contract = Contract::new(
+        access_controls_address,
+        access_controls_abi,
+        access_client.clone(),
+    );
     *ACCESS_CONTROLS_CONTRACT.lock().unwrap() = Some(Arc::new(access_controls_contract));
 
     let agents_address = AGENTS.parse::<Address>().expect("Error in parsing AGENTS");

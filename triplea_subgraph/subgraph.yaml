@@ -8,7 +8,7 @@ dataSources:
     name: AAACollectionManager
     network: lens-testnet
     source:
-      address: "0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a"
+      address: "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C"
       abi: AAACollectionManager
       startBlock: 103090
     mapping:
@@ -41,7 +41,7 @@ dataSources:
     name: AAAAgents
     network: lens-testnet
     source:
-      address: "0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1"
+      address: "0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712"
       abi: AAAAgents
       startBlock: 103090
     mapping:
@@ -54,6 +54,7 @@ dataSources:
         - AgentEdited
         - BalanceAdded
         - BalanceWithdrawn
+        - AgentRecharged
       abis:
         - name: AAAAgents
           file: ./abis/AAAAgents.json
@@ -70,12 +71,14 @@ dataSources:
           handler: handleBalanceAdded
         - event: BalanceWithdrawn(address[],uint256[],uint256[],uint256)
           handler: handleBalanceWithdrawn
+        - event: AgentRecharged(address,address,uint256,uint256,uint256)
+          handler: handleAgentRecharged
       file: ./src/aaa-agents.ts
   - kind: ethereum
     name: AAAMarket
     network: lens-testnet
     source:
-      address: "0xC726dCb8e5eBF5e6d6B9072FE090D09EFF6f623F"
+      address: "0x79d7C37612737A7a6bE306F5E0B2aB0281dc6Ea6"
       abi: AAAMarket
       startBlock: 103090
     mapping:
@@ -97,7 +100,7 @@ dataSources:
     name: AAADevTreasury
     network: lens-testnet
     source:
-      address: "0x3E5D47795680ea6956190281dAE8bfB225d4B660"
+      address: "0x46335C789aBc15f735a7527342B864BF6a48B661"
       abi: AAADevTreasury
       startBlock: 103090
     mapping:
@@ -105,31 +108,41 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - AgentFundsWithdrawn
+        - FundsWithdrawnTreasury
+        - FundsWithdrawnServices
+        - FundsWithdrawnWithoutReceive
         - AgentOwnerPaid
+        - AgentPaidRent
         - FundsReceived
         - FundsWithdrawn
         - OrderPayment
+        - DevTreasuryAdded
       abis:
         - name: AAADevTreasury
           file: ./abis/AAADevTreasury.json
       eventHandlers:
-        - event: AgentFundsWithdrawn(address[],uint256[],indexed address)
-          handler: handleAgentFundsWithdrawn
+        - event: AgentPaidRent(address[],uint256[],uint256[],indexed uint256)
+          handler: handleAgentPaidRent
+        - event: FundsWithdrawnTreasury(indexed address,uint256)
+          handler: handleFundsWithdrawnTreasury
+        - event: FundsWithdrawnServices(indexed address,uint256)
+          handler: handleFundsWithdrawnServices
+        - event: FundsWithdrawnWithoutReceive(indexed address,uint256)
+          handler: handleFundsWithdrawnWithoutReceive
         - event: AgentOwnerPaid(address,address,uint256)
           handler: handleAgentOwnerPaid
         - event: FundsReceived(indexed address,indexed address,uint256)
           handler: handleFundsReceived
-        - event: FundsWithdrawn(indexed address,uint256)
-          handler: handleFundsWithdrawn
         - event: OrderPayment(address,address,uint256)
           handler: handleOrderPayment
+        - event: DevTreasuryAdded(address,uint256)
+          handler: handleDevTreasuryAdded
       file: ./src/aaa-dev-treasury.ts
   - kind: ethereum
     name: AAAAccessControls
     network: lens-testnet
     source:
-      address: "0xE67406Beb8de9106D53A437ad230603F62450a96"
+      address: "0x3ee3A2bAF1620a59fEC0FB2E6E248CcBF0CE55d7"
       abi: AAAAccessControls
       startBlock: 103090
     mapping:

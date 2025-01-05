@@ -18,7 +18,8 @@ pub async fn call_chat_completion(
     let input_prompt = 
     format!(    "Create a meta response or insightful comment suitable for publication online that highlights this collection and its description: {}"
     , collection.description);
-    let combined_instructions = format!("{}\n\nIn addition, incorporate these specific instructions tailored to this collection: {}", custom_instructions, collection_instructions);
+   
+    let combined_instructions = format!("{}\n\nIn addition, incorporate these specific instructions tailored to this collection: {}\n\nDo not user quotation marks or any special characters in your response, you can use emojis. Don't reply with anything but the publication so it can be posted directly without extra editing.", custom_instructions, collection_instructions);
 
     let mut messages = vec![];
 
@@ -61,7 +62,7 @@ pub async fn call_chat_completion(
         .to_string();
 
  
-        println!("Open AI call successful");
+        println!("Open AI call successful {}", completion);
         Ok(completion)
     } else {
         return Err(Box::new(io::Error::new(

@@ -25,6 +25,26 @@
   },
   {
     "type": "function",
+    "name": "activateCollection",
+    "inputs": [
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "adjustCollectionPrice",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" },
+      { "name": "newPrice", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "create",
     "inputs": [
       {
@@ -52,12 +72,26 @@
             "type": "uint256[]",
             "internalType": "uint256[]"
           },
+          {
+            "name": "dailyFrequency",
+            "type": "uint256[]",
+            "internalType": "uint256[]"
+          },
           { "name": "metadata", "type": "string", "internalType": "string" },
           { "name": "amount", "type": "uint256", "internalType": "uint256" }
         ]
       },
       { "name": "dropMetadata", "type": "string", "internalType": "string" },
       { "name": "dropId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "deactivateCollection",
+    "inputs": [
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -88,6 +122,16 @@
       { "name": "agentId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [{ "name": "", "type": "string", "internalType": "string" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAgentCollectionDailyFrequency",
+    "inputs": [
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -153,6 +197,15 @@
     "outputs": [
       { "name": "", "type": "address[]", "internalType": "address[]" }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCollectionIsActive",
+    "inputs": [
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
     "stateMutability": "view"
   },
   {
@@ -255,12 +308,17 @@
   },
   {
     "type": "function",
-    "name": "updateCustomInstructions",
+    "name": "updateAgentCollectionDetails",
     "inputs": [
       {
         "name": "customInstructions",
         "type": "string[]",
         "internalType": "string[]"
+      },
+      {
+        "name": "dailyFrequency",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
       },
       { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
@@ -281,6 +339,44 @@
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "AgentDetailsUpdated",
+    "inputs": [
+      {
+        "name": "customInstructions",
+        "type": "string[]",
+        "indexed": false,
+        "internalType": "string[]"
+      },
+      {
+        "name": "dailyFrequency",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CollectionActivated",
+    "inputs": [
+      {
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
   },
   {
     "type": "event",
@@ -309,6 +405,19 @@
   },
   {
     "type": "event",
+    "name": "CollectionDeactivated",
+    "inputs": [
+      {
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "CollectionDeleted",
     "inputs": [
       {
@@ -328,16 +437,22 @@
   },
   {
     "type": "event",
-    "name": "CustomInstructionsUpdated",
+    "name": "CollectionPriceAdjusted",
     "inputs": [
       {
-        "name": "customInstructions",
-        "type": "string[]",
+        "name": "token",
+        "type": "address",
         "indexed": false,
-        "internalType": "string[]"
+        "internalType": "address"
       },
       {
         "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "newPrice",
         "type": "uint256",
         "indexed": false,
         "internalType": "uint256"
@@ -385,6 +500,8 @@
   },
   { "type": "error", "name": "BadUserInput", "inputs": [] },
   { "type": "error", "name": "CantDeleteSoldCollection", "inputs": [] },
+  { "type": "error", "name": "CollectionAlreadyActive", "inputs": [] },
+  { "type": "error", "name": "CollectionAlreadyDeactivated", "inputs": [] },
   { "type": "error", "name": "DropInvalid", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
   { "type": "error", "name": "NotArtist", "inputs": [] },

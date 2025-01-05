@@ -12,6 +12,7 @@ import {
   AgentEdited as AgentEditedEvent,
   BalanceAdded as BalanceAddedEvent,
   BalanceWithdrawn as BalanceWithdrawnEvent,
+  AgentRecharged as AgentRechargedEvent
 } from "../generated/AAAAgents/AAAAgents";
 import {
   AgentCreated,
@@ -24,6 +25,7 @@ import {
   AgentCollection,
   CollectionCreated,
   RentPaid,
+  AgentRecharged
 } from "../generated/schema";
 import { AgentMetadata as AgentMetadataTemplate } from "../generated/templates";
 import { AAACollectionManager } from "../generated/AAACollectionManager/AAACollectionManager";
@@ -41,7 +43,7 @@ export function handleAgentCreated(event: AgentCreatedEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   let agents = AAAAgents.bind(
-    Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
+    Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
   );
   entity.owner = agents.getAgentOwner(entity.AAAAgents_id) as Bytes;
   entity.uri = agents.getAgentMetadata(entity.AAAAgents_id);
@@ -97,7 +99,7 @@ export function handleAgentEdited(event: AgentEditedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
+      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
     );
 
     entityAgent.uri = agents.getAgentMetadata(entity.AAAAgents_id);
@@ -109,6 +111,106 @@ export function handleAgentEdited(event: AgentEditedEvent): void {
     }
 
     entityAgent.save();
+  }
+}
+
+
+export function handleAgentRecharged(event: AgentRechargedEvent): void {
+  let entity = new AgentRecharged(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.token = event.params.token;
+  entity.agentId = event.params.agentId;
+  entity.recharger = event.params.recharger;
+  entity.agentId = event.params.agentId;
+  entity.amount = event.params.amount;
+  entity.collectionId = event.params.collectionId;
+  
+
+  entity.save();
+
+  let entityAgent = AgentCreated.load(
+    Bytes.fromByteArray(ByteArray.fromBigInt(entity.agentId))
+  );
+
+  if (entityAgent) {
+    let agents = AAAAgents.bind(
+      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
+    );
+    let collections = AAACollectionManager.bind(
+      Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
+    );
+
+    let collectionIdHex = entity.collectionId.toHexString();
+    let tokenHex = entity.token.toHexString();
+    let combinedHex = collectionIdHex + tokenHex;
+    if (combinedHex.length % 2 !== 0) {
+      combinedHex = "0" + combinedHex;
+    }
+
+    let newBalance = Balance.load(Bytes.fromHexString(combinedHex));
+    if (!newBalance) {
+      newBalance = new Balance(Bytes.fromHexString(combinedHex));
+      newBalance.collectionId = entity.collectionId;
+      newBalance.token = entity.token;
+    }
+
+    newBalance.activeBalance = agents.getAgentActiveBalance(
+      event.params.token,
+      entity.agentId,
+      entity.collectionId
+    );
+    newBalance.instructions = collections.getAgentCollectionCustomInstructions(
+      entity.collectionId,
+      entity.agentId
+    );
+    newBalance.dailyFrequency = collections.getAgentCollectionDailyFrequency(
+      entity.collectionId,
+      entity.agentId
+    );
+    newBalance.totalBalance = agents.getAgentTotalBalance(
+      event.params.token,
+      entity.agentId,
+      entity.collectionId
+    );
+    newBalance.collection = Bytes.fromByteArray(
+      ByteArray.fromBigInt(event.params.collectionId)
+    );
+
+    newBalance.save();
+
+    let balances = entityAgent.balances;
+
+    if (!balances) {
+      balances = [];
+      balances.push(Bytes.fromHexString(combinedHex));
+    }
+
+    entityAgent.balances = balances;
+
+    entityAgent.save();
+
+    let agentActive = AgentActiveCollection.load(
+      Bytes.fromByteArray(ByteArray.fromBigInt(entity.agentId))
+    );
+
+    if (!agentActive) {
+      agentActive = new AgentActiveCollection(
+        Bytes.fromByteArray(ByteArray.fromBigInt(entity.agentId))
+      );
+      agentActive.agentId = entity.agentId;
+    }
+
+    let collectionIds = agents.getAgentActiveCollectionIds(entity.agentId);
+
+    let activeCollections: Bytes[] = [];
+    for (let i = 0; i < collectionIds.length; i++) {
+      activeCollections.push(
+        Bytes.fromByteArray(ByteArray.fromBigInt(collectionIds[i]))
+      );
+    }
+    agentActive.collections = activeCollections;
+    agentActive.save();
   }
 }
 
@@ -133,10 +235,10 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
+      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
     );
     let collections = AAACollectionManager.bind(
-      Address.fromString("0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a")
+      Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
     );
 
     let collectionIdHex = entity.collectionId.toHexString();
@@ -233,10 +335,10 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0xdE421E01Ecb93c29Ce0AF4809121F37B5b6653a1")
+      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
     );
     let collections = AAACollectionManager.bind(
-      Address.fromString("0x11d84C5067B6B45471B6e2E0A20D95Feb9Ea531a")
+      Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
     );
 
     let collectionIds: BigInt[] = entity.collectionIds as BigInt[];
@@ -244,7 +346,7 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
 
     for (let i = 0; i < (collectionIds as BigInt[]).length; i++) {
       let collectionId: BigInt = collectionIds[i];
-      let token: Bytes = (entity.tokens as Bytes[])[i] as Bytes;
+      let token = (entity.tokens as Bytes[])[i] as Bytes;
 
       let collectionIdHex = collectionId.toHexString();
       let tokenHex = token.toHexString();
@@ -263,7 +365,7 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
       }
 
       newBalance.activeBalance = agents.getAgentActiveBalance(
-        token as Address,
+        event.params.tokens[i],
         entity.agentId,
         collectionId
       );
@@ -277,7 +379,7 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
         entity.agentId
       );
       newBalance.totalBalance = agents.getAgentTotalBalance(
-        token as Address,
+        event.params.tokens[i],
         entity.agentId,
         collectionId
       );
