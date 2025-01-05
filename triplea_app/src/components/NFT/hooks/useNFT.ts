@@ -13,6 +13,7 @@ import {
   Post,
   PostType,
   PublicClient,
+  TextOnlyMetadata,
 } from "@lens-protocol/client";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
 import { getCollectors } from "../../../../graphql/queries/getCollectors";
@@ -31,6 +32,100 @@ const useNFT = (
   const [agentLoading, setAgentLoading] = useState<boolean>(false);
   const [activityCursor, setActivityCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState<boolean>(true);
+
+  const handlePosts = async (
+    reset: boolean,
+    title?: string
+  ): Promise<Post[] | void> => {
+    try {
+      const postsRes = await fetchPosts(
+        {
+          pageSize: PageSize.Fifty,
+          filter: {
+            metadata: {
+              tags: {
+                all: [
+                  "tripleA",
+                  (title || nft?.title?.replaceAll(" ", "")?.toLowerCase())!,
+                ]?.filter(Boolean),
+              },
+            },
+          },
+        },
+        lensConnected?.sessionClient || lensClient
+      );
+
+      let posts: Post[] = [];
+
+      if ((postsRes as any)?.items?.length > 0) {
+        posts = (postsRes as any)?.items;
+      } else {
+        const postsRes = await fetchPosts(
+          {
+            pageSize: PageSize.Fifty,
+          },
+          lensConnected?.sessionClient || lensClient
+        );
+
+        posts = (postsRes as any)?.items?.filter(
+          (pos: Post) =>
+            (pos?.metadata as TextOnlyMetadata)?.tags?.includes("tripleA") &&
+            (pos?.metadata as TextOnlyMetadata)?.tags?.includes(
+              (title || nft?.title?.replaceAll(" ", "")?.toLowerCase())!
+            )
+        );
+      }
+
+      if ((postsRes as any)?.pageInfo?.next) {
+        setHasMore(true);
+        setActivityCursor((postsRes as any)?.pageInfo?.next);
+      } else {
+        setHasMore(false);
+      }
+
+      posts = await Promise.all(
+        posts?.map(async (post) => {
+          let picture = post?.author?.metadata?.picture;
+
+          if (post?.author?.metadata?.picture) {
+            const cadena = await fetch(
+              `${STORAGE_NODE}/${
+                post?.author?.metadata?.picture?.split("lens://")?.[1]
+              }`
+            );
+
+            if (cadena) {
+              const json = await cadena.json();
+              picture = json.item;
+            }
+          }
+
+          return {
+            ...post,
+            author: {
+              ...post?.author,
+              metadata: {
+                ...post?.author?.metadata,
+                picture,
+              },
+            },
+          } as Post;
+        })
+      );
+
+
+      if (!reset) {
+        return posts;
+      } else {
+        setNft({
+          ...nft!,
+          agentActivity: posts || [],
+        });
+      }
+    } catch (err: any) {
+      console.error(err.message);
+    }
+  };
 
   const handleNFT = async () => {
     setNftLoading(true);
@@ -91,37 +186,10 @@ const useNFT = (
         });
       }
 
-      const postsRes = await fetchPosts(
-        {
-          pageSize: PageSize.Fifty,
-          filter: {
-            metadata: {
-              tags: {
-                oneOf: [
-                  "tripleA",
-                  collection?.metadata?.title
-                    ?.replaceAll(" ", "")
-                    ?.toLowerCase(),
-                ],
-              },
-            },
-          },
-        },
-        lensConnected?.sessionClient || lensClient
+      const posts = await handlePosts(
+        false,
+        collection?.metadata?.title?.replaceAll(" ", "")?.toLowerCase()!
       );
-
-      let posts: Post[] = [];
-
-      if ((postsRes as any)?.items?.length > 0) {
-        posts = (postsRes as any)?.items;
-      }
-
-      if ((postsRes as any)?.pageInfo?.next) {
-        setHasMore(true);
-        setActivityCursor((postsRes as any)?.pageInfo?.next);
-      } else {
-        setHasMore(false);
-      }
 
       let picture = "";
       const cadena = await fetch(
@@ -143,6 +211,7 @@ const useNFT = (
         title: collection?.metadata?.title,
         description: collection?.metadata?.description,
         blocktimestamp: collection?.blockTimestamp,
+        active: collection?.active,
         prices: collection?.prices,
         tokens: collection?.tokens,
         agents: collection?.agents,
@@ -158,7 +227,7 @@ const useNFT = (
           },
         },
         collectors,
-        agentActivity: posts,
+        agentActivity: posts || [],
       });
     } catch (err: any) {
       console.error(err.message);
@@ -172,11 +241,15 @@ const useNFT = (
     try {
       const postsRes = await fetchPosts(
         {
-          pageSize: "TEN",
+          pageSize: PageSize.Fifty,
+          cursor: activityCursor,
           filter: {
             metadata: {
               tags: {
-                oneOf: ["tripleA", nft?.title!],
+                all: [
+                  "tripleA",
+                  nft?.title?.replaceAll(" ", "")?.toLowerCase()!,
+                ],
               },
             },
           },
@@ -188,6 +261,20 @@ const useNFT = (
 
       if ((postsRes as any)?.items?.length > 0) {
         posts = (postsRes as any)?.items;
+      } else {
+        const postsRes = await fetchPosts(
+          {
+            pageSize: PageSize.Fifty,
+          },
+          lensConnected?.sessionClient || lensClient
+        );
+        posts = (postsRes as any)?.items?.filter(
+          (pos: Post) =>
+            (pos?.metadata as TextOnlyMetadata)?.tags?.includes("tripleA") &&
+            (pos?.metadata as TextOnlyMetadata)?.tags?.includes(
+              nft?.title?.replaceAll(" ", "")?.toLowerCase()!
+            )
+        );
       }
 
       if ((postsRes as any)?.pageInfo?.next) {
@@ -198,6 +285,37 @@ const useNFT = (
         setActivityCursor(undefined);
       }
 
+      posts = await Promise.all(
+        posts?.map(async (post) => {
+          let picture = post?.author?.metadata?.picture;
+
+          if (post?.author?.metadata?.picture) {
+            const cadena = await fetch(
+              `${STORAGE_NODE}/${
+                post?.author?.metadata?.picture?.split("lens://")?.[1]
+              }`
+            );
+
+            if (cadena) {
+              const json = await cadena.json();
+              picture = json.item;
+            }
+          }
+
+          return {
+            ...post,
+            author: {
+              ...post?.author,
+              metadata: {
+                ...post?.author?.metadata,
+                picture,
+              },
+            },
+          } as Post;
+        })
+      );
+
+      
       setNft({
         ...(nft as NFTData),
         agentActivity: [...(nft?.agentActivity || []), ...posts],
@@ -221,6 +339,7 @@ const useNFT = (
     agentLoading,
     handleMoreActivity,
     hasMore,
+    handlePosts,
   };
 };
 

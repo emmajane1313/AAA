@@ -3,7 +3,14 @@ import {
   Agent,
   AgentCollection,
 } from "@/components/Dashboard/types/dashboard.types";
-import { Account, evmAddress, Post, PublicClient } from "@lens-protocol/client";
+import {
+  Account,
+  evmAddress,
+  PageSize,
+  Post,
+  PublicClient,
+  TextOnlyMetadata,
+} from "@lens-protocol/client";
 import { useEffect, useState } from "react";
 import fetchPosts from "../../../../graphql/lens/queries/posts";
 import { getAgent } from "../../../../graphql/queries/getAgent";
@@ -20,6 +27,89 @@ const useAgent = (
   const [agentLoading, setAgentLoading] = useState<boolean>(false);
   const [activityCursor, setActivityCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState<boolean>(true);
+
+  const handleActivity = async (reset: boolean): Promise<Post[] | void> => {
+    try {
+      const postsRes = await fetchPosts(
+        {
+          pageSize: PageSize.Fifty,
+          filter: {
+            metadata: {
+              tags: {
+                oneOf: ["tripleA"],
+              },
+            },
+          },
+        },
+        lensConnected?.sessionClient || lensClient
+      );
+
+      let posts: Post[] = [];
+
+      if ((postsRes as any)?.items?.length > 0) {
+        posts = (postsRes as any)?.items;
+      } else {
+        const postsRes = await fetchPosts(
+          {
+            pageSize: PageSize.Fifty,
+          },
+          lensConnected?.sessionClient || lensClient
+        );
+        posts = (postsRes as any)?.items?.filter((pos: Post) =>
+          (pos?.metadata as TextOnlyMetadata)?.tags?.includes("tripleA")
+        );
+      }
+
+      posts = await Promise.all(
+        posts?.map(async (post) => {
+          let picture = post?.author?.metadata?.picture;
+
+          if (post?.author?.metadata?.picture) {
+            const cadena = await fetch(
+              `${STORAGE_NODE}/${
+                post?.author?.metadata?.picture?.split("lens://")?.[1]
+              }`
+            );
+
+            if (cadena) {
+              const json = await cadena.json();
+              picture = json.item;
+            }
+          }
+
+          return {
+            ...post,
+            author: {
+              ...post?.author,
+              metadata: {
+                ...post?.author?.metadata,
+                picture,
+              },
+            },
+          } as Post;
+        })
+      );
+
+      if ((postsRes as any)?.pageInfo?.next) {
+        setHasMore(true);
+        setActivityCursor((postsRes as any)?.pageInfo?.next);
+      } else {
+        setHasMore(false);
+        setActivityCursor(undefined);
+      }
+
+      if (!reset) {
+        return posts;
+      } else {
+        setAgent({
+          ...agent!,
+          activity: posts || [],
+        });
+      }
+    } catch (err: any) {
+      console.error(err.message);
+    }
+  };
 
   const handleAgent = async () => {
     if (!id) return;
@@ -104,34 +194,7 @@ const useAgent = (
         };
       }
 
-      const postsRes = await fetchPosts(
-        {
-          pageSize: "TEN",
-          filter: {
-            metadata: {
-              tags: {
-                oneOf: ["tripleA"],
-              },
-            },
-            // authors: [(result as any)?.[0]?.account?.address],
-          },
-        },
-        lensConnected?.sessionClient || lensClient
-      );
-
-      let posts: Post[] = [];
-
-      if ((postsRes as any)?.items?.length > 0) {
-        posts = (postsRes as any)?.items;
-      }
-
-      if ((postsRes as any)?.pageInfo?.next) {
-        setHasMore(true);
-        setActivityCursor((postsRes as any)?.pageInfo?.next);
-      } else {
-        setHasMore(false);
-        setActivityCursor(undefined);
-      }
+      const posts = await handleActivity(false);
 
       let activeCollectionIds: AgentCollection[] = [];
       let collectionIdsHistory: AgentCollection[] = [];
@@ -141,7 +204,7 @@ const useAgent = (
           async (id: any) => {
             const result = await fetchAccountsAvailable(
               {
-                managedBy: evmAddress(id?.owner),
+                managedBy: evmAddress(id?.artist),
               },
               lensClient
             );
@@ -160,7 +223,7 @@ const useAgent = (
           async (id: any) => {
             const result = await fetchAccountsAvailable(
               {
-                managedBy: evmAddress(id?.owner),
+                managedBy: evmAddress(id?.artist),
               },
               lensClient
             );
@@ -174,8 +237,6 @@ const useAgent = (
         )
       );
 
-
-
       setAgent({
         id: res?.data?.agentCreateds?.[0]?.AAAAgents_id,
         cover: metadata?.cover,
@@ -185,8 +246,9 @@ const useAgent = (
         wallet: res?.data?.agentCreateds?.[0]?.wallets?.[0],
         balance: res?.data?.agentCreateds?.[0]?.balances,
         owner: res?.data?.agentCreateds?.[0]?.owner,
+        details: res?.data?.agentCreateds?.[0]?.details,
         profile,
-        activity: posts,
+        activity: posts || [],
         activeCollectionIds,
         collectionIdsHistory,
         accountConnected: (result as any)?.[0]?.account?.address,
@@ -205,13 +267,15 @@ const useAgent = (
     try {
       const postsRes = await fetchPosts(
         {
-          pageSize: "TEN",
+          pageSize: PageSize.Fifty,
+          cursor: activityCursor,
           filter: {
             metadata: {
               tags: {
                 oneOf: ["tripleA"],
               },
             },
+
             // authors: [agent?.accountConnected],
           },
         },
@@ -222,6 +286,16 @@ const useAgent = (
 
       if ((postsRes as any)?.items?.length > 0) {
         posts = (postsRes as any)?.items;
+      } else {
+        const postsRes = await fetchPosts(
+          {
+            pageSize: PageSize.Fifty,
+          },
+          lensConnected?.sessionClient || lensClient
+        );
+        posts = (postsRes as any)?.items?.filter((pos: Post) =>
+          (pos?.metadata as TextOnlyMetadata)?.tags?.includes("tripleA")
+        );
       }
 
       if ((postsRes as any)?.pageInfo?.next) {
@@ -231,6 +305,36 @@ const useAgent = (
         setHasMore(false);
         setActivityCursor(undefined);
       }
+
+      posts = await Promise.all(
+        posts?.map(async (post) => {
+          let picture = post?.author?.metadata?.picture;
+
+          if (post?.author?.metadata?.picture) {
+            const cadena = await fetch(
+              `${STORAGE_NODE}/${
+                post?.author?.metadata?.picture?.split("lens://")?.[1]
+              }`
+            );
+
+            if (cadena) {
+              const json = await cadena.json();
+              picture = json.item;
+            }
+          }
+
+          return {
+            ...post,
+            author: {
+              ...post?.author,
+              metadata: {
+                ...post?.author?.metadata,
+                picture,
+              },
+            },
+          } as Post;
+        })
+      );
 
       setAgent({
         ...(agent as Agent),
@@ -256,6 +360,7 @@ const useAgent = (
     screen,
     setScreen,
     setAgent,
+    handleActivity,
   };
 };
 

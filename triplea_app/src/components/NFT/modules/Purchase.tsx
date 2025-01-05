@@ -1,4 +1,4 @@
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useContext } from "react";
 import { PurchaseProps } from "../types/nft.types";
 import usePurchase from "../hooks/usePurchase";
 import { useAccount } from "wagmi";
@@ -14,6 +14,7 @@ import Comments from "./Comments";
 import { useRouter } from "next/navigation";
 import { useModal } from "connectkit";
 import useAgentRecharge from "../hooks/useAgentRecharge";
+import { AnimationContext } from "@/app/providers";
 
 const Purchase: FunctionComponent<PurchaseProps> = ({
   nft,
@@ -30,10 +31,12 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
   setIndexer,
   tokenThresholds,
   agents,
+  handlePosts,
 }): JSX.Element => {
   const { isConnected, address } = useAccount();
   const router = useRouter();
   const { setOpen, open } = useModal();
+  const animationContext = useContext(AnimationContext);
   const publicClient = createPublicClient({
     chain: chains.testnet,
     transport: http(
@@ -79,20 +82,19 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
     setCommentQuote,
     success,
   } = useInteractions(
-    nft?.agentActivity,
     lensConnected?.sessionClient!,
     setSignless,
     storageClient,
-    String(nft?.id),
     setIndexer,
     setNotification,
     setNft,
-    nft
+    nft,
+    handlePosts
   );
 
   return (
     <div
-      className={`relative w-[38rem] h-[40rem] flex flex-col gap-4 items-start justify-start text-left p-3 pixel-border-2 bg-white ${
+      className={`relative w-full md:w-[38rem] h-[60rem] md:h-[40rem] flex flex-col gap-4 items-start justify-start text-left p-3 pixel-border-2 bg-white ${
         (nftLoading || nft?.amount == 0) && "animate-pulse"
       }`}
     >
@@ -175,13 +177,14 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
               <div className="relative text-sm text-black flex font-jackey2">
                 Edition — {nft?.amountSold || 0} / {nft?.amount}
               </div>
-              <div className="relative w-full h-fit flex items-center justify-between flex-row gap-3 font-jackey2">
+              <div className="relative w-full h-fit flex items-center justify-between flex-row gap-3 font-jackey2 flex-wrap sm:flex-nowrap">
                 <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
                   {nft?.profile?.metadata?.picture && (
                     <div
                       className="relative flex rounded-full w-8 h-8 bg-morado border border-morado cursor-pixel"
                       onClick={(e) => {
                         e.stopPropagation();
+                        animationContext?.setPageChange?.(true);
                         router.push(
                           `/user/${nft?.profile?.username?.localName}`
                         );
@@ -208,7 +211,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   {nft?.blocktimestamp}
                 </div>
               </div>
-              <div className="relative w-full font-start justify-between items-center flex flex-row">
+              <div className="relative w-full font-start justify-between items-center flex flex-wrap sm:flex-nowrap flex-row gap-3">
                 <input
                   disabled={purchaseLoading}
                   type="number"
@@ -227,7 +230,10 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   }
                 />
                 <div className="relative w-fit h-fit justify-end flex text-sm">
-                  {(Number(nft?.prices?.[0]) / 10 ** 18) * collectData?.amount}{" "}
+                  {(
+                    (Number(nft?.prices?.[0]) / 10 ** 18) *
+                    Number(collectData?.amount)
+                  )?.toFixed(2)}{" "}
                   {
                     TOKENS?.find(
                       (tok) =>
@@ -240,19 +246,41 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
               <div className="relative w-full h-fit flex font-start text-xxs text-[#e14c14] items-start justify-start text-left">
                 {Number(nft?.agents?.length || 0) <= 0
                   ? "No Agents Assigned To this Collection."
-                  : Number(nft?.amountSold || 0) >= 2 &&
-                    Number(nft?.agents?.length || 0) > 0 &&
-                    Number(nft?.prices?.[0]) >=
-                      Number(
-                        tokenThresholds?.find(
-                          (t) =>
-                            t?.token?.toLowerCase() ==
-                            nft?.tokens?.[0]?.toLowerCase()
-                        )?.threshold
-                      )
+                  : (Number(nft?.amountSold || 0) > 1 &&
+                      Number(nft?.amount || 0) > 2 &&
+                      Number(nft?.agents?.length || 0) > 0 &&
+                      Number(nft?.prices?.[0]) >=
+                        Number(
+                          tokenThresholds?.find(
+                            (t) =>
+                              t?.token?.toLowerCase() ==
+                              nft?.tokens?.[0]?.toLowerCase()
+                          )?.threshold
+                        )) ||
+                    (Number(nft?.agents?.length || 0) > 0 &&
+                      Number(nft?.amount || 0) > 2 &&
+                      Number(nft?.prices?.[0]) >=
+                        Number(
+                          tokenThresholds?.find(
+                            (t) =>
+                              t?.token?.toLowerCase() ==
+                              nft?.tokens?.[0]?.toLowerCase()
+                          )?.threshold
+                        ) &&
+                      agents
+                        ?.filter((ag) => nft?.agents?.includes(ag?.id))
+                        ?.map((bal) =>
+                          bal?.balance?.filter(
+                            (b) =>
+                              b?.collectionId == nft?.id &&
+                              Number(b?.activeBalance) > 0
+                          )
+                        )
+                        ?.filter((arr) => arr?.length > 0)?.length > 0)
                   ? "Agents Activated!"
                   : Number(nft?.amountSold || 0) == 1 &&
                     Number(nft?.agents?.length || 0) > 0 &&
+                    Number(nft?.amount || 0) > 2 &&
                     Number(nft?.prices?.[0]) >=
                       Number(
                         tokenThresholds?.find(
@@ -318,7 +346,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                     return (
                       <div
                         key={key}
-                        className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
+                        className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-wrap sm:flex-nowrap flex-row gap-2"
                         onClick={(e) => {
                           e.stopPropagation();
                           window.open(
@@ -331,6 +359,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                             className="relative w-fit h-fit flex flex-row gap-1 items-center justify-center cursor-pixel"
                             onClick={(e) => {
                               e.stopPropagation();
+                              animationContext?.setPageChange?.(true);
                               router.push(`/user/${collector?.localName}`);
                             }}
                           >
@@ -350,7 +379,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                 />
                               </div>
                             )}
-                            <div className="relative w-fit h-fit flex text-black text-sm font-start">
+                            <div className="relative w-fit h-fit flex text-black text-xxs font-start">
                               @
                               {collector?.name?.length > 10
                                 ? collector?.name?.slice(0, 10) + " ..."
@@ -397,6 +426,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                     className="relative w-full"
                   >
                     <Comments
+                      agents={agents}
                       comments={nft?.agentActivity || []}
                       setImageView={setImageView}
                       interactionsLoading={interactionsLoading}
@@ -434,11 +464,12 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                         className="relative w-full h-fit flex justify-between items-center flex-col gap-2"
                       >
                         <div className="relative w-full h-px flex bg-black"></div>
-                        <div className="relative w-full h-fit flex flex-row gap-2 justify-between items-center">
+                        <div className="relative w-full h-fit flex flex-row gap-2 justify-between items-center md:flex-nowrap flex-wrap">
                           <div
                             className="relative w-fit h-fit flex cursor-pixel"
                             onClick={(e) => {
                               e.stopPropagation();
+                              animationContext?.setPageChange?.(true);
                               router.push(`/agent/${agent?.id}`);
                             }}
                           >
@@ -489,9 +520,9 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                               )?.symbol
                             }
                           </div>
-                          <div className="relative w-full h-fit flex">
+                          <div className="relative w-fit h-fit flex">
                             <div
-                              className={`relative w-full h-8 pixel-border-2 text-black flex items-center justify-center text-xxs font-start ${
+                              className={`relative w-24 h-8 pixel-border-2 text-black flex items-center justify-center text-xxs font-start ${
                                 !purchaseLoading ? "cursor-pixel" : "opacity-70"
                               }`}
                               onClick={() => {
@@ -526,7 +557,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                             </div>
                           </div>
                         </div>
-                        <div className="relative w-full h-fit flex items-start justify-between gap-2 text-xs font-jackey2">
+                        <div className="relative w-full h-fit flex items-start justify-between gap-2 text-xs font-jackey2 sm:flex-nowrap flex-wrap">
                           <div className="relative w-full h-fit flex items-start justify-between flex-col gap-1">
                             <div className="relative w-fit h-fit flex">
                               Active Collection Balance:
@@ -537,7 +568,8 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                   (bal) =>
                                     Number(bal?.collectionId) == Number(nft?.id)
                                 )?.activeBalance || 0
-                              )}
+                              ) /
+                                10 ** 18}
                             </div>
                           </div>
                           <div className="relative w-full h-fit flex items-start justify-between flex-col gap-1">
@@ -551,13 +583,14 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                     Number(bal?.collectionId) == Number(nft?.id)
                                 )?.dailyFrequency || 0
                               ) *
-                                Number(
+                                (Number(
                                   tokenThresholds?.find(
                                     (thr) =>
                                       thr?.token?.toLowerCase() ==
                                       nft?.tokens?.[0]?.toLowerCase()
-                                  )?.dailyRent || 0
-                                )}
+                                  )?.rent || 0
+                                ) /
+                                  10 ** 18)}
                             </div>
                           </div>
                         </div>
@@ -579,7 +612,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                   (thr) =>
                                     thr?.token?.toLowerCase() ==
                                     nft?.tokens?.[0]?.toLowerCase()
-                                )?.dailyRent || 0
+                                )?.rent || 0
                               )) || 0 > 0
                             ? `If not recharged, Agent will run out in ${
                                 Number(
@@ -601,7 +634,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                         (thr) =>
                                           thr?.token?.toLowerCase() ==
                                           nft?.tokens?.[0]?.toLowerCase()
-                                      )?.dailyRent || 0
+                                      )?.rent || 0
                                     )) || 0
                               } days!!`
                             : "Agent needs to be recharged to start activity!"}

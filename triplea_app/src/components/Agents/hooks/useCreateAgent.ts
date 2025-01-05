@@ -2,17 +2,22 @@ import { chains } from "@lens-network/sdk/viem";
 import { SetStateAction, useState } from "react";
 import { createWalletClient, custom, decodeEventLog, PublicClient } from "viem";
 import { AgentDetails, CreateSwitcher } from "../types/agents.types";
-import { AGENTS_CONTRACT } from "@/lib/constants";
+import { ACCESS_CONTROLS_CONTRACT, AGENTS_CONTRACT } from "@/lib/constants";
 import AgentAbi from "@abis/AgentAbi.json";
 import { LensConnected } from "@/components/Common/types/common.types";
 import { StorageClient } from "@lens-protocol/storage-node-client";
 import { v4 as uuidv4 } from "uuid";
 import createAccount from "../../../../graphql/lens/mutations/createAccount";
-import { evmAddress } from "@lens-protocol/client";
+import {
+  evmAddress,
+  PublicClient as PublicClientLens,
+} from "@lens-protocol/client";
 import pollResult from "@/lib/helpers/pollResult";
 import fetchAccount from "../../../../graphql/lens/queries/account";
-import { ethers } from "ethers";
+import { Contract, Wallet, HDNodeWallet, JsonRpcProvider } from "ethers";
 import forge from "node-forge";
+import { enableSignless } from "@lens-protocol/client/actions";
+import AccessControlsAbi from "@abis/AccessControlsAbi.json";
 
 const useCreateAgent = (
   publicClient: PublicClient,
@@ -21,9 +26,11 @@ const useCreateAgent = (
   lensConnected: LensConnected | undefined,
   setIndexer: (e: SetStateAction<string | undefined>) => void,
   storageClient: StorageClient,
-  setNotification: (e: SetStateAction<string | undefined>) => void
+  setNotification: (e: SetStateAction<string | undefined>) => void,
+  lensClient: PublicClientLens
 ) => {
   const [createAgentLoading, setCreateAgentLoading] = useState<boolean>(false);
+  const [agentWallet, setAgentWallet] = useState<HDNodeWallet | undefined>();
   const [lensLoading, setLensLoading] = useState<boolean>(false);
   const [id, setId] = useState<string | undefined>();
   const [agentAccountAddress, setAgentAccountAddress] = useState<
@@ -51,12 +58,6 @@ const useCreateAgent = (
     if (!address || !lensConnected?.sessionClient) return;
     setLensLoading(true);
     try {
-      const signer = createWalletClient({
-        chain: chains.testnet,
-        transport: custom(window.ethereum!),
-        account: address,
-      });
-
       let picture = {};
 
       if (agentLensDetails?.pfp || agentDetails?.cover) {
@@ -93,48 +94,134 @@ const useCreateAgent = (
         },
       });
 
-      const accountResponse = await createAccount(
-        {
-          accountManager: [evmAddress(signer.account.address)],
-          username: {
-            localName: agentLensDetails?.username,
-          },
-          metadataUri: uri,
-        },
-        lensConnected?.sessionClient
+      const provider = new JsonRpcProvider(
+        "https://rpc.testnet.lens.dev",
+        37111
       );
+      const agentWalletCreated = Wallet.createRandom(provider);
 
-      if ((accountResponse as any)?.hash) {
-        const res = await pollResult(
-          (accountResponse as any)?.hash,
-          lensConnected?.sessionClient
-        );
-        if (res) {
-          const newAcc = await fetchAccount(
-            {
-              username: {
-                localName: agentLensDetails?.username,
-              },
+      const authenticatedOnboarding = await lensClient.login({
+        onboardingUser: {
+          app: "0xe5439696f4057aF073c0FB2dc6e5e755392922e1",
+          wallet: agentWalletCreated.address,
+        },
+        signMessage: (message) => agentWalletCreated.signMessage(message),
+      });
+
+      if (authenticatedOnboarding.isOk()) {
+        const accountResponse = await createAccount(
+          {
+            accountManager: [evmAddress(agentWalletCreated.address)],
+            username: {
+              localName: agentLensDetails?.username,
             },
+            metadataUri: uri,
+          },
+          authenticatedOnboarding.value
+        );
+
+        if (
+          (accountResponse as any)?.message?.includes("username already exists")
+        ) {
+          setNotification("Username Already Taken. Try something else?");
+          setLensLoading(false);
+          return;
+        }
+
+        if ((accountResponse as any)?.hash) {
+          const res = await pollResult(
+            (accountResponse as any)?.hash,
             lensConnected?.sessionClient
           );
+          if (res) {
+            const newAcc = await fetchAccount(
+              {
+                username: {
+                  localName: agentLensDetails?.username,
+                },
+              },
+              lensConnected?.sessionClient
+            );
 
-          if (
-            (accountResponse as any)?.message?.includes(
-              "username already exists"
-            )
-          ) {
-            setNotification("Username Already Taken. Try something else?");
-            setLensLoading(false);
-            return;
-          }
+            if ((newAcc as any)?.address) {
+              const authenticated = await lensClient.login({
+                accountOwner: {
+                  app: "0xe5439696f4057aF073c0FB2dc6e5e755392922e1",
+                  account: evmAddress((newAcc as any)?.address),
+                  owner: agentWalletCreated.address?.toLowerCase(),
+                },
+                signMessage: (message) =>
+                  agentWalletCreated.signMessage(message),
+              });
 
-          if ((newAcc as any)?.address) {
-            setCreateSwitcher(CreateSwitcher.Create);
-            setAgentAccountAddress((newAcc as any)?.address);
+              if (authenticated.isOk()) {
+                const res = await enableSignless(authenticated.value);
+
+                if (res.isErr()) {
+                  console.error(res.error);
+
+                  setIndexer?.("Error with Enabling Signless");
+                  setLensLoading(false);
+                } else {
+                  const responseKey = await fetch("/api/faucet", {
+                    method: "POST",
+                    headers: {
+                      "content-type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      address: agentWalletCreated.address,
+                    }),
+                  });
+
+                  let tx_res = await responseKey.json();
+
+                  if (tx_res?.tx) {
+                    const tx = {
+                      chainId: (res.value as any)?.raw?.chainId,
+                      from: (res.value as any)?.raw?.from,
+                      to: (res.value as any)?.raw?.to,
+                      nonce: (res.value as any)?.raw?.nonce,
+                      gasLimit: (res.value as any)?.raw?.gasLimit,
+                      maxFeePerGas: (res.value as any)?.raw?.maxFeePerGas,
+                      maxPriorityFeePerGas: (res.value as any)?.raw
+                        ?.maxPriorityFeePerGas,
+                      value: (res.value as any)?.raw?.value,
+                      data: (res.value as any)?.raw?.data,
+                    };
+                    const txResponse = await agentWalletCreated.sendTransaction(
+                      tx
+                    );
+                    await txResponse.wait();
+                    if (txResponse) {
+                      setCreateSwitcher(CreateSwitcher.Create);
+                      setAgentWallet(agentWalletCreated);
+                      setAgentAccountAddress((newAcc as any)?.address);
+                    } else {
+                      setIndexer?.("Error with Enabling Signless");
+                      setLensLoading(false);
+                      return;
+                    }
+                  } else {
+                    setIndexer?.("Error with Enabling Signless");
+                    setLensLoading(false);
+                    return;
+                  }
+                }
+              } else {
+                console.error(accountResponse);
+                setIndexer?.("Error Enabling Signless Transactions.");
+                setLensLoading(false);
+                return;
+              }
+            } else {
+              console.error(accountResponse);
+              setIndexer?.("Error with Fetching New Account");
+              setLensLoading(false);
+              return;
+            }
           } else {
             console.error(accountResponse);
-            setIndexer?.("Error with Fetching New Account");
+            setIndexer?.("Error with Account Creation");
             setLensLoading(false);
             return;
           }
@@ -145,8 +232,7 @@ const useCreateAgent = (
           return;
         }
       } else {
-        console.error(accountResponse);
-        setIndexer?.("Error with Account Creation");
+        setNotification("Error creating Lens Account. Try again?");
         setLensLoading(false);
         return;
       }
@@ -166,7 +252,7 @@ const useCreateAgent = (
     )
       return;
 
-    if (!agentAccountAddress) {
+    if (!agentAccountAddress || !agentWallet) {
       setNotification?.("Create your Agent's Lens Account!");
       return;
     }
@@ -205,8 +291,6 @@ const useCreateAgent = (
       });
 
       let responseJSON = await response.json();
-
-      const agentWallet = ethers.Wallet.createRandom();
 
       const { request } = await publicClient.simulateContract({
         address: AGENTS_CONTRACT,
@@ -273,18 +357,6 @@ const useCreateAgent = (
         accountAddress: agentAccountAddress,
       };
 
-      // const data = {
-      //   publicAddress: "0x898B0028e6e1446118852bA69bA472b41d852dcD",
-      //   encryptedPrivateKey:
-      //     "U2FsdGVkX18VlCkogTg6V7aJlzDrDRdhX0ESZY8B3PfQrCwjB3XNmws5To/47IkAKHmMqmEDkGscBr+TSQFZLj5X27e86FBVNCZn5uTV71tXNA9PgvB6ruPhIUy8c8+7",
-      //   id: 10,
-      //   title: "carlos 3",
-      //   description: "holiii",
-      //   cover: "ipfs://QmQoms1aCZ3LuYobhMpHCXFi4JvdufxsDuBPSKwTUrjQ62",
-      //   customInstructions: "nada interesante",
-      //   accountAddress: "0x13Ad819FB0d0fB3cD208aF6C2Dd846E3857b17cA",
-      // };
-
       const newSocket = new WebSocket(
         `ws://127.0.0.1:10000?key=${process.env.NEXT_PUBLIC_RENDER_KEY}`
       );
@@ -325,6 +397,7 @@ const useCreateAgent = (
     setAgentLensDetails,
     lensLoading,
     handleCreateAccount,
+    agentWallet,
   };
 };
 

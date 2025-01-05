@@ -9,7 +9,7 @@ const Data: FunctionComponent<DataProps> = ({
   setImageView,
 }): JSX.Element => {
   return (
-    <div className="relative w-full h-full flex px-6 py-2">
+    <div className="relative w-full h-[30rem] md:h-full flex px-6 py-2">
       {url && (
         <Image
           alt={id?.toString() || ""}

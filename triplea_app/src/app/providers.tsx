@@ -28,6 +28,7 @@ export const config = createConfig(
       [chains.testnet.id]: http("https://rpc.testnet.lens.dev"),
     },
     ssr: true,
+  
   })
 );
 
@@ -97,6 +98,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           customTheme={{
             "--ck-font-family": '"Jackey2", cursive',
           }}
+        
         >
           <AnimationContext.Provider
             value={{

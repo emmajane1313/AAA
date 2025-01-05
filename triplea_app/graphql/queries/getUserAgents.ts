@@ -37,6 +37,11 @@ const USER_AGENTS = gql`
           title
         }
       }
+      details {
+        collectionId
+        dailyFrequency
+        instructions
+      }
       blockNumber
       AAAAgents_id
       transactionHash

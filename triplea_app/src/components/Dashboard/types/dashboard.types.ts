@@ -129,6 +129,7 @@ export interface Agent {
   id: string;
   cover: string;
   title: string;
+  customInstructions: string;
   description: string;
   wallet: string;
   balance: Balances[];
@@ -139,6 +140,11 @@ export interface Agent {
     transactionHash: string;
     blockTimestamp: string;
   }[];
+  details: {
+    collectionId: string;
+    instructions: string;
+    dailyFrequency: string;
+  }[]
   profile?: Account;
   ownerProfile?: Account;
   activity?: Post[];

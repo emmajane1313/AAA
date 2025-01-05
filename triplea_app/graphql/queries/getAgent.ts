@@ -8,6 +8,7 @@ const AGENT = gql`
         title
         description
         cover
+        customInstructions
       }
       creator
       blockTimestamp
@@ -30,6 +31,7 @@ const AGENT = gql`
           image
           title
         }
+        artist
       }
       collectionIdsHistory {
         collectionId
@@ -37,6 +39,12 @@ const AGENT = gql`
           image
           title
         }
+        artist
+      }
+      details {
+        collectionId
+        dailyFrequency
+        instructions
       }
       blockNumber
       AAAAgents_id

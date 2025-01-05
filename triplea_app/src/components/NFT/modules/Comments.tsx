@@ -1,9 +1,11 @@
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useContext } from "react";
 import { CommentsProps } from "../types/nft.types";
 import Metadata from "./Metadata";
 import Image from "next/legacy/image";
 import { INFURA_GATEWAY } from "@/lib/constants";
 import moment from "moment";
+import { useRouter } from "next/navigation";
+import { AnimationContext } from "@/app/providers";
 
 const Comments: FunctionComponent<CommentsProps> = ({
   comments,
@@ -14,22 +16,91 @@ const Comments: FunctionComponent<CommentsProps> = ({
   interactionsLoading,
   postLoading,
   commentQuote,
+  agents,
+  post,
 }): JSX.Element => {
+  const router = useRouter();
+  const animationContext = useContext(AnimationContext);
   return (
-    <div className="relative w-full flex flex-col items-start justify-start gap-3 h-fit">
+    <div
+      className={`relative w-full flex flex-col items-start justify-start gap-3 h-fit ${
+        post ? "h-full" : "h-fit"
+      }`}
+    >
       {comments?.map((activity, key) => {
         return (
           <div
             key={key}
-            className="relative w-full h-fit gap-3 flex-col flex flex shadow-md item-start justify-start p-2"
+            className={`"relative w-full gap-3 flex-col flex flex shadow-md item-start p-2 ${
+              post ? "h-full justify-between" : "h-fit justify-start"
+            }`}
           >
-            <div className="relative w-full h-fit px-1.5 py-1 flex items-start justify-between flex-row gap-2 font-jackey2">
-              <div className="relative w-fit h-fit flex flex-row gap-1  items-center justify-center">
+            <div
+              className={`relative w-full h-fit flex flex-row items-center gap-2 text-xxs ${
+                activity?.commentOn?.id || activity?.quoteOf?.id
+                  ? "justify-between"
+                  : "justify-end"
+              }`}
+            >
+              {(activity?.commentOn?.id || activity?.quoteOf?.id) && (
+                <div className="relative font-jackey2 w-fit h-fit flex">
+                  {(activity?.commentOn?.id
+                    ? `Comment On ${(
+                        activity?.commentOn?.metadata as any
+                      )?.content?.slice(0, 10)}`
+                    : `Quote Of ${(
+                        activity?.quoteOf?.metadata as any
+                      )?.content?.slice(0, 10)}`) + "..."}
+                </div>
+              )}
+              <div
+                className="flex items-center justify-center relative w-fit h-fit cursor-pixel hover:opacity-70"
+                onClick={() => {
+                  animationContext?.setPageChange?.(true);
+                  router.push(`/post/${activity?.id}`);
+                }}
+              >
+                <svg
+                  fill="none"
+                  className="size-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  {" "}
+                  <path
+                    d="M21 3h-8v2h4v2h2v4h2V3zm-4 4h-2v2h-2v2h2V9h2V7zm-8 8h2v-2H9v2H7v2h2v-2zm-4-2v4h2v2H5h6v2H3v-8h2z"
+                    fill="currentColor"
+                  />{" "}
+                </svg>
+              </div>
+            </div>
+
+            <div className="relative w-full h-fit px-1.5 py-1 flex items-start justify-between flex-row gap-2 font-jackey2 sm:flex-nowrap flex-wrap">
+              <div
+                className="relative w-fit h-fit flex flex-row gap-1  items-center justify-center cursor-pixel"
+                onClick={() => {
+                  animationContext?.setPageChange?.(true);
+                  router.push(
+                    agents
+                      ?.map((ag) => ag?.profile?.address)
+                      ?.includes(activity?.author?.address)
+                      ? `/agent/${
+                          agents?.find(
+                            (ag) =>
+                              ag?.profile?.address?.toLowerCase() ==
+                              activity?.author?.address?.toLowerCase()
+                          )?.id
+                        }`
+                      : `/user/${activity?.author?.username?.localName}`
+                  );
+                }}
+              >
                 <div className="relative w-fit h-fit flex items-center justify-center">
                   <div className="w-6 h-6 flex relative flex items-center justify-center rounded-full border border-morado bg-morado">
                     <Image
                       layout="fill"
                       objectFit="cover"
+                      className="rounded-full"
                       draggable={false}
                       src={`${INFURA_GATEWAY}/ipfs/${
                         activity?.author?.metadata?.picture?.split(
@@ -51,16 +122,17 @@ const Comments: FunctionComponent<CommentsProps> = ({
               data={activity?.metadata as any}
               metadata={activity?.metadata?.__typename!}
               setImageView={setImageView}
+              post
             />
-            <div className="relative w-full h-fit p-1 pixel-border-3 font-jackey2 justify-between flex flex-row gap-3 items-center">
+            <div className="relative w-full h-fit p-1 pixel-border-3 font-jackey2 justify-between flex flex-row gap-3 items-center sm:flex-nowrap flex-wrap">
               {[
                 {
                   name: "Like",
                   function: () =>
                     handleLike(
                       activity?.id,
-
-                      activity?.operations?.hasUpvoted ? "DOWNVOTE" : "UPVOTE"
+                      activity?.operations?.hasUpvoted ? "DOWNVOTE" : "UPVOTE",
+                      post || false
                     ),
                   svgFull: (
                     <svg
@@ -91,13 +163,15 @@ const Comments: FunctionComponent<CommentsProps> = ({
                     </svg>
                   ),
                   stats: (activity as any)?.stats?.upvotes,
+                  reacted: activity?.operations?.hasUpvoted,
                   loader: interactionsLoading?.find(
                     (int) => int.id == activity?.id
                   )?.like,
                 },
                 {
                   name: "Mirror",
-                  function: () => handleMirror(activity?.id),
+                  function: () => handleMirror(activity?.id, post || false),
+                  reacted: activity?.operations?.hasReposted?.optimistic,
                   svgFull: (
                     <svg
                       className="size-4"
@@ -133,10 +207,12 @@ const Comments: FunctionComponent<CommentsProps> = ({
                 },
                 {
                   name: "Comment",
+                  reacted: activity?.operations?.hasCommented?.optimistic,
                   function: () =>
                     setCommentQuote({
                       type: "Comment",
                       id: activity?.id,
+                      post: post ? activity?.id : undefined,
                     }),
                   svgFull: (
                     <svg
@@ -175,7 +251,9 @@ const Comments: FunctionComponent<CommentsProps> = ({
                     setCommentQuote({
                       type: "Quote",
                       id: activity?.id,
+                      post: post ? activity?.id : undefined,
                     }),
+                  reacted: activity?.operations?.hasQuoted?.optimistic,
                   svgFull: (
                     <svg
                       className="size-4"
@@ -229,13 +307,13 @@ const Comments: FunctionComponent<CommentsProps> = ({
                             fill="currentColor"
                           />{" "}
                         </svg>
-                      ) : item?.stats > 0 ? (
+                      ) : item?.reacted ? (
                         item?.svgFull
                       ) : (
                         item?.svgEmpty
                       )}
                     </div>
-                    <div className="text-xs relative w-fit h-fit flex items-center justify-center text-black">
+                    <div className="text-xs relative w-fit h-fit flex items-center justify-center text-black cursor-pixel">
                       {item?.stats || 0}
                     </div>
                   </div>

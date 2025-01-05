@@ -64,13 +64,13 @@ const Mint: FunctionComponent<MintProps> = ({
                     </div>
                     <div className="relative w-fit h-fit flex">
                       {" "}
-                      {Number(
+                      {(Number(
                         tokenThresholds?.find(
                           (t) =>
                             t.token?.toLowerCase() ==
                             mintData?.tokens?.[0]?.toLowerCase()
-                        )?.dailyRent || 0
-                      ) * Number(agent?.dailyFrequency || 0)}
+                        )?.rent || 0
+                      ) / 10 **18) * Number(agent?.dailyFrequency || 0)}
                     </div>
                     <div className="relative w-fit h-fit flex">
                       {

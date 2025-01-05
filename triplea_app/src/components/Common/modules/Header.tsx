@@ -14,9 +14,9 @@ import { useModal } from "connectkit";
 
 const Header: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
-  const { setOpen, open , openProfile} = useModal();
+  const { setOpen, open, openProfile, openSwitchNetworks , openOnboarding} = useModal();
   const animationContext = useContext(AnimationContext);
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, chainId } = useAccount();
   const context = useContext(ModalContext);
   const {
     openAccount,
@@ -334,7 +334,11 @@ const Header: FunctionComponent = (): JSX.Element => {
                 <div
                   className="relative flex w-full h-10 rounded-xl bg-black active:scale-95 items-center justify-center text-center text-sm text-white hover:opacity-80 cursor-pixel pixel-border-4"
                   onClick={() =>
-                    isConnected ? openProfile?.() : setOpen?.(!open)
+                    isConnected
+                      ? openProfile?.()
+                      : chainId !== 37111
+                      ? openSwitchNetworks?.()
+                      : openOnboarding?.()
                   }
                 >
                   {isConnected ? "Disconnect" : "Connect"}

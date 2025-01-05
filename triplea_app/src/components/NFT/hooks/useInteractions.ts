@@ -7,19 +7,22 @@ import createRepost from "../../../../graphql/lens/mutations/createRepost";
 import addReaction from "../../../../graphql/lens/mutations/addReaction";
 import { NFTData } from "@/components/Common/types/common.types";
 import { Agent } from "@/components/Dashboard/types/dashboard.types";
+import pollResult from "@/lib/helpers/pollResult";
 
 const useInteractions = (
-  agentActivity: Post[] | undefined,
   sessionClient: SessionClient,
   setSignless: (e: SetStateAction<boolean>) => void,
   storageClient: StorageClient,
-  nftId: string,
   setIndexer: (e: SetStateAction<string | undefined>) => void,
   setNotification: (e: SetStateAction<string | undefined>) => void,
   setData:
     | ((e: SetStateAction<NFTData | undefined>) => void)
-    | ((e: SetStateAction<Agent | undefined>) => void),
-  data: NFTData | Agent | undefined
+    | ((e: SetStateAction<Agent | undefined>) => void)
+    | ((e: SetStateAction<Post[]>) => void),
+  data: NFTData | Agent | undefined | Post[],
+  handlePosts: (bool: true) => Promise<Post[] | void>,
+  setPostData?: (e: SetStateAction<Post[]>) => void,
+  postId?: string | undefined
 ) => {
   const [success, setSuccess] = useState<boolean>(false);
   const [post, setPost] = useState<string>("");
@@ -28,9 +31,11 @@ const useInteractions = (
     | {
         type: "Comment" | "Quote";
         id: string;
+        post?: string;
       }
     | undefined
   >();
+
   const [interactionsLoading, setInteractionsLoading] = useState<
     {
       mirror: boolean;
@@ -38,20 +43,37 @@ const useInteractions = (
       id: string;
     }[]
   >([]);
+  const [interactionsLoadingPost, setInteractionsLoadingPost] = useState<
+    {
+      mirror: boolean;
+      like: boolean;
+      id: string;
+    }[]
+  >([
+    {
+      mirror: false,
+      like: false,
+      id: (data as Post[])?.[0]?.id,
+    },
+  ]);
 
   const handlePost = async () => {
     if (post?.trim() == "") return;
     setPostLoading(true);
     try {
       const { uri } = await storageClient.uploadAsJson({
-        $schema: "https://json-schemas.lens.dev/posts/text/3.0.0.json",
+        $schema: "https://json-schemas.lens.dev/posts/text-only/3.0.0.json",
         lens: {
-          mainContentFocus:  MainContentFocus.TextOnly,
-          title: post?.slice(0, 10),
+          mainContentFocus: MainContentFocus.TextOnly,
           content: post,
           id: uuidv4(),
           locale: "en",
-          tags: (data as Agent)?.wallet ? ["tripleA", (data as Agent)?.id] : ["tripleA", nftId],
+          tags: [
+            "tripleA",
+            (data as any)?.title
+              ? (data as any)?.title?.replaceAll(" ", "")?.toLowerCase()
+              : undefined,
+          ]?.filter(Boolean),
         },
       });
 
@@ -69,9 +91,14 @@ const useInteractions = (
       ) {
         setSignless?.(true);
       } else if ((res as any)?.hash) {
-        setSuccess(true);
-        setPost("");
-        setIndexer?.("Post Indexing");
+        if (await pollResult((res as any)?.hash, sessionClient)) {
+          setSuccess(true);
+          setPost("");
+          setIndexer?.("Post Indexing");
+          await handlePosts(true);
+        } else {
+          setNotification?.("Something went wrong :( Try again?");
+        }
       } else {
         setNotification?.("Something went wrong :( Try again?");
       }
@@ -86,16 +113,18 @@ const useInteractions = (
     setPostLoading(true);
     try {
       const { uri } = await storageClient.uploadAsJson({
-        $schema: "https://json-schemas.lens.dev/posts/text/3.0.0.json",
+        $schema: "https://json-schemas.lens.dev/posts/text-only/3.0.0.json",
         lens: {
           mainContentFocus: MainContentFocus.TextOnly,
-          title: post?.slice(0, 10),
           content: post,
           id: uuidv4(),
           locale: "en",
-          tags: (data as Agent)?.wallet
-            ? ["tripleA", (data as Agent)?.id]
-            : ["tripleA", commentQuote?.id],
+          tags: [
+            "tripleA",
+            (data as any)?.title
+              ? (data as any)?.title?.replaceAll(" ", "")?.toLowerCase()
+              : undefined,
+          ]?.filter(Boolean),
         },
       });
 
@@ -116,10 +145,24 @@ const useInteractions = (
       ) {
         setSignless?.(true);
       } else if ((res as any)?.hash) {
-        setSuccess(true);
-        setPost("");
-        setCommentQuote(undefined);
-        setIndexer?.("Comment Indexing");
+        if (await pollResult((res as any)?.hash, sessionClient)) {
+          setSuccess(true);
+          setPost("");
+          if (commentQuote?.post) {
+            setCommentQuote({
+              type: "Comment",
+              id: postId!,
+              post: postId,
+            });
+          } else {
+            setCommentQuote(undefined);
+          }
+
+          setIndexer?.("Comment Indexing");
+          await handlePosts(true);
+        } else {
+          setNotification?.("Something went wrong :( Try again?");
+        }
       } else {
         setNotification?.("Something went wrong :( Try again?");
       }
@@ -129,15 +172,26 @@ const useInteractions = (
     setPostLoading(false);
   };
 
-  const handleLike = async (id: string, reaction: string) => {
-    setInteractionsLoading((prev) => {
-      let interactions = [...prev];
+  const handleLike = async (id: string, reaction: string, post: boolean) => {
+    if (post) {
+      setInteractionsLoadingPost((prev) => {
+        let interactions = [...prev];
 
-      let index = interactions?.findIndex((int) => int.id == id);
-      interactions[index].like = true;
+        interactions[0].like = true;
 
-      return interactions;
-    });
+        return interactions;
+      });
+    } else {
+      setInteractionsLoading((prev) => {
+        let interactions = [...prev];
+
+        let index = interactions?.findIndex((int) => int.id == id);
+        interactions[index].like = true;
+
+        return interactions;
+      });
+    }
+
     try {
       const res = await addReaction(
         {
@@ -155,31 +209,119 @@ const useInteractions = (
         setSignless?.(true);
       } else if ((res as any)?.success) {
         setIndexer?.("Reaction Success");
+        if (post) {
+          setPostData?.((prev) => {
+            const da = [...prev];
+
+            da[0] = {
+              ...da[0],
+              operations: {
+                ...da[0]?.operations!,
+                hasUpvoted: true,
+              },
+            };
+            return da;
+          });
+        } else {
+          setData((prev: any) => {
+            if (!prev) return;
+
+            if (
+              (prev as Agent)?.wallet ||
+              (prev as NFTData)?.prices?.length > 0
+            ) {
+              const da = { ...(prev || {}) };
+
+              if ((da as Agent)?.wallet) {
+                let activity = (da as Agent).activity || [];
+                let index = activity?.findIndex((ac) => ac?.id == id);
+
+                activity[index] = {
+                  ...activity[index],
+                  operations: {
+                    ...activity[index].operations!,
+                    hasUpvoted: true,
+                  },
+                };
+
+                (da as Agent).activity = activity;
+              } else if ((da as NFTData)?.prices?.length > 0) {
+                let activity = (da as NFTData).agentActivity || [];
+                let index = activity?.findIndex((ac) => ac?.id == id);
+
+                activity[index] = {
+                  ...activity[index],
+                  operations: {
+                    ...activity[index].operations!,
+
+                    hasUpvoted: true,
+                  },
+                };
+
+                (da as NFTData).agentActivity = activity;
+              }
+              return da;
+            } else {
+              let activity = [...((prev as Post[]) || [])];
+              let index = activity?.findIndex((ac) => ac?.id == id);
+
+              activity[index] = {
+                ...activity[index],
+                operations: {
+                  ...activity[index].operations!,
+                  hasUpvoted: true,
+                },
+              };
+
+              return activity;
+            }
+          });
+        }
       } else {
         setNotification?.("Something went wrong :( Try again?");
       }
     } catch (err: any) {
       console.error(err.message);
     }
-    setInteractionsLoading((prev) => {
-      let interactions = [...prev];
+    if (post) {
+      setInteractionsLoadingPost((prev) => {
+        let interactions = [...prev];
 
-      let index = interactions?.findIndex((int) => int.id == id);
-      interactions[index].like = false;
+        interactions[0].like = false;
 
-      return interactions;
-    });
+        return interactions;
+      });
+    } else {
+      setInteractionsLoading((prev) => {
+        let interactions = [...prev];
+
+        let index = interactions?.findIndex((int) => int.id == id);
+        interactions[index].like = false;
+
+        return interactions;
+      });
+    }
   };
 
-  const handleMirror = async (id: string) => {
-    setInteractionsLoading((prev) => {
-      let interactions = [...prev];
+  const handleMirror = async (id: string, post: boolean) => {
+    if (post) {
+      setInteractionsLoadingPost((prev) => {
+        let interactions = [...prev];
 
-      let index = interactions?.findIndex((int) => int.id == id);
-      interactions[index].mirror = true;
+        interactions[0].mirror = true;
 
-      return interactions;
-    });
+        return interactions;
+      });
+    } else {
+      setInteractionsLoading((prev) => {
+        let interactions = [...prev];
+
+        let index = interactions?.findIndex((int) => int.id == id);
+        interactions[index].mirror = true;
+
+        return interactions;
+      });
+    }
     try {
       const res = await createRepost(
         {
@@ -195,20 +337,111 @@ const useInteractions = (
         setSignless?.(true);
       } else if ((res as any)?.hash) {
         setIndexer?.("Mirror Indexing");
+
+        if (post) {
+          setPostData?.((prev) => {
+            const da = [...prev];
+
+            da[0] = {
+              ...da[0],
+              operations: {
+                ...da[0]?.operations!,
+                hasUpvoted: true,
+              },
+            };
+            return da;
+          });
+        } else {
+          setData((prev: any) => {
+            if (!prev) return;
+
+            if (
+              (prev as Agent)?.wallet ||
+              (prev as NFTData)?.prices?.length > 0
+            ) {
+              const da = { ...(prev || {}) };
+
+              if ((da as Agent)?.wallet) {
+                let activity = (da as Agent).activity || [];
+                let index = activity?.findIndex((ac) => ac?.id == id);
+
+                activity[index] = {
+                  ...activity[index],
+                  operations: {
+                    ...activity[index].operations!,
+                    hasReposted: {
+                      __typename: "BooleanValue",
+                      optimistic: true,
+                      onChain: true,
+                    },
+                  },
+                };
+
+                (da as Agent).activity = activity;
+              } else if ((da as NFTData)?.prices?.length > 0) {
+                let activity = (da as NFTData).agentActivity || [];
+                let index = activity?.findIndex((ac) => ac?.id == id);
+
+                activity[index] = {
+                  ...activity[index],
+                  operations: {
+                    ...activity[index].operations!,
+
+                    hasReposted: {
+                      __typename: "BooleanValue",
+                      optimistic: true,
+                      onChain: true,
+                    },
+                  },
+                };
+
+                (da as NFTData).agentActivity = activity;
+              }
+              return da;
+            } else {
+              let activity = [...((prev as Post[]) || [])];
+              let index = activity?.findIndex((ac) => ac?.id == id);
+
+              activity[index] = {
+                ...activity[index],
+                operations: {
+                  ...activity[index].operations!,
+                  hasReposted: {
+                    __typename: "BooleanValue",
+                    optimistic: true,
+                    onChain: true,
+                  },
+                },
+              };
+
+              return activity;
+            }
+          });
+        }
       } else {
         setNotification?.("Something went wrong :( Try again?");
       }
     } catch (err: any) {
       console.error(err.message);
     }
-    setInteractionsLoading((prev) => {
-      let interactions = [...prev];
+    if (post) {
+      setInteractionsLoadingPost((prev) => {
+        let interactions = [...prev];
 
-      let index = interactions?.findIndex((int) => int.id == id);
-      interactions[index].mirror = false;
+        interactions[0].mirror = false;
 
-      return interactions;
-    });
+        return interactions;
+      });
+    } else {
+      setInteractionsLoading((prev) => {
+        let interactions = [...prev];
+
+        let index = interactions?.findIndex((int) => int.id == id);
+        interactions[index].mirror = false;
+
+        return interactions;
+      });
+    }
   };
 
   const handleQuote = async () => {
@@ -216,16 +449,18 @@ const useInteractions = (
     setPostLoading(true);
     try {
       const { uri } = await storageClient.uploadAsJson({
-        $schema: "https://json-schemas.lens.dev/posts/text/3.0.0.json",
+        $schema: "https://json-schemas.lens.dev/posts/text-only/3.0.0.json",
         lens: {
-          mainContentFocus:  MainContentFocus.TextOnly,
-          title: post?.slice(0, 10),
+          mainContentFocus: MainContentFocus.TextOnly,
           content: post,
           id: uuidv4(),
           locale: "en",
-          tags: (data as Agent)?.wallet
-            ? ["tripleA", (data as Agent)?.id]
-            : ["tripleA", commentQuote?.id],
+          tags: [
+            "tripleA",
+            (data as any)?.title
+              ? (data as any)?.title?.replaceAll(" ", "")?.toLowerCase()
+              : undefined,
+          ]?.filter(Boolean),
         },
       });
 
@@ -246,10 +481,23 @@ const useInteractions = (
       ) {
         setSignless?.(true);
       } else if ((res as any)?.hash) {
-        setSuccess(true);
-        setPost("");
-        setCommentQuote(undefined);
-        setIndexer?.("Quote Indexing");
+        if (await pollResult((res as any)?.hash, sessionClient)) {
+          setSuccess(true);
+          setPost("");
+          if (commentQuote?.post) {
+            setCommentQuote({
+              type: "Quote",
+              id: postId!,
+              post: postId,
+            });
+          } else {
+            setCommentQuote(undefined);
+          }
+          setIndexer?.("Quote Indexing");
+          await handlePosts(true);
+        } else {
+          setNotification?.("Something went wrong :( Try again?");
+        }
       } else {
         setNotification?.("Something went wrong :( Try again?");
       }
@@ -260,16 +508,39 @@ const useInteractions = (
   };
 
   useEffect(() => {
-    if (agentActivity && agentActivity?.length > 0) {
+    if (data) {
       setInteractionsLoading(
-        Array.from({ length: agentActivity?.length }, (_, i) => ({
-          mirror: false,
-          like: false,
-          id: agentActivity[i]?.id,
-        }))
+        Array.from(
+          {
+            length: ((data as Agent)?.wallet
+              ? (data as Agent)?.activity
+              : (data as NFTData)?.prices?.length > 0
+              ? (data as NFTData)?.agentActivity
+              : (data as Post[]))!.length,
+          },
+          (_, i) => ({
+            mirror: false,
+            like: false,
+            id: ((data as Agent)?.wallet
+              ? (data as Agent)?.activity
+              : (data as NFTData)?.prices?.length > 0
+              ? (data as NFTData)?.agentActivity
+              : (data as Post[]))?.[i]?.id,
+          })
+        )
       );
     }
-  }, [agentActivity]);
+
+    if (postId) {
+      setInteractionsLoadingPost([
+        {
+          like: false,
+          mirror: false,
+          id: postId,
+        },
+      ]);
+    }
+  }, [data, postId]);
 
   useEffect(() => {
     if (success) {
@@ -292,6 +563,7 @@ const useInteractions = (
     commentQuote,
     setCommentQuote,
     success,
+    interactionsLoadingPost,
   };
 };
 

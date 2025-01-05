@@ -62,6 +62,8 @@ const usePurchase = (
         BigInt(Number(Number(nft?.prices[0]) * collectData?.amount).toFixed(0))
       ) {
         setApproved(true);
+      } else {
+        setApproved(false)
       }
     } catch (err: any) {
       console.error(err.message);
@@ -191,7 +193,12 @@ const usePurchase = (
       });
       checkAllowance();
     } catch (err: any) {
-      console.error(err);
+      if (err?.message?.includes("NotAvailable")) {
+        setNotification?.(
+          "We know you're eager, but you've reached this creations' collect limit!"
+        );
+      }
+      console.error(err?.message);
     }
     setPurchaseLoading(false);
   };
@@ -200,7 +207,7 @@ const usePurchase = (
     if (nft && address) {
       checkAllowance();
     }
-  }, [address, nft]);
+  }, [address, nft, collectData?.amount]);
 
   return {
     purchaseLoading,

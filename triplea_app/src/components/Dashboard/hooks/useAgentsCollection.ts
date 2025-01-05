@@ -134,24 +134,31 @@ const useAgentsCollection = (
           collection?.agents?.includes(ag?.id)
         );
         if (nftAgents) {
+        
           setDailyFrequency(
             nftAgents?.map(
               (ag) =>
-                ag?.balance?.find((col) => col?.collectionId == collection?.id)
-                  ?.dailyFrequency || 0
+                Number(
+                  ag?.details?.find(
+                    (col) => Number(col?.collectionId) == Number(collection?.id)
+                  )?.dailyFrequency
+                ) || 0
             )
           );
           setCustomInstructions(
             nftAgents?.map(
               (ag) =>
-                ag?.balance?.find((col) => col?.collectionId == collection?.id)
-                  ?.instructions || ""
+                ag?.details?.find(
+                  (col) => Number(col?.collectionId) == Number(collection?.id)
+                )?.instructions || ""
             )
           );
         }
       }
     }
-  }, [collection]);
+  }, [collection, agents]);
+
+
 
   return {
     handlePriceAdjust,

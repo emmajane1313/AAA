@@ -160,7 +160,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 disabled={mintLoading}
               />
               <div className="relative text-xs w-fit h-fit flex">
-                {"( Min. of 2 Editions to Activate Agents. )"}
+                {"( Min. of 3 Editions to Activate Agents. )"}
               </div>
               <input
                 disabled={mintLoading}
@@ -172,7 +172,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                 className={`relative flex w-14 px-1 h-12 pixel-border-2 focus:outline-none text-xl text-left 
                   
                   ${
-                    Number(mintData?.amount) >= 2
+                    Number(mintData?.amount) > 2
                       ? "text-[#00cc00]"
                       : "text-black"
                   }`}
@@ -306,11 +306,14 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                             Token Daily Rent
                           </div>
                           <div className="relative flex w-fit h-fit">
-                            {tokenThresholds?.find(
-                              (t) =>
-                                t.token?.toLowerCase() ==
-                                token.contract?.toLowerCase()
-                            )?.dailyRent || 0}
+                            {Number(
+                              tokenThresholds?.find(
+                                (t) =>
+                                  t.token?.toLowerCase() ==
+                                  token.contract?.toLowerCase()
+                              )?.rent || 0
+                            ) /
+                              10 ** 18}
                             {" " + token.symbol}
                           </div>
                         </div>
@@ -338,7 +341,8 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                                   t.token?.toLowerCase() ==
                                   token.contract?.toLowerCase()
                               )?.threshold || 0
-                            )}
+                            ) /
+                              10 ** 18}
                             {" " + token.symbol}
                           </div>
                         </div>

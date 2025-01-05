@@ -10,6 +10,7 @@ export const WGRASS_CONTRACT: `0x${string}` =
   "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 export const COLLECTION_MANAGER_CONTRACT: `0x${string}` =
   "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
+  export const ACCESS_CONTROLS_CONTRACT: `0x${string}` = "0x3ee3A2bAF1620a59fEC0FB2E6E248CcBF0CE55d7"
 
 export const TOKENS: { symbol: string; contract: string; image: string }[] = [
   {

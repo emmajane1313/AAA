@@ -37,5 +37,5 @@ export interface Collector {
 export interface TokenThreshold {
   token: string;
   threshold: string;
-  dailyRent: string;
+  rent: string;
 }

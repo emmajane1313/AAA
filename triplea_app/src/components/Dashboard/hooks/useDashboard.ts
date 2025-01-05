@@ -50,9 +50,7 @@ const useDashboard = (
   };
 
   useEffect(() => {
-    if (allDrops?.length < 1) {
-      handleAllDrops();
-    }
+    handleAllDrops();
   }, [address, lensConnected?.profile]);
 
   return {

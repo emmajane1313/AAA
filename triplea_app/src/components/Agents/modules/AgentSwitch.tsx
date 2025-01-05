@@ -11,7 +11,8 @@ import { ModalContext } from "@/app/providers";
 const AgentSwitch: FunctionComponent<AgentSwitchProps> = ({
   agentSwitcher,
   setAgentSwitcher,
-  createSwitcher, setCreateSwitcher
+  createSwitcher,
+  setCreateSwitcher,
 }): JSX.Element => {
   const context = useContext(ModalContext);
   switch (agentSwitcher) {
@@ -45,6 +46,7 @@ const AgentSwitch: FunctionComponent<AgentSwitchProps> = ({
               storageClient={context?.storageClient!}
               lensConnected={context?.lensConnected}
               setNotifcation={context?.setNotification!}
+              lensClient={context?.lensClient!}
             />
             <div className="relative w-full h-fit flex items-end justify-between flex-row gap-4">
               <div

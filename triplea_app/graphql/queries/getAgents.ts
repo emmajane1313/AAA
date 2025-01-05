@@ -8,6 +8,7 @@ const AGENTS = gql`
         title
         description
         cover
+        customInstructions
       }
       creator
       blockTimestamp
@@ -22,6 +23,11 @@ const AGENTS = gql`
       rentPaid {
         transactionHash
         blockTimestamp
+      }
+      details {
+        collectionId
+        dailyFrequency
+        instructions
       }
       blockNumber
       AAAAgents_id

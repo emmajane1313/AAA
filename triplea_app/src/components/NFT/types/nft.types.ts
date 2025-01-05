@@ -16,6 +16,7 @@ export type DataProps = {
 
 export type PurchaseProps = {
   nft: NFTData;
+  handlePosts: (bool: true) => Promise<Post[] | void>;
   nftLoading: boolean;
   tokenThresholds: TokenThreshold[];
   setNotification: (e: SetStateAction<string | undefined>) => void;
@@ -45,13 +46,14 @@ export type CommentsProps = {
     like: boolean;
     id: string;
   }[];
-  handleLike: (id: string, reaction: string) => Promise<void>;
-  handleMirror: (id: string) => Promise<void>;
+  handleLike: (id: string, reaction: string, post: boolean) => Promise<void>;
+  handleMirror: (id: string, post: boolean) => Promise<void>;
   setCommentQuote: (
     e: SetStateAction<
       | {
           type: "Comment" | "Quote";
           id: string;
+          post?: string;
         }
       | undefined
     >
@@ -60,8 +62,11 @@ export type CommentsProps = {
     | {
         type: "Comment" | "Quote";
         id: string;
+        post?: string;
       }
     | undefined;
+  agents: Agent[];
+  post?: boolean;
 };
 
 export type PostProps = {
@@ -70,12 +75,14 @@ export type PostProps = {
   handleQuote: () => Promise<void>;
   postLoading: boolean;
   success: boolean;
+  postPage?: boolean;
   setPost: (e: SetStateAction<string>) => void;
   post: string;
   commentQuote:
     | {
         type: "Comment" | "Quote";
         id: string;
+        post?: string;
       }
     | undefined;
   setCommentQuote: (
@@ -83,6 +90,7 @@ export type PostProps = {
       | {
           type: "Comment" | "Quote";
           id: string;
+          post?: string;
         }
       | undefined
     >
@@ -93,4 +101,5 @@ export type MetadataProps = {
   metadata: string;
   data: TextOnlyMetadata | ImageMetadata;
   setImageView: (e: SetStateAction<string | undefined>) => void;
+  post?: boolean;
 };

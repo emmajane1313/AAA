@@ -29,6 +29,11 @@ const USER_AGENTS = gql`
           title
         }
       }
+      details {
+        collectionId
+        dailyFrequency
+        instructions
+      }
       collectionIdsHistory {
         collectionId
         artist

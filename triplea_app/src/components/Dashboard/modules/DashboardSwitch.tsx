@@ -68,7 +68,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
 
     case Switcher.Mint:
       return (
-        <div className="relative w-full h-full flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
+        <div className="relative w-full h-full  flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
           <div className="relative w-full h-full p-3 pixel-border-2 flex flex-col items-center justify-between gap-6">
             <div className="relative w-full h-fit flex items-start justify-start">
               <div
@@ -166,7 +166,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
 
     default:
       return (
-        <div className="relative w-full h-full flex items-center justify-center">
+        <div className="relative w-full  h-full flex items-center justify-center">
           <div className="relative w-full h-fit flex flex-wrap gap-10 items-center justify-center">
             {[
               {

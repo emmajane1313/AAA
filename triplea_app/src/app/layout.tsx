@@ -44,7 +44,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <Animation>
-            <div className="relative w-full h-screen flex flex-col items-start justify-start gap-3 px-2">
+            <div className="relative w-full h-fit min-h-screen md:h-screen flex flex-col items-start justify-start gap-3 px-2">
               <Header />
               {children}
             </div>

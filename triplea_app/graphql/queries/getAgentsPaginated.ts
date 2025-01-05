@@ -8,6 +8,7 @@ const AGENTS_PAGINATED = gql`
         title
         description
         cover
+        customInstructions
       }
       creator
       blockTimestamp
@@ -23,6 +24,11 @@ const AGENTS_PAGINATED = gql`
       AAAAgents_id
       transactionHash
       uri
+      details {
+        collectionId
+        dailyFrequency
+        instructions
+      }
       wallets
     }
   }

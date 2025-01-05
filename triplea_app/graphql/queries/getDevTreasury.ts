@@ -3,7 +3,7 @@ import { FetchResult, gql } from "@apollo/client";
 
 const DEV_TREASURY = gql`
   query {
-    devTreasuries {
+    devTreasuryAddeds(first: 1) {
       amount
       token
     }

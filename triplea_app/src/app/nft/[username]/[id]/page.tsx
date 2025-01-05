@@ -10,7 +10,7 @@ import { useContext } from "react";
 export default function NFT() {
   const id = useParams();
   const context = useContext(ModalContext);
-  const { nft, nftLoading, setNft, hasMore, handleMoreActivity, agentLoading } =
+  const { nft, nftLoading, setNft, hasMore, handleMoreActivity, agentLoading, handlePosts } =
     useNFT(
       id?.id as string,
       context?.lensClient!,
@@ -19,7 +19,7 @@ export default function NFT() {
     );
 
   return (
-    <div className="relative w-full h-full flex flex-row items-start justify-between gap-4 pb-10">
+    <div className="relative w-full h-full flex flex-col md:flex-row items-center justify-between gap-4 pb-10">
       <Data
         id={nft?.id!}
         url={nft?.image!}
@@ -27,6 +27,7 @@ export default function NFT() {
       />
       <Purchase
         nft={nft!}
+        handlePosts={handlePosts}
         tokenThresholds={context?.tokenThresholds!}
         setIndexer={context?.setIndexer!}
         nftLoading={nftLoading}

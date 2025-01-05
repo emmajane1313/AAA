@@ -13,7 +13,7 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
   return (
     <div
       className={`flex relative w-full h-full items-center justify-start ${
-        Number(mintData?.amount || 0) < 2 ||
+        Number(mintData?.amount || 0) <= 2 ||
         Number(mintData?.prices?.[0]) * 10 ** 18 <
           Number(
             tokenThresholds?.find(
@@ -52,6 +52,8 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                         ...prev,
                       };
 
+                
+
                       if (
                         newMintData.agents
                           ?.map((ag) => ag?.agent?.id)
@@ -60,7 +62,7 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                         newMintData.agents = newMintData.agents?.filter(
                           (ag) => ag?.agent?.id !== agent.id
                         );
-                      } else {
+                      } else if (newMintData.agents?.length < 3) {
                         newMintData.agents = [
                           ...newMintData.agents,
                           {
@@ -123,7 +125,11 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                         min={1}
                         max={3}
                         step={1}
-                        value={mintData?.agents?.find((ag) => ag?.agent?.id == agent?.id)?.dailyFrequency}
+                        value={
+                          mintData?.agents?.find(
+                            (ag) => ag?.agent?.id == agent?.id
+                          )?.dailyFrequency
+                        }
                         onChange={(e) => {
                           let value = Number(e.target.value);
                           if (value > 3) {
@@ -156,7 +162,11 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
                         style={{
                           resize: "none",
                         }}
-                        value={mintData?.agents?.find((ag) => ag?.agent?.id == agent?.id)?.customInstructions}
+                        value={
+                          mintData?.agents?.find(
+                            (ag) => ag?.agent?.id == agent?.id
+                          )?.customInstructions
+                        }
                         onChange={(e) => {
                           e.preventDefault();
                           e.stopPropagation();

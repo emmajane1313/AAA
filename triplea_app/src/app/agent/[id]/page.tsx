@@ -25,6 +25,7 @@ export default function Agent() {
     screen,
     setScreen,
     setAgent,
+    handleActivity,
   } = useAgent(id?.id as string, context?.lensClient!, context?.lensConnected);
 
   const {
@@ -41,20 +42,19 @@ export default function Agent() {
     setCommentQuote,
     success,
   } = useInteractions(
-    agent?.activity,
     context?.lensConnected?.sessionClient!,
     context?.setSignless!,
     context?.storageClient!,
-    String(agent?.id),
     context?.setIndexer!,
     context?.setNotification!,
     setAgent,
-    agent
+    agent,
+    handleActivity
   );
 
   return (
-    <div className="relative w-full h-full flex flex-row items-start justify-between gap-4 pb-10">
-      <div className="relative w-full h-full flex px-6 py-2">
+    <div className="relative w-full h-full flex flex-col md:flex-row items-center justify-between gap-4 pb-10 overflow-auto ">
+      <div className="relative w-full h-[30rem] md:h-full flex px-6 py-2">
         {agent?.cover && (
           <Image
             alt={id?.toString() || ""}
@@ -76,7 +76,7 @@ export default function Agent() {
         )}
       </div>
       <div
-        className={`relative w-[38rem] h-[40rem] flex flex-col gap-4 items-start justify-start text-left p-3 pixel-border-2 bg-white ${
+        className={`relative w-full md:w-[38rem] h-[60rem] md:h-[40rem] flex flex-col gap-4 items-start justify-start text-left p-3 pixel-border-2 bg-white ${
           (agentLoading || !agent) && "animate-pulse"
         }`}
       >
@@ -116,7 +116,7 @@ export default function Agent() {
                     ? "Collection History"
                     : screen == 4
                     ? "Rent History"
-                    : "Active Balances"}
+                    : "Active Coll. Balances"}
                 </div>
                 <div
                   className="relative w-fit h-fit flex items-center justiy-center cursor-pixel"
@@ -142,7 +142,7 @@ export default function Agent() {
                 <div className="relative text-xl break-all text-black flex font-start">
                   {agent?.title}
                 </div>
-                <div className="relative w-full h-fit flex items-center justify-between gap-2">
+                <div className="relative w-full h-fit flex items-center justify-between gap-2 sm:flex-nowrap flex-wrap">
                   <div className="relative w-fit h-fit flex text-black text-xs text-black font-jackey2">
                     Agent Owner
                   </div>
@@ -170,7 +170,7 @@ export default function Agent() {
                     </div>
                   </div>
                 </div>
-                <div className="relative w-full h-fit flex items-center justify-between gap-2">
+                <div className="relative w-full h-fit flex items-center justify-between gap-2 sm:flex-nowrap flex-wrap">
                   <div className="relative w-fit h-fit flex text-black text-xs text-black font-jackey2">
                     Agent
                   </div>
@@ -228,6 +228,7 @@ export default function Agent() {
                       setCommentQuote={setCommentQuote}
                       postLoading={postLoading}
                       commentQuote={commentQuote}
+                      agents={context?.agents!}
                     />
                   </InfiniteScroll>
                 </div>
@@ -333,8 +334,8 @@ export default function Agent() {
                               />
                             </div>
                           </div>
-                          <div className="relative w-fit h-fit flex text-left">
-                            {balance.activeBalance}{" "}
+                          <div className="relative w-fit h-fit flex text-left font-jackey2">
+                            {Number(balance.activeBalance ) / 10**18}{" "}
                             {
                               TOKENS.find(
                                 (tok) =>

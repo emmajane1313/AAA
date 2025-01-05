@@ -72,7 +72,7 @@ const useAgentRecharge = (
         ],
         functionName: "approve",
         chain: chains.testnet,
-        args: [AGENTS_CONTRACT, BigInt(amount)],
+        args: [AGENTS_CONTRACT, BigInt(amount * 10 ** 18)],
         account: address,
       });
       const res = await clientWallet.writeContract(request);
@@ -192,6 +192,17 @@ const useAgentRecharge = (
       });
 
       setNotification?.("Success! You recharged the agent!");
+      setApprovedRecharge((prev) => {
+        let ref = [...prev];
+
+        let index = nftAgents?.findIndex(
+          (ag) => Number(ag) == Number(agent.id)
+        );
+
+        ref[index] = false;
+
+        return ref;
+      });
     } catch (err: any) {
       console.error(err.message);
     }

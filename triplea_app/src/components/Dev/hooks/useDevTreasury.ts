@@ -17,7 +17,7 @@ const useDevTreasury = () => {
     try {
       const dev = await getDevTreasury();
 
-      setTreasury(dev?.data?.devTreasuries?.[0]);
+      setTreasury(dev?.data?.devTreasuryAddeds?.[0]);
     } catch (err: any) {
       console.error(err.message);
     }

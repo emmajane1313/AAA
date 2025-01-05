@@ -18,7 +18,7 @@ const Collects: FunctionComponent<CollectsProps> = ({
     const animationContext = useContext(AnimationContext);
   const router = useRouter();
   return (
-    <div className="relative w-full h-full flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
+    <div className="relative w-full h-full  flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
       <div className="relative w-full h-full pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
         <div className="relative w-full h-fit flex items-start justify-start">
           <div
@@ -66,7 +66,7 @@ const Collects: FunctionComponent<CollectsProps> = ({
                     className={`relative w-60 h-full bg-morado rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2`}
                   >
                     <div
-                      className="relative w-full h-full rounded-2xl flex cursor-pixel pixel-border-2"
+                      className="relative w-full h-80 md:h-full rounded-2xl flex cursor-pixel pixel-border-2"
                       onClick={() => {
                         animationContext?.setPageChange?.(true);
                         router.push(

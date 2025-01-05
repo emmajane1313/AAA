@@ -7,7 +7,12 @@
         "type": "address",
         "internalType": "address payable"
       },
-      { "name": "_devTreasury", "type": "address", "internalType": "address" }
+      { "name": "_devTreasury", "type": "address", "internalType": "address" },
+      {
+        "name": "_collectionManager",
+        "type": "address",
+        "internalType": "address"
+      }
     ],
     "stateMutability": "payable"
   },
@@ -36,6 +41,19 @@
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "collectionManager",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract AAACollectionManager"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -82,6 +100,17 @@
   },
   {
     "type": "function",
+    "name": "excessAgent",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "getAgentActiveBalance",
     "inputs": [
       { "name": "token", "type": "address", "internalType": "address" },
@@ -100,6 +129,17 @@
     "outputs": [
       { "name": "", "type": "uint256[]", "internalType": "uint256[]" }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAgentBonusBalance",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
@@ -177,8 +217,19 @@
         "type": "uint256[]",
         "internalType": "uint256[]"
       },
-      { "name": "amounts", "type": "uint256[]", "internalType": "uint256[]" },
       { "name": "agentId", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "rechargeAgentActiveBalance",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
+      { "name": "agentId", "type": "uint256", "internalType": "uint256" },
+      { "name": "collectionId", "type": "uint256", "internalType": "uint256" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -191,6 +242,19 @@
         "name": "_accessControls",
         "type": "address",
         "internalType": "address payable"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setCollectionManager",
+    "inputs": [
+      {
+        "name": "_collectionManager",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "outputs": [],
@@ -267,6 +331,43 @@
   },
   {
     "type": "event",
+    "name": "AgentRecharged",
+    "inputs": [
+      {
+        "name": "recharger",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "agentId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "BalanceAdded",
     "inputs": [
       {
@@ -327,10 +428,47 @@
     ],
     "anonymous": false
   },
+  {
+    "type": "event",
+    "name": "ExcessAgent",
+    "inputs": [
+      {
+        "name": "token",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "agentId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "collectionId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
   { "type": "error", "name": "AgentStillActive", "inputs": [] },
+  { "type": "error", "name": "BadUserInput", "inputs": [] },
+  { "type": "error", "name": "CollectionNotActive", "inputs": [] },
+  { "type": "error", "name": "CollectionSoldOut", "inputs": [] },
   { "type": "error", "name": "InsufficientBalance", "inputs": [] },
+  { "type": "error", "name": "NoActiveAgents", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
   { "type": "error", "name": "NotAgent", "inputs": [] },
   { "type": "error", "name": "NotAgentOwner", "inputs": [] },
-  { "type": "error", "name": "OnlyMarketContract", "inputs": [] }
+  { "type": "error", "name": "OnlyMarketContract", "inputs": [] },
+  { "type": "error", "name": "PaymentFailed", "inputs": [] },
+  { "type": "error", "name": "TokenNotAccepted", "inputs": [] }
 ]

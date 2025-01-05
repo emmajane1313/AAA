@@ -59,8 +59,10 @@ const useAgents = (
             cover: agent?.metadata?.cover,
             title: agent?.metadata?.title,
             description: agent?.metadata?.description,
+            customInstructions: agent?.metadata?.customInstructions,
             wallet: agent?.wallets?.[0],
             balance: agent?.balances,
+            details: agent?.details,
             profile: {
               ...(result as any)?.[0]?.account,
               metadata: {
@@ -82,7 +84,7 @@ const useAgents = (
     try {
       const data = await getTokenThresholds();
 
-      setTokenThresholds?.(data?.data?.setTokenThresholdAndRents);
+      setTokenThresholds?.(data?.data?.tokenThresholdSets);
     } catch(err:any){
       console.error(err.message)
     }

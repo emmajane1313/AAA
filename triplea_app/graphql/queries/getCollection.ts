@@ -22,6 +22,7 @@ const COLLECTION = gql`
       amount
       agents
       tokenIds
+      active
       tokens
       transactionHash
       uri
