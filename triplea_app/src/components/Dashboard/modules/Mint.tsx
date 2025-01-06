@@ -44,7 +44,7 @@ const Mint: FunctionComponent<MintProps> = ({
               }
             </div>
           </div>
-          <div className="relative flex w-fit h-fit max-h-60 overflow-y-scroll text-left text-black text-base font-jack">
+          <div className="relative flex w-full sm:w-fit max-w-96 h-fit max-h-60 overflow-y-scroll text-left text-black text-base font-jack">
             {mintData.description}
           </div>
           {mintData?.agents?.length > 0 && (
