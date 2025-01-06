@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { getOwnersPaid } from "../../../../graphql/queries/getOwnersPaid";
 import { getCollectorsPaid } from "../../../../graphql/queries/getCollectorsPaid";
+import { Account, evmAddress, PublicClient } from "@lens-protocol/client";
+import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
+import { STORAGE_NODE } from "@/lib/constants";
 
-const useAgentPayouts = () => {
+const useAgentPayouts = (lensClient: PublicClient) => {
   const [screen, setScreen] = useState<number>(0);
   const [ordersLoading, setOrdersLoading] = useState<boolean>(false);
   const [ownersPaid, setOwnersPaid] = useState<
@@ -12,6 +15,7 @@ const useAgentPayouts = () => {
       owner: string;
       token: string;
       transactionHash: string;
+      profile?: Account;
     }[]
   >([]);
   const [collectorsPaid, setCollectorsPaid] = useState<
@@ -21,6 +25,7 @@ const useAgentPayouts = () => {
       recipient: string;
       token: string;
       transactionHash: string;
+      profile?: Account;
     }[]
   >([]);
 
@@ -61,8 +66,90 @@ const useAgentPayouts = () => {
             : paginated?.owners,
       });
 
-      setOwnersPaid(owners?.data?.agentOwnerPaids);
-      setCollectorsPaid(collectors?.data?.orderPayments);
+      let collectors_info = await Promise.all(
+        collectors?.data?.orderPayments?.map(async (coll: any) => {
+          const result = await fetchAccountsAvailable(
+            {
+              managedBy: evmAddress(coll?.recipient),
+            },
+            lensClient
+          );
+          let picture = "";
+          let profile: any;
+
+          if (result) {
+            const cadena = await fetch(
+              `${STORAGE_NODE}/${
+                (result as any)?.[0]?.account?.metadata?.picture?.split(
+                  "lens://"
+                )?.[1]
+              }`
+            );
+
+            if (cadena) {
+              const json = await cadena.json();
+              picture = json.item;
+            }
+
+            profile = {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            };
+          }
+
+          return {
+            ...coll,
+            profile,
+          };
+        })
+      );
+
+      let owners_info = await Promise.all(
+        owners?.data?.agentOwnerPaids?.map(async (coll: any) => {
+          const result = await fetchAccountsAvailable(
+            {
+              managedBy: evmAddress(coll?.owner),
+            },
+            lensClient
+          );
+          let picture = "";
+          let profile: any;
+
+          if (result) {
+            const cadena = await fetch(
+              `${STORAGE_NODE}/${
+                (result as any)?.[0]?.account?.metadata?.picture?.split(
+                  "lens://"
+                )?.[1]
+              }`
+            );
+
+            if (cadena) {
+              const json = await cadena.json();
+              picture = json.item;
+            }
+
+            profile = {
+              ...(result as any)?.[0]?.account,
+              metadata: {
+                ...(result as any)?.[0]?.account?.metadata,
+                picture,
+              },
+            };
+          }
+
+          return {
+            ...coll,
+            profile,
+          };
+        })
+      );
+
+      setOwnersPaid(owners_info);
+      setCollectorsPaid(collectors_info);
     } catch (err: any) {
       console.error(err.message);
     }
@@ -77,10 +164,49 @@ const useAgentPayouts = () => {
         paginatedCollector: number = 0;
       if (hasMore.collectors) {
         const collectors = await getCollectorsPaid(0);
-        setCollectorsPaid([
-          ...collectorsPaid,
-          ...(collectors?.data?.orderPayments || []),
-        ] as any);
+
+        let collectors_info = await Promise.all(
+          collectors?.data?.orderPayments?.map(async (coll: any) => {
+            const result = await fetchAccountsAvailable(
+              {
+                managedBy: evmAddress(coll?.recipient),
+              },
+              lensClient
+            );
+            let picture = "";
+            let profile: any;
+
+            if (result) {
+              const cadena = await fetch(
+                `${STORAGE_NODE}/${
+                  (result as any)?.[0]?.account?.metadata?.picture?.split(
+                    "lens://"
+                  )?.[1]
+                }`
+              );
+
+              if (cadena) {
+                const json = await cadena.json();
+                picture = json.item;
+              }
+
+              profile = {
+                ...(result as any)?.[0]?.account,
+                metadata: {
+                  ...(result as any)?.[0]?.account?.metadata,
+                  picture,
+                },
+              };
+            }
+
+            return {
+              ...coll,
+              profile,
+            };
+          })
+        );
+
+        setCollectorsPaid([...collectorsPaid, ...collectors_info] as any);
 
         if (collectors?.data?.orderPayments?.length == 20) {
           hasMoreCollector = true;
@@ -90,10 +216,49 @@ const useAgentPayouts = () => {
 
       if (hasMore.owners) {
         const owners = await getOwnersPaid(paginated.owners);
-        setOwnersPaid([
-          ...ownersPaid,
-          ...(owners?.data?.agentOwnerPaids || []),
-        ] as any);
+
+        let owners_info = await Promise.all(
+          owners?.data?.agentOwnerPaids?.map(async (coll: any) => {
+            const result = await fetchAccountsAvailable(
+              {
+                managedBy: evmAddress(coll?.owner),
+              },
+              lensClient
+            );
+            let picture = "";
+            let profile: any;
+
+            if (result) {
+              const cadena = await fetch(
+                `${STORAGE_NODE}/${
+                  (result as any)?.[0]?.account?.metadata?.picture?.split(
+                    "lens://"
+                  )?.[1]
+                }`
+              );
+
+              if (cadena) {
+                const json = await cadena.json();
+                picture = json.item;
+              }
+
+              profile = {
+                ...(result as any)?.[0]?.account,
+                metadata: {
+                  ...(result as any)?.[0]?.account?.metadata,
+                  picture,
+                },
+              };
+            }
+
+            return {
+              ...coll,
+              profile,
+            };
+          })
+        );
+
+        setOwnersPaid([...ownersPaid, ...owners_info] as any);
 
         if (owners?.data?.agentOwnerPaids?.length == 20) {
           hasMoreOwner = true;
@@ -116,10 +281,10 @@ const useAgentPayouts = () => {
   };
 
   useEffect(() => {
-    if (ownersPaid?.length < 1 && collectorsPaid?.length < 1) {
+    if (ownersPaid?.length < 1 && collectorsPaid?.length < 1 && lensClient) {
       handleOrderPayments();
     }
-  }, []);
+  }, [lensClient]);
 
   return {
     screen,

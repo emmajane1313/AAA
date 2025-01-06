@@ -46,6 +46,7 @@ contract AAADevTreasury {
     event FundsWithdrawnWithoutReceive(address indexed token, uint256 amount);
     event AgentPaidRent(
         address[] tokens,
+        uint256[] collectionIds,
         uint256[] amounts,
         uint256[] bonuses,
         uint256 indexed agentId
@@ -141,7 +142,7 @@ contract AAADevTreasury {
             }
         }
 
-        emit AgentPaidRent(tokens, amounts, bonuses, agentId);
+        emit AgentPaidRent(tokens, collectionIds, amounts, bonuses, agentId);
     }
 
     function _handleBonus(

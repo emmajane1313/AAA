@@ -62,13 +62,16 @@ const useAgentsCollection = (
         chain: chains.testnet,
         transport: custom((window as any).ethereum),
       });
+      let ids = agents
+        ?.filter((ag) => collection?.agents?.includes(ag?.id))
+        ?.map((ag) => Number(ag?.id));
 
       const { request } = await publicClient.simulateContract({
         address: COLLECTION_MANAGER_CONTRACT,
         abi: CollectionManagerAbi,
         functionName: "updateAgentCollectionDetails",
         chain: chains.testnet,
-        args: [customInstructions, dailyFrequency, Number(collection?.id)],
+        args: [customInstructions, dailyFrequency, ids, Number(collection?.id)],
         account: address,
       });
 
@@ -76,6 +79,8 @@ const useAgentsCollection = (
       await publicClient.waitForTransactionReceipt({
         hash: res,
       });
+
+      setNotification?.("Success! Everything will be on chain soon :)");
     } catch (err: any) {
       console.error(err.message);
     }
@@ -134,7 +139,6 @@ const useAgentsCollection = (
           collection?.agents?.includes(ag?.id)
         );
         if (nftAgents) {
-        
           setDailyFrequency(
             nftAgents?.map(
               (ag) =>
@@ -157,8 +161,6 @@ const useAgentsCollection = (
       }
     }
   }, [collection, agents]);
-
-
 
   return {
     handlePriceAdjust,

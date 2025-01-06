@@ -10,6 +10,7 @@ pub async fn call_chat_completion(
     collection: &Collection,
     custom_instructions: &str,
     collection_instructions: &str,
+    agent_id: &u32
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
     from_filename(".env").ok();
     let open_ai_key: String =
@@ -62,7 +63,7 @@ pub async fn call_chat_completion(
         .to_string();
 
  
-        println!("Open AI call successful {}", completion);
+        println!("Open AI call successful for agent_{}: {}",  agent_id, completion);
         Ok(completion)
     } else {
         return Err(Box::new(io::Error::new(

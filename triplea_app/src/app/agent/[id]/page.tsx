@@ -25,8 +25,18 @@ export default function Agent() {
     screen,
     setScreen,
     setAgent,
+    stats,
     handleActivity,
-  } = useAgent(id?.id as string, context?.lensClient!, context?.lensConnected);
+    followLoading,
+    handleFollow,
+    agentRent,
+  } = useAgent(
+    id?.id as string,
+    context?.lensClient!,
+    context?.lensConnected,
+    context?.setNotification!,
+    context?.setSignless!
+  );
 
   const {
     handlePost,
@@ -51,6 +61,7 @@ export default function Agent() {
     agent,
     handleActivity
   );
+
 
   return (
     <div className="relative w-full h-full flex flex-col md:flex-row items-center justify-between gap-4 pb-10 overflow-auto ">
@@ -142,59 +153,80 @@ export default function Agent() {
                 <div className="relative text-xl break-all text-black flex font-start">
                   {agent?.title}
                 </div>
-                <div className="relative w-full h-fit flex items-center justify-between gap-2 sm:flex-nowrap flex-wrap">
-                  <div className="relative w-fit h-fit flex text-black text-xs text-black font-jackey2">
-                    Agent Owner
-                  </div>
-                  <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
-                    <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado">
-                      {agent?.ownerProfile?.metadata?.picture && (
-                        <Image
-                          src={`${INFURA_GATEWAY}/ipfs/${
-                            agent?.ownerProfile?.metadata?.picture?.split(
-                              "ipfs://"
-                            )?.[1]
-                          }`}
-                          draggable={false}
-                          className="rounded-full"
-                          layout="fill"
-                          objectFit="cover"
-                        />
-                      )}
+                <div className="relative w-full h-fit flex flex-wrap gap-3 items-start justify-between">
+                  <div className="relative w-fit h-fit flex items-start gap-1 flex-col justify-start font-jackey2">
+                    <div className="relative w-fit h-fit flex text-black text-xs text-black">
+                      Followers
                     </div>
-                    <div className="relative flex w-fit h-fit text-xs text-black font-jackey2">
-                      {agent?.ownerProfile?.username?.localName
-                        ? "@" +
-                          agent?.ownerProfile?.username?.localName?.slice(0, 10)
-                        : agent?.owner?.slice(0, 10)}
+                    <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
+                      {stats?.graphFollowStats?.followers || 0}
                     </div>
                   </div>
-                </div>
-                <div className="relative w-full h-fit flex items-center justify-between gap-2 sm:flex-nowrap flex-wrap">
-                  <div className="relative w-fit h-fit flex text-black text-xs text-black font-jackey2">
-                    Agent
-                  </div>
-                  <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
-                    <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado">
-                      {agent?.profile?.metadata?.picture && (
-                        <Image
-                          src={`${INFURA_GATEWAY}/ipfs/${
-                            agent?.profile?.metadata?.picture?.split(
-                              "ipfs://"
-                            )?.[1]
-                          }`}
-                          draggable={false}
-                          className="rounded-full"
-                          layout="fill"
-                          objectFit="cover"
-                        />
-                      )}
+                  <div className="relative w-fit h-fit flex items-start gap-1 flex-col justify-start font-jackey2">
+                    <div className="relative w-fit h-fit flex text-black text-xs text-black">
+                      Following
                     </div>
-                    <div className="relative flex w-fit h-fit text-xs text-black font-jackey2">
-                      {agent?.profile?.username?.localName
-                        ? "@" +
-                          agent?.profile?.username?.localName?.slice(0, 10)
-                        : agent?.wallet?.slice(0, 10)}
+                    <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
+                      {stats?.graphFollowStats?.following || 0}
+                    </div>
+                  </div>
+                  <div className="relative w-fit h-fit flex items-start gap-1 flex-col justify-start font-jackey2">
+                    <div className="relative w-fit h-fit flex text-black text-xs text-black font-jackey2">
+                      Agent Owner
+                    </div>
+                    <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
+                      <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado">
+                        {agent?.ownerProfile?.metadata?.picture && (
+                          <Image
+                            src={`${INFURA_GATEWAY}/ipfs/${
+                              agent?.ownerProfile?.metadata?.picture?.split(
+                                "ipfs://"
+                              )?.[1]
+                            }`}
+                            draggable={false}
+                            className="rounded-full"
+                            layout="fill"
+                            objectFit="cover"
+                          />
+                        )}
+                      </div>
+                      <div className="relative flex w-fit h-fit text-xs text-black font-jackey2">
+                        {agent?.ownerProfile?.username?.localName
+                          ? "@" +
+                            agent?.ownerProfile?.username?.localName?.slice(
+                              0,
+                              10
+                            )
+                          : agent?.owner?.slice(0, 10)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative w-fit h-fit flex items-start gap-1 flex-col justify-start font-jackey2">
+                    <div className="relative w-fit h-fit flex text-black text-xs text-black font-jackey2">
+                      Agent
+                    </div>
+                    <div className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row">
+                      <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado">
+                        {agent?.profile?.metadata?.picture && (
+                          <Image
+                            src={`${INFURA_GATEWAY}/ipfs/${
+                              agent?.profile?.metadata?.picture?.split(
+                                "ipfs://"
+                              )?.[1]
+                            }`}
+                            draggable={false}
+                            className="rounded-full"
+                            layout="fill"
+                            objectFit="cover"
+                          />
+                        )}
+                      </div>
+                      <div className="relative flex w-fit h-fit text-xs text-black font-jackey2">
+                        {agent?.profile?.username?.localName
+                          ? "@" +
+                            agent?.profile?.username?.localName?.slice(0, 10)
+                          : agent?.wallet?.slice(0, 10)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -203,9 +235,40 @@ export default function Agent() {
                     {agent?.description}
                   </div>
                 </div>
-                <div className="relative w-full h-fit flex py-4 overflow-y-scroll">
-                  <div className="py-3 h-full max-h-full overflow-y-scroll flex relative items-start justify-start text-left text-black text-sm font-jack">
-                    {agent?.customInstructions}
+                <div className="relative w-full h-fit flex py-4 flex-col items-start justify-start gap-2">
+                  <div className="relative w-fit h-fit flex text-xxs font-jackey2">
+                    Custom Instructions
+                  </div>
+                  <div className="relative w-full h-fit flexoverflow-y-scroll">
+                    <div className="py-3 h-full max-h-full overflow-y-scroll flex relative items-start justify-start text-left text-black text-sm font-jack">
+                      {agent?.customInstructions}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={`relative w-full h-10 pixel-border-2 text-black font-start text-center flex items-center justify-center ${
+                    !followLoading ? "cursor-pixel" : "opacity-70"
+                  }`}
+                  onClick={() => !followLoading && handleFollow()}
+                >
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    {followLoading ? (
+                      <svg
+                        fill="none"
+                        className="size-4 animate-spin"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M13 2h-2v6h2V2zm0 14h-2v6h2v-6zm9-5v2h-6v-2h6zM8 13v-2H2v2h6zm7-6h2v2h-2V7zm4-2h-2v2h2V5zM9 7H7v2h2V7zM5 5h2v2H5V5zm10 12h2v2h2v-2h-2v-2h-2v2zm-8 0v-2h2v2H7v2H5v-2h2z"
+                          fill="currentColor"
+                        />{" "}
+                      </svg>
+                    ) : agent?.profile?.operations?.isFollowedByMe ? (
+                      "Unfollow"
+                    ) : (
+                      "Follow"
+                    )}
                   </div>
                 </div>
               </>
@@ -246,33 +309,108 @@ export default function Agent() {
               </div>
             ) : screen == 4 ? (
               <div className="relative w-full h-full overflow-y-scroll flex items-start justify-start">
-                <div className="relative w-full h-fit flex flex-col items-start justify-start  gap-3">
-                  {Number(agent?.rentPaid?.length) < 1 ? (
+                <div className="relative w-full h-fit flex flex-col items-start justify-start gap-5">
+                  {Number(agentRent?.length) < 1 ? (
                     <div className="relative w-full h-full flex items-center justify-center text-sm text-gray-600 font-jack">
                       No Rent Paid Yet.
                     </div>
                   ) : (
-                    agent?.rentPaid?.map((rent, key) => {
+                    agentRent?.map((rent, key) => {
                       return (
                         <div
+                          className="relative w-full h-fit flex flex-col gap-3"
                           key={key}
-                          className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
-                          onClick={() =>
-                            window.open(
-                              `https://block-explorer.testnet.lens.dev/tx/${rent?.transactionHash}`
-                            )
-                          }
                         >
-                          <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2 text-xs">
-                            {rent?.transactionHash?.slice(0, 5) +
-                              "..." +
-                              rent?.transactionHash?.slice(-3)}
+                          <div
+                            className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2 font-jackey2 text-xs"
+                            onClick={() =>
+                              window.open(
+                                `https://block-explorer.testnet.lens.dev/tx/${rent?.transactionHash}`
+                              )
+                            }
+                          >
+                            <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                              {rent?.transactionHash?.slice(0, 5) +
+                                "..." +
+                                rent?.transactionHash?.slice(-3)}
+                            </div>
+                            <div className="relative w-fit h-fit flex items-center justify-center text-black">
+                              {moment
+                                .unix(Number(rent?.blockTimestamp))
+                                .fromNow()}
+                            </div>
                           </div>
-                          <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2 text-xs">
-                            {moment
-                              .unix(Number(rent?.blockTimestamp))
-                              .fromNow()}
+                          <div className="relative w-full h-fit flex flex-col gap-2">
+                            {rent?.amounts?.map((_, index) => {
+                              return (
+                                <div
+                                  key={index}
+                                  className="relative w-full h-fit flex items-center justify-between gap-2 font-jackey2 text-xxs"
+                                >
+                                  <div
+                                    className="relative w-fit h-fit flex items-center justify-center cursor-pixel"
+                                    onClick={() => {
+                                      animationContext?.setPageChange?.(true);
+                                      router.push(
+                                        `/nft/${
+                                          agent?.collectionIdsHistory
+                                            ?.find(
+                                              (col) =>
+                                                Number(col?.collectionId) ==
+                                                Number(
+                                                  rent?.collectionIds[index]
+                                                )
+                                            )
+                                            ?.profile?.username?.value?.split(
+                                              "lens/"
+                                            )?.[1]
+                                        }/${
+                                          agent?.collectionIdsHistory?.find(
+                                            (col) =>
+                                              Number(col?.collectionId) ==
+                                              Number(rent?.collectionIds[index])
+                                          )?.collectionId
+                                        }`
+                                      );
+                                    }}
+                                  >
+                                    <div className="rounded-sm w-7 h-7 flex relative">
+                                      <Image
+                                        draggable={false}
+                                        objectFit="cover"
+                                        className="rounded-sm"
+                                        layout="fill"
+                                        src={`${INFURA_GATEWAY}/ipfs/${
+                                          agent?.collectionIdsHistory
+                                            ?.find(
+                                              (col) =>
+                                                Number(col?.collectionId) ==
+                                                Number(
+                                                  rent?.collectionIds[index]
+                                                )
+                                            )
+                                            ?.metadata?.image?.split(
+                                              "ipfs://"
+                                            )?.[1]
+                                        }`}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="relative w-fit h-fit flex">
+                                    {Number(rent?.amounts?.[index]) / 10 ** 18}{" "}
+                                    {
+                                      TOKENS?.find(
+                                        (tok) =>
+                                          tok.contract?.toLowerCase() ==
+                                          rent?.tokens?.[index]?.toLowerCase()
+                                      )?.symbol
+                                    }
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
+                          <div className="relative w-full h-px bg-black/70 flex"></div>
                         </div>
                       );
                     })
@@ -335,7 +473,7 @@ export default function Agent() {
                             </div>
                           </div>
                           <div className="relative w-fit h-fit flex text-left font-jackey2">
-                            {Number(balance.activeBalance ) / 10**18}{" "}
+                            {Number(balance.activeBalance) / 10 ** 18}{" "}
                             {
                               TOKENS.find(
                                 (tok) =>

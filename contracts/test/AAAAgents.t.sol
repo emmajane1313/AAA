@@ -12,6 +12,7 @@ import "src/AAANFT.sol";
 import "src/AAAMarket.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
 
@@ -344,7 +345,7 @@ contract AAAAgentsTest is Test {
         token1.allowance(buyer, address(devTreasury));
         market.buy(1, 2, address(token1));
         uint256 buyerExpectedBalance = buyerInitialBalance - (10 ether);
-        uint256 artistExpectedBalance = artistInitialBalance + (10 ether);
+        uint256 artistExpectedBalance = artistInitialBalance + (9.5 ether);
         vm.stopPrank();
 
         assertEq(buyerExpectedBalance, token1.balanceOf(buyer));
@@ -365,8 +366,10 @@ contract AAAAgentsTest is Test {
             1,
             1
         );
-        assertEq(activeBalance_after, 123400000 + rent);
-        assertEq(bonusBalance_after, ((10 / 100) * 5 ether) - rent);
+        console.log(activeBalance_after, bonusBalance_after);
+
+        assertEq(bonusBalance_after, ((10 / 100) * 10 ether) - rent * 2);
+        assertEq(activeBalance_after, 123400000 + rent * 2);
     }
 
     function testPayRentWithoutBonus() public {
@@ -535,8 +538,8 @@ contract AAAAgentsTest is Test {
             address(token1)
         );
 
-        assertEq(allBalance, ((10 / 100) * 5 ether) + 3000000000);
-        assertEq(oneBalance, ((10 / 100) * 5 ether) + 3000000000);
+        assertEq(allBalance, ((10 / 100) * 10 ether) + 3000000000);
+        assertEq(oneBalance, ((10 / 100) * 10 ether) + 3000000000);
         assertEq(allServices, rent);
         assertEq(oneServices, rent);
 
@@ -557,8 +560,8 @@ contract AAAAgentsTest is Test {
             address(token1)
         );
 
-        assertEq(allBalance_after3, ((10 / 100) * 5 ether) + 3000000000);
-        assertEq(oneBalance_after3, ((10 / 100) * 5 ether) + 3000000000);
+        assertEq(allBalance_after3, ((10 / 100) * 10 ether) + 3000000000);
+        assertEq(oneBalance_after3, ((10 / 100) * 10 ether) + 3000000000);
         assertEq(allServices_after3, rent * 3);
         assertEq(oneServices_after3, rent * 3);
 
@@ -714,8 +717,8 @@ contract AAAAgentsTest is Test {
         // Two purchases for 10% + 10% of 5 ether
         // Recharged with 3000000000 3 times
 
-        assertEq(allBalance, ((20 / 100) * 5 ether) + 9000000000);
-        assertEq(oneBalance, ((20 / 100) * 5 ether) + 9000000000);
+        assertEq(allBalance, ((20 / 100) * 10 ether) + 9000000000);
+        assertEq(oneBalance, ((20 / 100) * 10 ether) + 9000000000);
         assertEq(allServices, rent * 3);
         assertEq(oneServices, rent * 3);
 
@@ -779,12 +782,12 @@ contract AAAAgentsTest is Test {
         BonusInput memory _bonusInput
     ) internal view returns (uint256, uint256, uint256) {
         uint256 rent = accessControls.getTokenDailyRent(address(token1));
-        uint256 agentShare_coll1 = ((10 / 100) * 5 ether); // one agent
-        uint256 agentShare_coll2 = ((10 / 100) * 5 ether) / 2; // two agents
+        uint256 agentShare_coll1 = ((10 / 100) * 10 ether); // one agent
+        uint256 agentShare_coll2 = ((10 / 100) * 10 ether) / 2; // two agents
 
-        uint256 agent1Coll1Bonus = agentShare_coll1 - rent;
-        uint256 agent1Coll2Bonus = agentShare_coll2 - rent;
-        uint256 agent2Coll2Bonus = agentShare_coll2 - rent;
+        uint256 agent1Coll1Bonus = agentShare_coll1 - rent*2;
+        uint256 agent1Coll2Bonus = agentShare_coll2 - rent*2;
+        uint256 agent2Coll2Bonus = agentShare_coll2 - rent*2;
 
         assertEq(
             token1.balanceOf(address(agentOwner)),

@@ -1,89 +1,90 @@
 "use client";
 
-import { INFURA_GATEWAY } from "@/lib/constants";
+import { FOOTER_TEXT, INFURA_GATEWAY } from "@/lib/constants";
 import Image from "next/legacy/image";
-import { FunctionComponent, JSX } from "react";
+import { FunctionComponent, JSX, useState } from "react";
 
 const Footer: FunctionComponent = (): JSX.Element => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
   return (
-    <div className="relative w-full h-fit bg-black px-6 pt-6 flex border-4 border-morado flex-col items-center justify-between gap-8">
-      <div className="relative w-full h-fit flex items-center justify-between flex flex-col sm:flex-row gap-8">
-        <div className="relative w-full h-full flex items-start justify-between flex-col gap-2">
-          <div className="relative w-full h-fit flex items-start justify-start flex-col gap-2">
-            <div className="text-white text-lg sm:text-2xl font-jackey flex w-fit h-fit text-left relative">
-              Agents Amplify Artists
+    <div className="relative w-full h-fit flex border-4 border-morado border">
+      <div className="relative w-full h-fit bg-gradient-to-r from-[#EA5EFF] to-[#9568F6] border-2 border-black flex flex-col items-center justify-between gap-8">
+        <div className="relative w-full h-fit flex flex-row justify-between items-center gap-6 pt-6 px-2 sm:px-6 flex-wrap lg:flex-nowrap">
+          <div className="relative w-full h-fit flex justify-between items-center gap-6 lg:flex-row flex-col">
+            <div className="relative w-full sm:w-fit h-fit flex items-center justify-center">
+              <div className="relative w-full sm:w-72 h-80 flex">
+                <Image
+                  draggable={false}
+                  src={`${INFURA_GATEWAY}/ipfs/QmPmvs2swFozQWvAhbV5kB1tz5AryEydhvYfUw2Eyavi5v`}
+                  layout="fill"
+                  objectFit="contain"
+                />
+              </div>
             </div>
-            <div className="text-[#FFF026] font-start text-xxs flex w-fit h-fit text-left relative">
-              Artists win, agents hustle, buyers stack. The streets of the
-              creative grind.
+            <div className="relative w-full sm:w-fit h-full flex items-center md:items-start justify-center md:justify-start flex-row gap-4 xl:flex-nowrap flex-wrap">
+              <div className="relative w-full sm:w-fit h-fit flex">
+              <div className="w-full sm:w-60 h-60 xl:w-80 xl:h-80 flex items-center justify-center pixel-border-2 rounded-xl relative p-3">
+                  <div className="rounded-lg pixel-border-4 relative w-full h-full flex p-1 bg-[#73B6DF]">
+                    <div
+                    className="relative w-full h-full rounded-md bg-[#0B75FF] border border-black flex overflow-y-scroll break-words p-3 text-base lg:text-lg font-arc text-white whitespace-inline"
+                      dangerouslySetInnerHTML={{
+                        __html: FOOTER_TEXT[currentPage - 1],
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div
+                className="relative w-fit h-fit flex cursor-pixel"
+                onClick={() =>
+                  setCurrentPage(
+                    currentPage < FOOTER_TEXT.length ? currentPage + 1 : 1
+                  )
+                }
+              >
+                <div className="relative w-20 h-20 flex">
+                  <Image
+                    draggable={false}
+                    src={`${INFURA_GATEWAY}/ipfs/QmbPHZuqofaVWRM4KCMRaqhVrQJvCiUKnrdWZ6jhWmPstZ`}
+                    layout="fill"
+                    objectFit="contain"
+                  />
+                </div>
+              </div>
+              <div className="relative w-full sm:w-fit h-fit flex">
+              <div className="w-full sm:w-60 h-60 xl:w-80 xl:h-80 flex items-center justify-center pixel-border-2 rounded-xl relative p-3">
+                  <div className="rounded-lg pixel-border-4 relative w-full h-full flex p-1 bg-[#73B6DF]">
+                    <div
+                      className="relative w-full h-full rounded-md bg-[#0B75FF] border border-black flex overflow-y-scroll break-words p-3 text-base lg:text-lg font-arc text-white whitespace-inline"
+                      dangerouslySetInnerHTML={{
+                        __html: FOOTER_TEXT[currentPage],
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="relative w-full h-80 flex items-start justify-start border border-morado bg-morado">
-            <Image
-              draggable={false}
-              src={`${INFURA_GATEWAY}/ipfs/QmVNM3k24ZfvWWxkQqKUGoLZhJyYQ63dZid33k6m3NVAen`}
-              layout="fill"
-              objectFit="cover"
-            />
+          <div className="relative w-full lg:w-fit h-full flex break-all font-jackey2 text-white text-base flex-col justify-between text-center lg:text-right gap-6 lg:items-end items-center">
+            <div className="uppercase text-2xl relative w-fit h-fit flex">
+              DO YOUR STORIES <br />
+              COLLECT THEMSELVES?
+            </div>
+            <div className="uppercase relative w-fit h-fit flex break-words">
+              NOW THEY CAN. BUT YOU NEED AN AGENT TO GET SEEN
+            </div>
+            <div className="uppercase relative w-fit h-fit flex break-words">
+              FUNDED BY SALES AND SOCIAL VIBES
+            </div>
+            <div className="uppercase relative w-fit h-fit flex break-words">
+              BUILT ON THE NEW LENS NETWORK
+            </div>
           </div>
         </div>
-        <div className="relative w-full h-full flex">
-          <div className="relative w-fit h-fit flex font-jackey2 text-base text-white text-right break-words">
-            Artists assign agents to their collections. Once an artist sells one
-            or more collections, agents spring into action, earning 10% from
-            each sale moving forward.
-            <br />
-            <br />
-            Every 24 hours, agents amplify your collection’s reach by
-            propagating it on Lens, attracting new buyers and boosting sales
-            potential.
-            <br />
-            <br />
-            Agents pay rent to stay in the game. From this rent: <br />
-            - 20% goes to the agent’s owner.
-            <br />
-            - 40% funds developer grants to power innovation.
-            <br />
-            - 40% is distributed to you, the collection buyers. The earlier you
-            buy, the bigger your slice of the pie.
-            <br />
-            <br />
-            The earlier you collect, the greater your reward as new agents drive
-            sales and rent flows back to you. It’s like turning fandom into a
-            finely-tuned, profit-sharing machine. Everyone wins: artists,
-            buyers, agents, and even developers.
-          </div>
-        </div>
-      </div>
-      <div className="relative w-full h-fit flex items-center gap-6 justify-between flex-row">
-        <div className="relative w-fit h-fit flex">
-        <div className="relative w-8 h-8 sm:w-20 sm:h-20 flex">
-            <Image
-              draggable={false}
-              src={`${INFURA_GATEWAY}/ipfs/QmVttWALP9AVX1cJp8Es5Wfia26DHE9oByLfSDLxEBTu7X`}
-              layout="fill"
-              objectFit="contain"
-            />
-          </div>
-        </div>
-        <div className="relative w-fit h-fit flex">
-          <div className="relative w-8 h-8 sm:w-20 sm:h-20 flex">
-            <Image
-              draggable={false}
-              src={`${INFURA_GATEWAY}/ipfs/QmP894udssnN9AzxPxyAqDm58qstYxJjKkZaTgcr4nPBMY`}
-              layout="fill"
-              objectFit="contain"
-            />
-          </div>
-        </div>
-        <div className="relative w-fit h-fit flex">
-          <div className="relative w-12 h-8 sm:w-28 sm:h-20 flex">
-            <Image
-              draggable={false}
-              src={`${INFURA_GATEWAY}/ipfs/QmPmvs2swFozQWvAhbV5kB1tz5AryEydhvYfUw2Eyavi5v`}
-              layout="fill"
-              objectFit="contain"
-            />
+
+        <div className="relative w-full h-20 bg-[#FFD237] flex items-center justify-center font-start text-xxs text-black">
+          <div className="relative w-fit h-fit flex">
+            {`${currentPage} / ${FOOTER_TEXT.length}`}
           </div>
         </div>
       </div>

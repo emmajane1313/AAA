@@ -22,7 +22,7 @@ const collectionAddress = "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
 
 (async () => {
   const feeData = await provider.getFeeData();
-  // const agentsContract = new ethers.Contract(agentsAddress, agentsAbi, wallet);
+  const agentsContract = new ethers.Contract(agentsAddress, agentsAbi, wallet);
   // const accessContract = new ethers.Contract(accessAddress, accessAbi, wallet);
   // const marketContract = new ethers.Contract(marketAddress, marketAbi, wallet);
   // const treasuryContract = new ethers.Contract(
@@ -48,6 +48,12 @@ const collectionAddress = "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
   const value7 = await collectionContract.getAgentCollectionCustomInstructions(2,8);
   const value8 = await collectionContract.getAgentCollectionCustomInstructions(3,8);
   console.log({value5, value6, value7, value8})
+
+
+  const value9 = await agentsContract.getAgentActiveBalance(grassAddress, 7, 3);
+  const value10 = await agentsContract.getAgentActiveBalance(grassAddress, 8, 3);
+
+  console.log({value9, value10})
   // const errores = [
   //   "NotAdmin()",
   //   "AlreadyAdmin()",

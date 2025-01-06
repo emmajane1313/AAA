@@ -142,7 +142,8 @@ export function handleAgentRecharged(event: AgentRechargedEvent): void {
     let collectionIdHex = entity.collectionId.toHexString();
     let tokenHex = entity.token.toHexString();
     let agentHex = entity.agentId.toHexString();
-    let combinedHex = collectionIdHex + tokenHex + agentHex;
+    let agentWalletHex = (entityAgent.wallets as Bytes[])[0].toHexString();
+    let combinedHex = collectionIdHex + tokenHex + agentHex + agentWalletHex;
     if (combinedHex.length % 2 !== 0) {
       combinedHex = "0" + combinedHex;
     }
@@ -243,7 +244,8 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
     let collectionIdHex = entity.collectionId.toHexString();
     let tokenHex = entity.token.toHexString();
     let agentHex = entity.agentId.toHexString();
-    let combinedHex = collectionIdHex + tokenHex + agentHex;
+    let agentWalletHex = (entityAgent.wallets as Bytes[])[0].toHexString();
+    let combinedHex = collectionIdHex + tokenHex + agentHex + agentWalletHex;
     if (combinedHex.length % 2 !== 0) {
       combinedHex = "0" + combinedHex;
     }
@@ -350,7 +352,8 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
       let collectionIdHex = collectionId.toHexString();
       let tokenHex = token.toHexString();
       let agentHex = entity.agentId.toHexString();
-      let combinedHex = collectionIdHex + tokenHex + agentHex;
+      let agentWalletHex = (entityAgent.wallets as Bytes[])[0].toHexString();
+      let combinedHex = collectionIdHex + tokenHex + agentHex + agentWalletHex;
       if (combinedHex.length % 2 !== 0) {
         combinedHex = "0" + combinedHex;
       }
@@ -489,6 +492,11 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
     );
     newRent.blockTimestamp = entity.blockTimestamp;
     newRent.transactionHash = entity.transactionHash;
+    newRent.tokens = entity.tokens;
+    newRent.collectionIds = entity.collectionIds;
+    newRent.agentId = entity.agentId;
+    newRent.amounts = entity.amounts;
+
     newRent.save();
     rentPaids.push(event.transaction.hash.concatI32(event.logIndex.toI32()));
 

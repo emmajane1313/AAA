@@ -16,11 +16,8 @@ const useAgentRecharge = (
   const [rechargeAmount, setRechargeAmount] = useState<number[]>([]);
   const [approvedRecharge, setApprovedRecharge] = useState<boolean[]>([]);
 
-  const handleApproveRecharge = async (agent: Agent) => {
-    const amount =
-      rechargeAmount[
-        nftAgents?.findIndex((ag) => Number(ag) == Number(agent.id))
-      ];
+  const handleApproveRecharge = async (index: number) => {
+    const amount = rechargeAmount[index];
     if (amount <= 0) {
       setNotification?.("Invalid Recharge Amount :/");
       return;
@@ -28,8 +25,6 @@ const useAgentRecharge = (
 
     setRechargeLoading((prev) => {
       let ref = [...prev];
-
-      let index = nftAgents?.findIndex((ag) => Number(ag) == Number(agent.id));
 
       ref[index] = true;
 
@@ -82,10 +77,6 @@ const useAgentRecharge = (
       setApprovedRecharge((prev) => {
         let ref = [...prev];
 
-        let index = nftAgents?.findIndex(
-          (ag) => Number(ag) == Number(agent.id)
-        );
-
         ref[index] = true;
 
         return ref;
@@ -96,27 +87,26 @@ const useAgentRecharge = (
     setRechargeLoading((prev) => {
       let ref = [...prev];
 
-      let index = nftAgents?.findIndex((ag) => Number(ag) == Number(agent.id));
-
       ref[index] = false;
 
       return ref;
     });
   };
 
-  const handleRecharge = async (agent: Agent, token: string) => {
-    const amount =
-      rechargeAmount[
-        nftAgents?.findIndex((ag) => Number(ag) == Number(agent.id))
-      ];
+  const handleRecharge = async (
+    index: number,
+    token: string,
+    agentId: number
+  ) => {
+
+    const amount = rechargeAmount[index];
     if (amount <= 0) {
       setNotification?.("Invalid Recharge Amount :/");
       return;
     }
+
     setRechargeLoading((prev) => {
       let ref = [...prev];
-
-      let index = nftAgents?.findIndex((ag) => Number(ag) == Number(agent.id));
 
       ref[index] = true;
 
@@ -156,14 +146,10 @@ const useAgentRecharge = (
         account: address,
       });
 
-      if (balance < BigInt(amount)) {
+      if (balance < BigInt(amount * 10**18)) {
         setNotification?.("Not Enough Tokens in Your Wallet :(");
         setRechargeLoading((prev) => {
           let ref = [...prev];
-
-          let index = nftAgents?.findIndex(
-            (ag) => Number(ag) == Number(agent.id)
-          );
 
           ref[index] = false;
 
@@ -177,12 +163,7 @@ const useAgentRecharge = (
         abi: AgentAbi,
         functionName: "rechargeAgentActiveBalance",
         chain: chains.testnet,
-        args: [
-          token,
-          Number(agent?.id),
-          Number(collectionId),
-          amount * 10 ** 18,
-        ],
+        args: [token, Number(agentId), Number(collectionId), BigInt(amount * 10 ** 18)],
         account: address,
       });
 
@@ -195,21 +176,18 @@ const useAgentRecharge = (
       setApprovedRecharge((prev) => {
         let ref = [...prev];
 
-        let index = nftAgents?.findIndex(
-          (ag) => Number(ag) == Number(agent.id)
-        );
-
         ref[index] = false;
 
         return ref;
       });
     } catch (err: any) {
+      if (err?.message?.includes("Insufficient")) {
+        setNotification?.("Not Enough Tokens in Your Wallet :(");
+      }
       console.error(err.message);
     }
     setRechargeLoading((prev) => {
       let ref = [...prev];
-
-      let index = nftAgents?.findIndex((ag) => Number(ag) == Number(agent.id));
 
       ref[index] = false;
 

@@ -166,7 +166,7 @@ const useUserAgents = (
         hash: res,
       });
 
-      setNotification?.("Success! Eveything will be on chain soon :)");
+      setNotification?.("Success! Everything will be on chain soon :)");
     } catch (err: any) {
       console.error(err.message);
     }

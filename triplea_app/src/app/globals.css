@@ -22,6 +22,11 @@
   src: url("/fonts/Jack.ttf");
 }
 
+@font-face {
+  font-family: "Arcadia";
+  src: url("/fonts/Arcadia.ttf");
+}
+
 ::-webkit-scrollbar {
   display: none;
 }

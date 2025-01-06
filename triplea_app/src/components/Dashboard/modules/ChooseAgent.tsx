@@ -194,7 +194,7 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
               );
             })}
       </div>
-      {(Number(mintData?.amount || 0) < 2 ||
+      {(Number(mintData?.amount || 0) <= 2 ||
         Number(mintData?.prices?.[0]) * 10 ** 18 <
           Number(
             tokenThresholds?.find(
@@ -204,7 +204,7 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
           )) && (
         <div className="absolute top-0 left-0 flex items-center justify-center bg-white/90 w-full h-full font-jackey2 text-black text-center">
           <div className="relative sm:w-1/2 w-full flex items-center justify-center">
-            Set a minimum edition of 2 and a price above the Token Threshold to
+            Set a minimum edition of 3 and a price above the Token Threshold to
             activate Agents for this collection!
           </div>
         </div>

@@ -22,14 +22,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Triple A",
     description:
-      "Artists win, agents hustle, buyers stack. The streets of the creative grind.",
+      "Everyone wins in this agent-to-earn story.",
     images: ["https://thedial.infura-ipfs.io/ipfs/QmNQ5fe9Ruyy8LDMgJbxCnM8upSus1eNriqnKda31Wcsut"],
   },
 
   openGraph: {
     title: "Triple A",
     description:
-      "Artists win, agents hustle, buyers stack. The streets of the creative grind.",
+      "Everyone wins in this agent-to-earn story.",
     images: "https://thedial.infura-ipfs.io/ipfs/QmNQ5fe9Ruyy8LDMgJbxCnM8upSus1eNriqnKda31Wcsut",
   },
 };

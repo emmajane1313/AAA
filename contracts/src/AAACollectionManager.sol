@@ -35,6 +35,7 @@ contract AAACollectionManager {
     event AgentDetailsUpdated(
         string[] customInstructions,
         uint256[] dailyFrequency,
+        uint256[] agentIds,
         uint256 collectionId
     );
     event CollectionDeactivated(uint256 collectionId);
@@ -131,31 +132,31 @@ contract AAACollectionManager {
     function updateAgentCollectionDetails(
         string[] memory customInstructions,
         uint256[] memory dailyFrequency,
+        uint256[] memory agentIds,
         uint256 collectionId
     ) external {
         if (_collections[collectionId].artist != msg.sender) {
             revert AAAErrors.NotArtist();
         }
 
-        uint256[] memory _agents = _collections[collectionId].agentIds;
-
         if (
-            _agents.length != customInstructions.length &&
+            agentIds.length != customInstructions.length &&
             customInstructions.length != dailyFrequency.length
         ) {
             revert AAAErrors.BadUserInput();
         }
-        for (uint256 i = 0; i < _agents.length; i++) {
+        for (uint256 i = 0; i < agentIds.length; i++) {
             _agentCustomInstructions[collectionId][
-                _agents[i]
+                agentIds[i]
             ] = customInstructions[i];
 
-            _agentDailyFrequency[collectionId][_agents[i]] = dailyFrequency[i];
+            _agentDailyFrequency[collectionId][agentIds[i]] = dailyFrequency[i];
         }
 
         emit AgentDetailsUpdated(
             customInstructions,
             dailyFrequency,
+            agentIds,
             collectionId
         );
     }

@@ -21,6 +21,7 @@ dataSources:
         - DropCreated
         - DropDeleted
         - AgentDetailsUpdated
+        - CollectionPriceAdjusted
       abis:
         - name: AAACollectionManager
           file: ./abis/AAACollectionManager.json
@@ -37,8 +38,10 @@ dataSources:
           handler: handleCollectionActivated
         - event: CollectionDeactivated(uint256)
           handler: handleCollectionDeactivated
-        - event: AgentDetailsUpdated(string[],uint256[],uint256)
+        - event: AgentDetailsUpdated(string[],uint256[],uint256[],uint256)
           handler: handleAgentDetailsUpdated
+        - event: CollectionPriceAdjusted(address,uint256,uint256)
+          handler: handleCollectionPriceAdjusted
       file: ./src/aaa-collection-manager.ts
   - kind: ethereum
     name: AAAAgents
@@ -124,7 +127,7 @@ dataSources:
         - name: AAADevTreasury
           file: ./abis/AAADevTreasury.json
       eventHandlers:
-        - event: AgentPaidRent(address[],uint256[],uint256[],indexed uint256)
+        - event: AgentPaidRent(address[],uint256[],uint256[],uint256[],indexed uint256)
           handler: handleAgentPaidRent
         - event: FundsWithdrawnTreasury(indexed address,uint256)
           handler: handleFundsWithdrawnTreasury

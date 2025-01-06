@@ -2,11 +2,18 @@
 
 import useAgentPayouts from "@/components/AgentPayouts/hooks/useAgentPayouts";
 import Slider from "@/components/Common/modules/Slider";
-import { TOKENS } from "@/lib/constants";
+import { INFURA_GATEWAY, TOKENS } from "@/lib/constants";
 import moment from "moment";
+import { useContext } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { AnimationContext, ModalContext } from "../providers";
+import Image from "next/legacy/image";
+import { useRouter } from "next/navigation";
 
 export default function AgentPayouts() {
+  const context = useContext(ModalContext);
+  const router = useRouter();
+  const animationContext = useContext(AnimationContext);
   const {
     screen,
     setScreen,
@@ -15,7 +22,7 @@ export default function AgentPayouts() {
     collectorsPaid,
     handleMorePaid,
     hasMore,
-  } = useAgentPayouts();
+  } = useAgentPayouts(context?.lensClient!);
   return (
     <>
       <Slider />
@@ -72,44 +79,95 @@ export default function AgentPayouts() {
                 }
                 next={handleMorePaid}
                 hasMore={screen < 1 ? hasMore?.owners : hasMore?.collectors}
-                loader={<div key={0}/>}
-                className="relative w-full"
+                loader={<div key={0} />}
+                className="relative w-full gap-6 flex flex-col"
               >
-                {(screen < 1 ? ownersPaid : collectorsPaid)?.map(
-                  (item, key) => {
-                    return (
-                      <div
-                        key={key}
-                        className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
-                        onClick={() =>
-                          window.open(
-                            `https://block-explorer.testnet.lens.dev/tx/${item?.transactionHash}`
-                          )
-                        }
-                      >
-                        <div className="relative w-fit h-fit flex font-start text-xs">
-                          {(screen < 1
-                            ? (item as any)?.owner
-                            : (item as any)?.recipient
-                          )?.slice(0, 10) + " ..."}
-                        </div>
-                        <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2">
-                          {item?.amount}{" "}
-                          {
-                            TOKENS.find(
-                              (tok) =>
-                                tok.contract?.toLowerCase() ==
-                                item?.token?.toLowerCase()
-                            )?.symbol
-                          }
-                        </div>
-                        <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2 text-xs">
-                          {moment.unix(Number(item?.blockTimestamp)).fromNow()}
-                        </div>
-                      </div>
-                    );
-                  }
-                )}
+                {ordersLoading
+                  ? Array.from({ length: 20 }).map((_, key) => {
+                      return (
+                        <div
+                          className="relative animate-pulse w-full h-px bg-black "
+                          key={key}
+                        ></div>
+                      );
+                    })
+                  : (screen < 1 ? ownersPaid : collectorsPaid)?.map(
+                      (item, key) => {
+                        return (
+                          <div
+                            className="relative w-full h-fit flex flex-col gap-1.5"
+                            key={key}
+                          >
+                            <div
+                              className="relative w-full h-fit flex cursor-pixel justify-between items-center flex-row gap-2"
+                              onClick={() =>
+                                window.open(
+                                  `https://block-explorer.testnet.lens.dev/tx/${item?.transactionHash}`
+                                )
+                              }
+                            >
+                              {item?.profile && (
+                                <div
+                                  className="relative w-fit h-fit flex items-center justify-start gap-2 flex-row"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    animationContext?.setPageChange?.(true);
+                                    router.push(
+                                      `/user/${item?.profile?.username?.localName}`
+                                    );
+                                  }}
+                                >
+                                  <div className="relative flex rounded-full w-8 h-8 bg-morado border border-morado">
+                                    {item?.profile?.metadata?.picture && (
+                                      <Image
+                                        src={`${INFURA_GATEWAY}/ipfs/${
+                                          item?.profile?.metadata?.picture?.split(
+                                            "ipfs://"
+                                          )?.[1]
+                                        }`}
+                                        draggable={false}
+                                        className="rounded-full"
+                                        layout="fill"
+                                        objectFit="cover"
+                                      />
+                                    )}
+                                  </div>
+                                  <div className="relative flex w-fit h-fit text-xs text-black font-jackey2">
+                                    {"@" +
+                                      item?.profile?.username?.localName?.slice(
+                                        0,
+                                        10
+                                      )}
+                                  </div>
+                                </div>
+                              )}
+                              <div className="relative w-fit h-fit flex font-start text-xs">
+                                {(screen < 1
+                                  ? (item as any)?.owner
+                                  : (item as any)?.recipient
+                                )?.slice(0, 10) + " ..."}
+                              </div>
+                              <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2">
+                                {Number(item?.amount) / 10 ** 18}{" "}
+                                {
+                                  TOKENS.find(
+                                    (tok) =>
+                                      tok.contract?.toLowerCase() ==
+                                      item?.token?.toLowerCase()
+                                  )?.symbol
+                                }
+                              </div>
+                              <div className="relative w-fit h-fit flex items-center justify-center text-black font-jackey2 text-xs">
+                                {moment
+                                  .unix(Number(item?.blockTimestamp))
+                                  .fromNow()}
+                              </div>
+                            </div>
+                            <div className="relative w-full h-px bg-black/70 flex"></div>
+                          </div>
+                        );
+                      }
+                    )}
               </InfiniteScroll>
             </div>
           </div>

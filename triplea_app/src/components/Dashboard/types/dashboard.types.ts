@@ -136,10 +136,6 @@ export interface Agent {
   owner: string;
   activeCollectionIds: AgentCollection[];
   collectionIdsHistory: AgentCollection[];
-  rentPaid: {
-    transactionHash: string;
-    blockTimestamp: string;
-  }[];
   details: {
     collectionId: string;
     instructions: string;

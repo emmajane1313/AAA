@@ -5,35 +5,139 @@ import {
 } from "@/components/Dashboard/types/dashboard.types";
 import {
   Account,
+  AccountStats,
   evmAddress,
   PageSize,
   Post,
   PublicClient,
   TextOnlyMetadata,
 } from "@lens-protocol/client";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import fetchPosts from "../../../../graphql/lens/queries/posts";
 import { getAgent } from "../../../../graphql/queries/getAgent";
 import { INFURA_GATEWAY, STORAGE_NODE } from "@/lib/constants";
 import fetchAccountsAvailable from "../../../../graphql/lens/queries/availableAccounts";
+import fetchStats from "../../../../graphql/lens/queries/accountStats";
+import unfollow from "../../../../graphql/lens/mutations/unfollow";
+import follow from "../../../../graphql/lens/mutations/follow";
+import { getAgentRent } from "../../../../graphql/queries/getAgentRent";
 
 const useAgent = (
   id: string | undefined,
   lensClient: PublicClient,
-  lensConnected: LensConnected | undefined
+  lensConnected: LensConnected | undefined,
+  setNotification: (e: SetStateAction<string | undefined>) => void,
+  setSignless: (e: SetStateAction<boolean>) => void
 ) => {
   const [screen, setScreen] = useState<number>(0);
   const [agent, setAgent] = useState<Agent | undefined>();
   const [agentLoading, setAgentLoading] = useState<boolean>(false);
   const [activityCursor, setActivityCursor] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const [stats, setStats] = useState<AccountStats>();
+  const [followLoading, setFollowLoading] = useState<boolean>(false);
+  const [agentRent, setAgentRent] = useState<
+    {
+      amounts: string[];
+      collectionIds: string[];
+      tokens: string;
+      blockTimestamp: string;
+      transactionHash: string;
+    }[]
+  >([]);
 
-  const handleActivity = async (reset: boolean): Promise<Post[] | void> => {
+  const handleFollow = async () => {
+    if (!lensConnected?.sessionClient) return;
+    setFollowLoading(true);
+    try {
+      if (agent?.profile?.operations?.isFollowedByMe) {
+        const res = await unfollow(
+          {
+            account: evmAddress(agent?.profile?.address),
+          },
+          lensConnected?.sessionClient
+        );
+
+        if (
+          (res as any)?.reason?.includes(
+            "Signless experience is unavailable for this operation. You can continue by signing the sponsored request."
+          )
+        ) {
+          setSignless?.(true);
+        } else if ((res as any)?.hash) {
+          setNotification("Unfollowed!");
+          setStats({
+            ...stats!,
+            graphFollowStats: {
+              ...stats?.graphFollowStats!,
+              followers:
+                Number(stats?.graphFollowStats?.followers) > 0
+                  ? Number(stats?.graphFollowStats?.followers) - 1
+                  : 0,
+            },
+          });
+          setAgent({
+            ...agent!,
+            profile: {
+              ...agent?.profile!,
+              operations: {
+                ...agent?.profile?.operations!,
+                isFollowedByMe: false,
+              },
+            },
+          });
+        }
+      } else {
+        const res = await follow(
+          {
+            account: evmAddress(agent?.profile?.address),
+          },
+          lensConnected?.sessionClient
+        );
+
+        if (
+          (res as any)?.reason?.includes(
+            "Signless experience is unavailable for this operation. You can continue by signing the sponsored request."
+          )
+        ) {
+          setSignless?.(true);
+        } else if ((res as any)?.hash) {
+          setNotification("Followed!");
+          setStats({
+            ...stats!,
+            graphFollowStats: {
+              ...stats?.graphFollowStats!,
+              followers: Number(stats?.graphFollowStats?.followers) + 1,
+            },
+          });
+          setAgent({
+            ...agent!,
+            profile: {
+              ...agent?.profile!,
+              operations: {
+                ...agent?.profile?.operations!,
+                isFollowedByMe: true,
+              },
+            },
+          });
+        }
+      }
+    } catch (err: any) {
+      console.error(err.message);
+    }
+    setFollowLoading(false);
+  };
+
+  const handleActivity = async (
+    reset: boolean,
+    agentInput?: string
+  ): Promise<Post[] | void> => {
     try {
       const postsRes = await fetchPosts(
         {
           pageSize: PageSize.Fifty,
           filter: {
+            authors: [agentInput ? agentInput : agent?.profile?.address],
             metadata: {
               tags: {
                 oneOf: ["tripleA"],
@@ -44,6 +148,8 @@ const useAgent = (
         lensConnected?.sessionClient || lensClient
       );
 
+
+
       let posts: Post[] = [];
 
       if ((postsRes as any)?.items?.length > 0) {
@@ -52,6 +158,9 @@ const useAgent = (
         const postsRes = await fetchPosts(
           {
             pageSize: PageSize.Fifty,
+            filter: {
+              authors: [agentInput ? agentInput : agent?.profile?.address],
+            },
           },
           lensConnected?.sessionClient || lensClient
         );
@@ -59,7 +168,7 @@ const useAgent = (
           (pos?.metadata as TextOnlyMetadata)?.tags?.includes("tripleA")
         );
       }
-
+   
       posts = await Promise.all(
         posts?.map(async (post) => {
           let picture = post?.author?.metadata?.picture;
@@ -134,7 +243,7 @@ const useAgent = (
         {
           managedBy: evmAddress(res?.data?.agentCreateds?.[0]?.wallets?.[0]),
         },
-        lensClient
+        lensConnected?.sessionClient || lensClient
       );
       let picture = "";
       let profile: any;
@@ -166,7 +275,7 @@ const useAgent = (
         {
           managedBy: evmAddress(res?.data?.agentCreateds?.[0]?.owner),
         },
-        lensClient
+        lensConnected?.sessionClient || lensClient
       );
       let ownerPicture = "";
       let ownerProfile: any;
@@ -194,7 +303,10 @@ const useAgent = (
         };
       }
 
-      const posts = await handleActivity(false);
+      const posts = await handleActivity(
+        false,
+        (result as any)?.[0]?.account?.address
+      );
 
       let activeCollectionIds: AgentCollection[] = [];
       let collectionIdsHistory: AgentCollection[] = [];
@@ -225,7 +337,7 @@ const useAgent = (
               {
                 managedBy: evmAddress(id?.artist),
               },
-              lensClient
+              lensConnected?.sessionClient || lensClient
             );
 
             collectionIdsHistory.push({
@@ -236,6 +348,21 @@ const useAgent = (
           }
         )
       );
+
+      const stats = await fetchStats(
+        {
+          account: (result as any)?.[0]?.account?.owner,
+        },
+        lensConnected?.sessionClient || lensClient
+      );
+
+      setStats(stats as AccountStats);
+
+      const rent = await getAgentRent(
+        Number(res?.data?.agentCreateds?.[0]?.AAAAgents_id)
+      );
+
+      setAgentRent(rent?.data?.rentPaids);
 
       setAgent({
         id: res?.data?.agentCreateds?.[0]?.AAAAgents_id,
@@ -253,7 +380,6 @@ const useAgent = (
         collectionIdsHistory,
         accountConnected: (result as any)?.[0]?.account?.address,
         ownerProfile,
-        rentPaid: res?.data?.agentCreateds?.[0]?.rentPaid || [],
       });
     } catch (err: any) {
       console.error(err.message);
@@ -270,6 +396,7 @@ const useAgent = (
           pageSize: PageSize.Fifty,
           cursor: activityCursor,
           filter: {
+            authors: [agent?.profile?.address],
             metadata: {
               tags: {
                 oneOf: ["tripleA"],
@@ -290,6 +417,9 @@ const useAgent = (
         const postsRes = await fetchPosts(
           {
             pageSize: PageSize.Fifty,
+            filter: {
+              authors: [agent?.profile?.address],
+            },
           },
           lensConnected?.sessionClient || lensClient
         );
@@ -361,6 +491,10 @@ const useAgent = (
     setScreen,
     setAgent,
     handleActivity,
+    stats,
+    followLoading,
+    handleFollow,
+    agentRent,
   };
 };
 

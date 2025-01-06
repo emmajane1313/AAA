@@ -1,4 +1,3 @@
-use base64::{engine::general_purpose, Engine};
 use chrono::Utc;
 use dotenv::{dotenv, var};
 use futures_util::StreamExt;
@@ -26,15 +25,12 @@ use tokio_tungstenite::{
 use tungstenite::http::method;
 use utils::{
     constants::{AAA_URI, AGENT_INTERFACE_URL},
+    contracts::configure_key,
     lens::handle_lens_account,
     types::*,
 };
 mod classes;
 mod utils;
-use aes_gcm::{
-    aead::{Aead, KeyInit},
-    {Aes256Gcm, Nonce},
-};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -101,16 +97,13 @@ async fn handle_connection(
                         if let Some(origen) = origen {
                             match origen.to_str() {
                                 Ok(origen_str) => {
-                                    // if origen_str ==
-                                    //          AGENT_INTERFACE_URL
-
-                                    // {
-                                    return Ok(respuesta);
-                                    // } else {
-                                    //     return Err(ErrorResponse::new(Some(
-                                    //         "Forbidden".to_string(),
-                                    //     )));
-                                    // }
+                                    if origen_str == AGENT_INTERFACE_URL {
+                                        return Ok(respuesta);
+                                    } else {
+                                        return Err(ErrorResponse::new(Some(
+                                            "Forbidden".to_string(),
+                                        )));
+                                    }
                                 }
                                 Err(e) => {
                                     eprintln!("Error processing origin: {:?}", e);
@@ -162,47 +155,33 @@ async fn handle_connection(
                         parsed["customInstructions"].as_str(),
                         parsed["accountAddress"].as_str(),
                     ) {
-                        let encryption_details_parse: Value = from_str(encryption_details)
-                            .expect("Failed to parse encryption_details JSON");
-                        let encrypted_private_key =
-                            encryption_details_parse["encrypted"].as_str().unwrap();
-                        let iv = encryption_details_parse["iv"].as_str().unwrap();
-                        let auth_tag = encryption_details_parse["authTag"].as_str().unwrap();
-                        let encryption_key =
-                            var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY isn't configured.");
+                        let private_key = match configure_key(encryption_details) {
+                            Ok(private_key) => private_key,
+                            Err(err) => {
+                                eprintln!("Error in decrypting private key {}", err);
+                                "no_key".to_string()
+                            }
+                        };
 
-                        let key = encryption_key.as_bytes();
-                        let cipher = Aes256Gcm::new_from_slice(key).expect("Invalid Key");
-
-                        let slice = &general_purpose::STANDARD
-                            .decode(iv)
-                            .expect("Error with slice");
-                        let nonce = Nonce::from_slice(slice);
-                        let ciphertext = general_purpose::STANDARD.decode(encrypted_private_key)?;
-                        let mut combined = ciphertext.clone();
-                        combined.extend_from_slice(&general_purpose::STANDARD.decode(auth_tag)?);
-
-                        let decrypted_data = cipher
-                            .decrypt(nonce, combined.as_ref())
-                            .expect("Invalid Data to Decrypt");
-                        let private_key =
-                            String::from_utf8(decrypted_data).expect("UTF8 Error in key");
-
-                        println!("private_key: {:?}\n\n", private_key);
+                        if private_key == "no_key".to_string() {
+                            return Ok(());
+                        }
+                        let new_id: u32 = id.parse().expect("Error converting id to u32");
+                        println!("private_key for agent_{}: {:?}\n\n", private_key, new_id);
 
                         let clock = {
                             let agents_snapshot = agents.read().await;
                             let mut rng = StdRng::from_entropy();
                             let mut clock;
                             loop {
-                                let random_hour = rng.gen_range(0..24);
+                                let random_hour = rng.gen_range(0..12);
                                 let random_minute = rng.gen_range(0..60);
                                 let random_second = rng.gen_range(0..60);
                                 clock = random_hour * 3600 + random_minute * 60 + random_second;
 
                                 if !agents_snapshot.values().any(|agent| {
                                     let agent_clock = agent.agent.clock;
-                                    (clock as i32 - agent_clock as i32).abs() < 1800
+                                    (clock as i32 - agent_clock as i32).abs() < 600
                                 }) {
                                     break;
                                 }
@@ -210,7 +189,6 @@ async fn handle_connection(
                             clock
                         };
                         let mut agents_write = agents.write().await;
-                        let new_id: u32 = id.parse().expect("Error converting id to u32");
 
                         let mut env_file = OpenOptions::new()
                             .append(true)
@@ -234,7 +212,11 @@ async fn handle_connection(
                             .expect("Error writing to the .env");
 
                         let mut existing_data = Map::new();
-                        if let Ok(mut file) = File::open("var/data/data.json").await {
+                        if let Ok(mut file) = File::
+                        // open("var/data/data.json")
+                         open("/var/data/data.json")
+                        .await
+                        {
                             let mut content = String::new();
                             file.read_to_string(&mut content).await.unwrap();
                             existing_data = from_str(&content).unwrap_or_else(|_| Map::new());
@@ -245,11 +227,15 @@ async fn handle_connection(
                             json!(encryption_details),
                         );
 
-                        println!("Attempting to create or write to var/data/data.json");
+                        println!(
+                            "Attempting to create or write to var/data/data.json agent_{}",
+                            new_id
+                        );
                         let file = OpenOptions::new()
                             .write(true)
                             .create(true)
-                            .open("var/data/data.json")
+                            // .open("var/data/data.json")
+                            .open("/var/data/data.json")
                             .await;
 
                         match file {
@@ -260,22 +246,27 @@ async fn handle_connection(
                                     .await
                                     .unwrap_or_else(|err| eprintln!("Error writing: {:?}", err));
 
-                                agents_write.insert(
-                                    new_id,
-                                    AgentManager::new(&TripleAAgent {
-                                        id: new_id,
-                                        name: title.to_string(),
-                                        description: description.to_string(),
-                                        cover: cover.to_string(),
-                                        custom_instructions: custom_instructions.to_string(),
-                                        wallet: public_address.to_string(),
-                                        clock,
-                                        last_active_time: Utc::now().timestamp() as u32,
-                                        account_address: account_address.to_string(),
-                                    }),
-                                );
+                                let new_agent = AgentManager::new(&TripleAAgent {
+                                    id: new_id,
+                                    name: title.to_string(),
+                                    description: description.to_string(),
+                                    cover: cover.to_string(),
+                                    custom_instructions: custom_instructions.to_string(),
+                                    wallet: public_address.to_string(),
+                                    clock,
+                                    last_active_time: Utc::now().timestamp() as u32,
+                                    account_address: account_address.to_string(),
+                                });
 
-                                println!("Agent added at address: {}", public_address);
+                                match new_agent {
+                                    Some(agent) => {
+                                        agents_write.insert(new_id, agent);
+                                        println!("Agent added at address: {}", public_address);
+                                    }
+                                    None => {
+                                        eprintln!("Agent not added at address: {}", public_address);
+                                    }
+                                }
                             }
                             Err(err) => {
                                 eprintln!("Failed to open file: {:?}", err);
@@ -300,7 +291,11 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
 
         {
             let agents_guard = agents.read().await;
-            agent_ids = agents_guard.keys().cloned().collect();
+            agent_ids = agents_guard
+                .iter()
+                .filter(|(_, manager)| should_trigger(&manager.agent))
+                .map(|(&id, _)| id)
+                .collect();
         }
 
         for id in agent_ids {
@@ -329,7 +324,7 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
 
 fn should_trigger(agent: &TripleAAgent) -> bool {
     let now_seconds = Utc::now().timestamp() as u32;
-    let day_seconds = now_seconds % 86400;
+    let day_seconds = now_seconds % 43200;
     let diff = (agent.clock as i32 - day_seconds as i32).abs();
 
     diff <= 60
@@ -395,14 +390,14 @@ async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + S
                 let mut rng = StdRng::from_entropy();
                 let mut clock;
                 loop {
-                    let random_hour = rng.gen_range(0..24);
+                    let random_hour = rng.gen_range(0..12);
                     let random_minute = rng.gen_range(0..60);
                     let random_second = rng.gen_range(0..60);
                     clock = random_hour * 3600 + random_minute * 60 + random_second;
 
                     if !agents_snapshot.values().any(|agent| {
                         let agent_clock = agent.agent.clock;
-                        (clock as i32 - agent_clock as i32).abs() < 1800
+                        (clock as i32 - agent_clock as i32).abs() < 600
                     }) {
                         break;
                     }
@@ -414,7 +409,9 @@ async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + S
                     .and_then(|w| w.as_str())
                     .unwrap_or("")
                     .to_string();
-                let account_address = handle_lens_account(&wallet, false).await.unwrap_or_default();
+                let account_address = handle_lens_account(&wallet, false)
+                    .await
+                    .unwrap_or_default();
 
                 let manager = AgentManager::new(&TripleAAgent {
                     id: new_id,
@@ -440,7 +437,14 @@ async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + S
                     account_address,
                 });
 
-                agents_snapshot.insert(new_id, manager);
+                match manager {
+                    Some(man) => {
+                        agents_snapshot.insert(new_id, man);
+                    }
+                    None => {
+                        eprintln!("Agent Not Added at id {}", new_id)
+                    }
+                }
             }
             Ok(agents_snapshot)
         }

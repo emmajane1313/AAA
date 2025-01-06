@@ -491,15 +491,8 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                             type="number"
                             disabled={rechargeLoading[key]}
                             min={1}
-                            max={3}
-                            step={1}
                             value={rechargeAmount[key]}
                             onChange={(e) => {
-                              let value = Number(e.target.value);
-                              if (value > 3) {
-                                value = 3;
-                              }
-                              (e.target.value as any) = value;
                               e.preventDefault();
                               e.stopPropagation();
                               setRechargeAmount((prev) => {
@@ -530,9 +523,13 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                   if (!isConnected) {
                                     setOpen?.(!open);
                                   } else if (approvedRecharge[key]) {
-                                    handleRecharge(agent, nft?.tokens?.[0]);
+                                    handleRecharge(
+                                      key,
+                                      nft?.tokens?.[0],
+                                      Number(agent?.id)
+                                    );
                                   } else {
-                                    handleApproveRecharge(agent);
+                                    handleApproveRecharge(key);
                                   }
                                 }
                               }}

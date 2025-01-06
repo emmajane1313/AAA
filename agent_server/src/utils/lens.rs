@@ -45,7 +45,8 @@ async fn refresh(
         .post(LENS_API)
         .header("Authorization", format!("Bearer {}", auth_tokens))
         .header("Content-Type", "application/json")
-        .header("Origin", "http://localhost:3000")
+        .header("Origin", "https://aaa-6t0j.onrender.com")
+        // .header("Origin", "http://localhost:3000")
         .json(&query)
         .send()
         .await?;
@@ -107,7 +108,8 @@ pub async fn authenticate(
     let res = client
         .post(LENS_API)
         .header("Content-Type", "application/json")
-        .header("Origin", "http://localhost:3000")
+        .header("Origin", "https://aaa-6t0j.onrender.com")
+        // .header("Origin", "http://localhost:3000")
         .json(&mutation)
         .send()
         .await;
@@ -159,7 +161,8 @@ pub async fn authenticate(
                     let response = client
                         .post(LENS_API)
                         .header("Content-Type", "application/json")
-                        .header("Origin", "http://localhost:3000")
+                        .header("Origin", "https://aaa-6t0j.onrender.com")
+                        // .header("Origin", "http://localhost:3000")
                         .json(&authenticate_mutation)
                         .send()
                         .await?;
@@ -209,7 +212,14 @@ pub async fn handle_tokens(
     tokens: Option<SavedTokens>,
 ) -> Result<SavedTokens, Box<dyn Error + Send + Sync>> {
     let client = initialize_api();
-    let wallet = initialize_wallet(private_key);
+
+    let wallet = match initialize_wallet(private_key) {
+        Some(wallet) => wallet,
+        None => {
+            eprintln!("Wallet initialization failed. Skipping agent tokens.");
+            return Err("Wallet initialization failed. Skipping agent tokens.".into());
+        }
+    };
 
     if let Some(saved) = tokens {
         let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
@@ -245,7 +255,15 @@ pub async fn make_publication(
     auth_tokens: &str,
 ) -> Result<String, Box<dyn Error>> {
     let client = initialize_api();
-    let wallet = initialize_wallet(private_key);
+
+    let wallet = match initialize_wallet(private_key) {
+        Some(wallet) => wallet,
+        None => {
+            eprintln!("Wallet initialization failed. Skipping publication.");
+            return Err("Wallet initialization failed. Skipping publication.".into());
+        }
+    };
+
     let query = json!({
         "query": r#"
             mutation post($contentUri: String!) {
@@ -281,7 +299,8 @@ pub async fn make_publication(
         .post(LENS_API)
         .header("Authorization", format!("Bearer {}", auth_tokens))
         .header("Content-Type", "application/json")
-        .header("Origin", "http://localhost:3000")
+        .header("Origin", "https://aaa-6t0j.onrender.com")
+        // .header("Origin", "http://localhost:3000")
         .json(&query)
         .send()
         .await?;
@@ -397,7 +416,8 @@ async fn poll(hash: &str, auth_tokens: &str) -> Result<String, Box<dyn Error>> {
         .post(LENS_API)
         .header("Authorization", format!("Bearer {}", auth_tokens))
         .header("Content-Type", "application/json")
-        .header("Origin", "http://localhost:3000")
+        .header("Origin", "https://aaa-6t0j.onrender.com")
+        // .header("Origin", "http://localhost:3000")
         .json(&query)
         .send()
         .await?;
@@ -460,7 +480,8 @@ pub async fn handle_lens_account(wallet: &str, username: bool) -> Result<String,
     let response = client
         .post(LENS_API)
         .header("Content-Type", "application/json")
-        .header("Origin", "http://localhost:3000")
+        .header("Origin", "https://aaa-6t0j.onrender.com")
+        // .header("Origin", "http://localhost:3000")
         .json(&query)
         .send()
         .await?;

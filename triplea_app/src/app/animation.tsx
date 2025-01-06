@@ -10,7 +10,7 @@ export default function Animation({ children }: { children: React.ReactNode }) {
     if (context?.pageChange) {
       const timer = setTimeout(() => {
         context?.setPageChange(false);
-      }, 500);
+      }, 2000);
 
       return () => clearTimeout(timer);
     }

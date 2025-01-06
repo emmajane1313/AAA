@@ -1,6 +1,14 @@
-use std::sync::{Arc, Mutex, Once};
+use std::{
+    error::Error,
+    sync::{Arc, Mutex, Once},
+};
 
 use crate::utils::constants::{ACCESS_CONTROLS, AGENTS, LENS_CHAIN_ID, LENS_RPC_URL};
+use aes_gcm::{
+    aead::{Aead, KeyInit},
+    {Aes256Gcm, Nonce},
+};
+use base64::{engine::general_purpose, Engine};
 use dotenv::{dotenv, from_filename, var};
 use ethers::{
     abi::{Abi, Address},
@@ -11,7 +19,7 @@ use ethers::{
     types::Chain,
 };
 use reqwest::Client;
-use serde_json::from_str;
+use serde_json::{from_str, Value};
 
 static INIT_PROVIDER: Once = Once::new();
 static INIT_LENS: Once = Once::new();
@@ -73,34 +81,86 @@ pub fn initialize_access_wallet() -> LocalWallet {
     wallet
 }
 
-pub fn initialize_wallet(private_key: u32) -> LocalWallet {
+pub fn initialize_wallet(private_key: u32) -> Option<LocalWallet> {
     from_filename(".env").ok();
-    let wallet = match var(format!("ID_{}", private_key.to_string())) {
+    match var(format!("ID_{}", private_key.to_string())) {
         Ok(key) => match key.parse::<LocalWallet>() {
             Ok(mut wallet) => {
                 let chain_id = *LENS_CHAIN_ID;
                 wallet = wallet.with_chain_id(chain_id);
-                wallet
+                *WALLET.lock().unwrap() = Some(wallet.clone());
+                Some(wallet)
             }
-            Err(e) => panic!("Error in parsing private key: {:?}", e),
+            Err(e) => {
+                eprintln!("Error in parsing private key: {:?}", e);
+                None
+            }
         },
-        Err(e) => panic!("PRIVATE_KEY not found: {:?}", e),
-    };
+        Err(_) => {
+            eprintln!("PRIVATE_KEY not found in .env for agent_{}, looking in /var/data/data.json...", private_key);
 
-    *WALLET.lock().unwrap() = Some(wallet.clone());
-    wallet
+            match std::fs::
+            read_to_string("/var/data/data.json")
+            // read_to_string("var/data/data.json")  
+             {
+                Ok(json_data) => {
+                    let parsed_json: serde_json::Value =
+                        serde_json::from_str(&json_data).expect("Failed to parse data.json");
+                    if let Some(encrypted_data) =
+                        parsed_json[format!("ID_{}", private_key)].as_str()
+                    {
+                        match configure_key(encrypted_data) {
+                            Ok(decrypted_private_key) => {
+                                match decrypted_private_key.parse::<LocalWallet>() {
+                                    Ok(mut wallet) => {
+                                        let chain_id = *LENS_CHAIN_ID;
+                                        wallet = wallet.with_chain_id(chain_id);
+                                        *WALLET.lock().unwrap() = Some(wallet.clone());
+                                        println!("Key Found for ID_{} in var/data", private_key);
+                                        Some(wallet)
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Error parsing decrypted private key: {:?}", e);
+                                        None
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Error decrypting private key: {:?}", e);
+                                None
+                            }
+                        }
+                    } else {
+                        eprintln!("ID_{} not found in data.json", private_key);
+                        None
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to read /var/data/data.json: {:?}", e);
+                    None
+                }
+            }
+        }
+    }
 }
 
 pub fn initialize_contracts(
     private_key: u32,
-) -> (
+) -> (Option<(
     Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
     Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
-) {
+)>) {
     let provider = initialize_provider();
     dotenv().ok();
 
-    let wallet = initialize_wallet(private_key);
+    let wallet = match initialize_wallet(private_key) {
+        Some(wallet) => wallet,
+        None => {
+            eprintln!("Wallet initialization failed. Skipping agent creation.");
+            return None;
+        }
+    };
+
     let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
 
     let access_wallet = initialize_access_wallet();
@@ -124,7 +184,7 @@ pub fn initialize_contracts(
     let agents_contract = Contract::new(agents_address, agents_abi, client.clone());
     *AGENTS_CONTRACT.lock().unwrap() = Some(Arc::new(agents_contract));
 
-    (
+    Some((
         ACCESS_CONTROLS_CONTRACT
             .lock()
             .unwrap()
@@ -135,5 +195,32 @@ pub fn initialize_contracts(
             .unwrap()
             .clone()
             .expect("AGENTS_CONTRACT not initialized"),
-    )
+    ))
+}
+
+pub fn configure_key(encryption_details: &str) -> Result<String, Box<dyn Error + Send + Sync>> {
+    let encryption_details_parse: Value =
+        from_str(encryption_details).expect("Failed to parse encryption_details JSON");
+    let encrypted_private_key = encryption_details_parse["encrypted"].as_str().unwrap();
+    let iv = encryption_details_parse["iv"].as_str().unwrap();
+    let auth_tag = encryption_details_parse["authTag"].as_str().unwrap();
+    let encryption_key = var("ENCRYPTION_KEY").expect("ENCRYPTION_KEY isn't configured.");
+
+    let key = encryption_key.as_bytes();
+    let cipher = Aes256Gcm::new_from_slice(key).expect("Invalid Key");
+
+    let slice = &general_purpose::STANDARD
+        .decode(iv)
+        .expect("Error with slice");
+    let nonce = Nonce::from_slice(slice);
+    let ciphertext = general_purpose::STANDARD.decode(encrypted_private_key)?;
+    let mut combined = ciphertext.clone();
+    combined.extend_from_slice(&general_purpose::STANDARD.decode(auth_tag)?);
+
+    let decrypted_data = cipher
+        .decrypt(nonce, combined.as_ref())
+        .expect("Invalid Data to Decrypt");
+    let private_key = String::from_utf8(decrypted_data).expect("UTF8 Error in key");
+
+    Ok(private_key)
 }

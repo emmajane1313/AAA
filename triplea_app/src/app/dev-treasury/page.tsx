@@ -19,9 +19,9 @@ export default function DevTreasury() {
               treasuryLoading && "animate-pulse"
             }`}
           >
-            <div className="relative w-fit h-fit flex items-center justify-center text-3xl">
+            <div className="relative w-fit h-fit font-start uppercase flex items-center justify-center text-xl">
               {" "}
-              {treasury?.amount}{" "}
+              {Number(treasury?.amount) / 10 ** 18}{" "}
               {
                 TOKENS.find(
                   (tok) =>
@@ -35,7 +35,7 @@ export default function DevTreasury() {
                 className="absolute top-0 left-0 h-full bg-[#5aacfa] rounded-md"
                 style={{
                   width: `${Math.min(
-                    (Number(treasury?.amount) / 100000) * 100,
+                    (Number(treasury?.amount) / 10 ** 18) * 100,
                     100
                   )}%`,
                 }}

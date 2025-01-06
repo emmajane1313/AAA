@@ -73,20 +73,52 @@ contract AAAMarket {
         uint256 _agentShare = 0;
 
         if (
-            collectionManager.getCollectionAmountSold(collectionId) >= 1 &&
-            collectionManager.getCollectionAmount(collectionId) > 2 &&
-            collectionManager.getCollectionPrices(collectionId)[0] >
-            accessControls.getTokenThreshold(paymentToken) &&
-            collectionManager.getCollectionAgentIds(collectionId).length > 0
+            collectionManager.getCollectionAmountSold(collectionId) == 0 &&
+            amount > 1
         ) {
-            _agentShare = (_totalPrice * 10) / 100;
+            _artistShare = _tokenPrice;
+            uint256 _additionalUnits = amount - 1;
 
-            _perAgentShare =
-                _agentShare /
-                collectionManager.getCollectionAgentIds(collectionId).length;
+            if (
+                collectionManager.getCollectionAmount(collectionId) > 2 &&
+                collectionManager.getCollectionPrices(collectionId)[0] >
+                accessControls.getTokenThreshold(paymentToken) &&
+                collectionManager.getCollectionAgentIds(collectionId).length > 0
+            ) {
+                _agentShare = (_additionalUnits * _tokenPrice * 10) / 100;
 
-            if (_agentShare < _totalPrice) {
-                _artistShare = _totalPrice - _agentShare;
+                _perAgentShare =
+                    _agentShare /
+                    collectionManager
+                        .getCollectionAgentIds(collectionId)
+                        .length;
+
+                uint256 _artistShareForAdditionalUnits = (_additionalUnits *
+                    _tokenPrice *
+                    90) / 100;
+                _artistShare += _artistShareForAdditionalUnits;
+            }
+        } else {
+            if (
+                collectionManager.getCollectionAmountSold(collectionId) +
+                    amount >
+                1 &&
+                collectionManager.getCollectionAmount(collectionId) > 2 &&
+                collectionManager.getCollectionPrices(collectionId)[0] >
+                accessControls.getTokenThreshold(paymentToken) &&
+                collectionManager.getCollectionAgentIds(collectionId).length > 0
+            ) {
+                _agentShare = (_totalPrice * 10) / 100;
+
+                _perAgentShare =
+                    _agentShare /
+                    collectionManager
+                        .getCollectionAgentIds(collectionId)
+                        .length;
+
+                if (_agentShare < _totalPrice) {
+                    _artistShare = _totalPrice - _agentShare;
+                }
             }
         }
 

@@ -12,10 +12,6 @@ const AGENT = gql`
       }
       creator
       blockTimestamp
-      rentPaid {
-        transactionHash
-        blockTimestamp
-      }
       balances {
         activeBalance
         totalBalance

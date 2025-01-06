@@ -122,7 +122,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
               data={activity?.metadata as any}
               metadata={activity?.metadata?.__typename!}
               setImageView={setImageView}
-              post
+              post={post}
             />
             <div className="relative w-full h-fit p-1 pixel-border-3 font-jackey2 justify-between flex flex-row gap-3 items-center sm:flex-nowrap flex-wrap">
               {[

@@ -358,7 +358,8 @@ const useCreateAgent = (
       };
 
       const newSocket = new WebSocket(
-        `ws://127.0.0.1:10000?key=${process.env.NEXT_PUBLIC_RENDER_KEY}`
+        // `ws://127.0.0.1:10000?key=${process.env.NEXT_PUBLIC_RENDER_KEY}`
+        `wss://aaa-6t0j.onrender.com?key=${process.env.NEXT_PUBLIC_RENDER_KEY}`
       );
 
       newSocket.onerror = (error) => {

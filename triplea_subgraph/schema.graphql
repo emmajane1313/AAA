@@ -76,6 +76,10 @@ type RentPaid @entity(immutable: false) {
   id: Bytes!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
+  tokens: [Bytes!]
+  amounts: [BigInt!]
+  collectionIds: [BigInt!]
+  agentId: BigInt!
 }
 
 type AgentCollection @entity(immutable: false) {
@@ -186,9 +190,9 @@ type AgentActiveCollection @entity(immutable: false) {
 
 type AgentOwnerPaid @entity(immutable: false) {
   id: Bytes!
-  token: Bytes! # address
-  owner: Bytes! # address
-  amount: BigInt! # uint256
+  token: Bytes
+  owner: Bytes
+  amount: BigInt
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -216,8 +220,8 @@ type OrderPayment @entity(immutable: false) {
 
 type DevTreasury @entity(immutable: false) {
   id: Bytes!
-  token: Bytes!
-  amount: BigInt!
+  token: Bytes
+  amount: BigInt
 }
 type AcceptedTokenRemoved @entity(immutable: false) {
   id: Bytes!
@@ -307,7 +311,10 @@ type AgentPaidRent @entity(immutable: false) {
   tokens: [Bytes!]
   amounts: [BigInt!]
   bonuses: [BigInt!]
+  collectionIds: [BigInt!]
   agentId: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
 }
 
 type FundsWithdrawnWithoutReceive @entity(immutable: false) {
@@ -341,6 +348,13 @@ type AgentDetailsUpdated @entity(immutable: false) {
   id: Bytes!
   customInstructions: [String!]
   dailyFrequency: [BigInt!]
-
+  agentIds: [BigInt!]
   collectionId: BigInt!
+}
+
+type CollectionPriceAdjusted @entity(immutable: false) {
+  id: Bytes!
+  token: Bytes!
+  collectionId: BigInt!
+  newPrice: BigInt!
 }

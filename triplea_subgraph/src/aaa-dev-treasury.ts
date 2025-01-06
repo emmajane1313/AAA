@@ -1,4 +1,4 @@
-import { Bytes } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes } from "@graphprotocol/graph-ts";
 import {
   AgentOwnerPaid as AgentOwnerPaidEvent,
   FundsReceived as FundsReceivedEvent,
@@ -37,9 +37,13 @@ export function handleAgentOwnerPaid(event: AgentOwnerPaidEvent): void {
 
   if (!devEntity) {
     devEntity = new DevTreasury(event.params.token);
+    devEntity.id = event.params.token;
   }
-
-  devEntity.amount = devEntity.amount.plus(event.params.amount);
+  let amount = devEntity.amount;
+  if (!amount) {
+    amount = BigInt.fromI32(0);
+  }
+  devEntity.amount = amount.plus(event.params.amount);
   devEntity.token = event.params.token;
 
   devEntity.save();
@@ -92,7 +96,10 @@ export function handleAgentPaidRent(event: AgentPaidRentEvent): void {
   entity.tokens = event.params.tokens.map<Bytes>((target: Bytes) => target);
   entity.amounts = event.params.amounts;
   entity.agentId = event.params.agentId;
+  entity.collectionIds = event.params.collectionIds;
   entity.bonuses = event.params.bonuses;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
   entity.save();
 }

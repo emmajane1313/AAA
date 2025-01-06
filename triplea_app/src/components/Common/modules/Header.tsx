@@ -14,7 +14,7 @@ import { useModal } from "connectkit";
 
 const Header: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
-  const { setOpen, open, openProfile, openSwitchNetworks , openOnboarding} = useModal();
+  const { open, openProfile, openSwitchNetworks , openOnboarding} = useModal();
   const animationContext = useContext(AnimationContext);
   const { isConnected, address, chainId } = useAccount();
   const context = useContext(ModalContext);

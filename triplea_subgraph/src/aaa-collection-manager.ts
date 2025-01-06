@@ -15,6 +15,7 @@ import {
   CollectionDeactivated as CollectionDeactivatedEvent,
   CollectionActivated as CollectionActivatedEvent,
   AgentDetailsUpdated as AgentDetailsUpdatedEvent,
+  CollectionPriceAdjusted as CollectionPriceAdjustedEvent,
 } from "../generated/AAACollectionManager/AAACollectionManager";
 import {
   CollectionDeleted,
@@ -26,6 +27,7 @@ import {
   AgentCreated,
   AgentDetails,
   AgentDetailsUpdated,
+  CollectionPriceAdjusted,
 } from "../generated/schema";
 import {
   CollectionMetadata as CollectionMetadataTemplate,
@@ -310,6 +312,36 @@ export function handleDropDeleted(event: DropDeletedEvent): void {
   entity.save();
 }
 
+export function handleCollectionPriceAdjusted(
+  event: CollectionPriceAdjustedEvent
+): void {
+  let entity = new CollectionPriceAdjusted(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.collectionId = event.params.collectionId;
+  entity.newPrice = event.params.newPrice;
+  entity.token = event.params.token;
+
+  entity.save();
+
+  let entityCollection = CollectionCreated.load(
+    Bytes.fromByteArray(ByteArray.fromBigInt(event.params.collectionId))
+  );
+
+  if (entityCollection) {
+    let prices = entityCollection.prices;
+
+    if (!prices) {
+      prices = [];
+    }
+
+    prices[0] = entity.newPrice;
+
+    entityCollection.prices = prices;
+    entityCollection.save();
+  }
+}
+
 export function handleAgentDetailsUpdated(
   event: AgentDetailsUpdatedEvent
 ): void {
@@ -319,6 +351,7 @@ export function handleAgentDetailsUpdated(
   entity.collectionId = event.params.collectionId;
   entity.customInstructions = event.params.customInstructions;
   entity.dailyFrequency = event.params.dailyFrequency;
+  entity.agentIds = event.params.agentIds;
 
   entity.save();
 
@@ -343,7 +376,9 @@ export function handleAgentDetailsUpdated(
       if (current_agent) {
         let collectionIdHex = entityCollection.collectionId.toHexString();
         let agentHex = agents[i].toHexString();
-        let agentWalletHex = (current_agent.wallets as Bytes[])[0].toHexString();
+        let agentWalletHex = (
+          current_agent.wallets as Bytes[]
+        )[0].toHexString();
         let combinedHex = collectionIdHex + agentHex + agentWalletHex;
         if (combinedHex.length % 2 !== 0) {
           combinedHex = "0" + combinedHex;

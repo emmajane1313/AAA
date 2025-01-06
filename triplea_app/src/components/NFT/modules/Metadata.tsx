@@ -48,10 +48,10 @@ const Metadata: FunctionComponent<MetadataProps> = ({
                 </div>
               </div>
               <div
-                className={`relative w-full overflow-y-scroll p-1.5 items-start justify-start font-jack text-xs pixel-border-4 bg-morado rounded-md break-all h-full`}
+                className={`relative w-full p-1.5 items-start justify-start font-jack text-xs pixel-border-4 bg-morado rounded-md break-all h-full`}
               >
                 <div
-                  className="relative w-full h-full flex p-1.5 items-start justify-start break-all rounded-md bg-white"
+                  className="relative overflow-y-scroll w-full h-full flex p-1.5 items-start justify-start break-all rounded-md bg-white"
                   dangerouslySetInnerHTML={{
                     __html: descriptionRegex(
                       (data as ImageMetadata)?.content as string,
@@ -66,10 +66,10 @@ const Metadata: FunctionComponent<MetadataProps> = ({
               className={`relative w-full flex flex-col sm:flex-row gap-2 items-start justify-start h-fit sm:h-44`}
             >
               <div
-                className={`relative w-full overflow-y-scroll p-1.5 items-start justify-start font-jack text-xs pixel-border-4 bg-morado rounded-md break-all h-full max-h-44`}
+                className={`relative w-full p-1.5 items-start justify-start font-jack text-xs pixel-border-4 bg-morado rounded-md break-all h-full max-h-44`}
               >
                 <div
-                  className="relative w-full h-full flex p-1.5 items-start justify-start break-all rounded-md bg-white"
+                  className="relative w-full h-full flex p-1.5 items-start justify-start break-all rounded-md bg-white overflow-y-scroll"
                   dangerouslySetInnerHTML={{
                     __html: descriptionRegex(
                       (data as ImageMetadata)?.content as string,

@@ -285,6 +285,12 @@
         "internalType": "address[]"
       },
       {
+        "name": "collectionIds",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
         "name": "amounts",
         "type": "uint256[]",
         "indexed": false,

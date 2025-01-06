@@ -26,12 +26,14 @@ export default {
         jack: "Jack",
         start: "Start",
         jackey2: "Jackey2",
+        arc: "Arcadia",
       },
       fontSize: {
         xxs: "0.6rem",
       },
       cursor: {
-        pixel: "url('https://thedial.infura-ipfs.io/ipfs/QmTw119xZnNe978MWYJpdZsMvZvCHe99uLpiQzsQiomnNr'), pointer",
+        pixel:
+          "url('https://thedial.infura-ipfs.io/ipfs/QmTw119xZnNe978MWYJpdZsMvZvCHe99uLpiQzsQiomnNr'), pointer",
       },
     },
   },

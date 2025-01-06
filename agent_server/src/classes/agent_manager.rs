@@ -24,17 +24,26 @@ use tokio::time;
 use uuid::Uuid;
 
 impl AgentManager {
-    pub fn new(agent: &TripleAAgent) -> Self {
-        let (access_controls_contract, agents_contract) = initialize_contracts(agent.id);
+    pub fn new(agent: &TripleAAgent) -> Option<Self> {
+        let contracts = initialize_contracts(agent.id);
         initialize_api();
 
-        return AgentManager {
-            agent: agent.clone(),
-            current_queue: Vec::new(),
-            agents_contract,
-            access_controls_contract,
-            tokens: None,
-        };
+        match contracts {
+            Some((access_controls_contract, agents_contract)) => Some(AgentManager {
+                agent: agent.clone(),
+                current_queue: Vec::new(),
+                agents_contract,
+                access_controls_contract,
+                tokens: None,
+            }),
+            None => {
+                eprintln!(
+                    "Failed to initialize contracts for agent with ID: {}",
+                    agent.id
+                );
+                None
+            }
+        }
     }
 
     pub async fn resolve_activity(&mut self) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -72,9 +81,10 @@ impl AgentManager {
     }
 
     async fn get_faucet_grass(&mut self) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let method = self
-            .access_controls_contract
-            .method::<_, U256>("getNativeGrassBalance", self.agent.wallet.clone());
+        let method = self.access_controls_contract.method::<_, U256>(
+            "getNativeGrassBalance",
+            H160::from_str(&self.agent.wallet.clone()).unwrap(),
+        );
 
         match method {
             Ok(call) => {
@@ -87,9 +97,10 @@ impl AgentManager {
                     Ok(balance) => {
                         println!("Agent Grass Balance: {}\n", balance);
                         if balance <= U256::from(1u128.pow(18)) {
-                            let method = self
-                                .access_controls_contract
-                                .method::<_, H256>("faucet", self.agent.wallet.clone());
+                            let method = self.access_controls_contract.method::<_, H256>(
+                                "faucet",
+                                (self.agent.wallet.clone(), 2 * 10u128.pow(17)),
+                            );
 
                             match method {
                                 Ok(call) => {
@@ -167,13 +178,13 @@ impl AgentManager {
                         }
                     }
                     Err(err) => {
-                        eprintln!("Error getting agent GRASS balance: {}", err);
+                        eprintln!("Error claiming from faucet: {}", err);
                         return Err(Box::new(err));
                     }
                 }
             }
             Err(err) => {
-                eprintln!("Error claiming from faucet: {}", err);
+                eprintln!("Error getting agent GRASS balance: {}", err);
                 return Err(Box::new(err));
             }
         }
@@ -352,7 +363,10 @@ impl AgentManager {
                             self.current_queue.extend(reordered_list);
                         }
 
-                        println!("Final queue: {:?}", self.current_queue);
+                        println!(
+                            "Final queue for agent{}: {:?}",
+                            self.agent.id, self.current_queue
+                        );
 
                         Ok(())
                     } else {
@@ -373,7 +387,10 @@ impl AgentManager {
             }
         } else {
             self.current_queue = Vec::new();
-            println!("No collection Ids with sufficient tokens");
+            println!(
+                "No collection Ids with sufficient tokens for agent_{}",
+                self.agent.id
+            );
             Ok(())
         }
     }
@@ -436,7 +453,8 @@ impl AgentManager {
                                 .unwrap_or_default()
                                 .to_string();
 
-                            let username = handle_lens_account(&artist, true).await.unwrap_or_default();
+                            let username =
+                                handle_lens_account(&artist, true).await.unwrap_or_default();
 
                             activities.push(AgentActivity {
                                 collection: Collection {
@@ -527,6 +545,7 @@ impl AgentManager {
             collection,
             &self.agent.custom_instructions,
             collection_instructions,
+            &self.agent.id,
         )
         .await
         {
@@ -544,12 +563,23 @@ impl AgentManager {
 
                         match self.format_publication(&llm_message, &collection).await {
                             Ok(_) => {
-                                self.current_queue
-                                    .retain(|item| item.collection_id != collection.collection_id);
+                                let mut removed = false;
+
+                                self.current_queue.retain(|item| {
+                                    if !removed && item.collection_id == collection.collection_id {
+                                        removed = true;
+                                        false
+                                    } else {
+                                        true
+                                    }
+                                });
                                 Ok(())
                             }
                             Err(err) => {
-                                eprintln!("Error in making lens post: {:?}", err);
+                                eprintln!(
+                                    "Error in making lens post for agent_{}: {:?}",
+                                    self.agent.id, err
+                                );
                                 Ok(())
                             }
                         }
@@ -578,13 +608,28 @@ impl AgentManager {
             7200
         };
 
+        // let total_time = 500;
+
         let queue = self.current_queue.clone();
         let queue_size = queue.len() as i64;
+
+        // let interval = if queue_size > 0 {
+        //     total_time / queue_size
+        // } else {
+        //     0
+        // };
+
         let interval = if queue_size > 0 {
             adjusted_remaining_time / queue_size
         } else {
             0
         };
+
+        println!(
+            "Queue Length for Agent_{} before loop: {}",
+            self.agent.id,
+            self.current_queue.len()
+        );
 
         for collection in queue {
             let _ = self
@@ -592,9 +637,17 @@ impl AgentManager {
                 .await;
 
             if interval > 0 {
+                println!("Sleeping agent_{}", self.agent.id);
                 time::sleep(std::time::Duration::from_secs(interval as u64)).await;
             }
         }
+
+        println!(
+            "Queue Length for Agent_{} after finishing: {}",
+            self.agent.id,
+            self.current_queue.len()
+        );
+
         Ok(())
     }
 
@@ -652,13 +705,18 @@ impl AgentManager {
         .await
         .map_err(|e| Box::new(e.to_string()));
 
+        println!("Lens response for agent_{}: {:?}", self.agent.id, res);
+
         match res {
             Ok(success) => {
                 eprintln!("Post success: {:?}", success);
                 Ok(())
             }
             Err(e) => {
-                eprintln!("Error processing message: {:?}", e);
+                eprintln!(
+                    "Error processing message for agent_{}: {:?}",
+                    self.agent.id, e
+                );
                 Err(Box::new(io::Error::new(
                     io::ErrorKind::Other,
                     "Error sending message",
