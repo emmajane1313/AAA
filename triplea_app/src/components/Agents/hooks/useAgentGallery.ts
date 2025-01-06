@@ -88,7 +88,10 @@ const useAgentGallery = (
         setAgentPaginated(agentPaginated + 20);
       }
 
-      setAgents?.([...(agents || []), ...newAgents]);
+      setAgents?.([
+        ...(agents || []),
+        ...newAgents?.sort(() => Math.random() - 0.5),
+      ]);
     } catch (err: any) {
       console.error(err.message);
     }

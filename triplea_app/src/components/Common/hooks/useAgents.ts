@@ -75,7 +75,7 @@ const useAgents = (
           };
         })
       );
-      setAgents?.(allAgents);
+      setAgents?.(allAgents ?.sort(() => Math.random() - 0.5));
     } catch (err: any) {
       console.error(err.message);
     }

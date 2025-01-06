@@ -142,7 +142,7 @@ const useGallery = (lensClient: PublicClient) => {
 
       setPage(gallery?.length == 40 ? page + 40 : page);
       setHasMore(gallery?.length == 40 ? true : false);
-      setNfts([...nfts?.sort(() => Math.random() - 0.5), ...gallery]);
+      setNfts([...nfts, ...gallery?.sort(() => Math.random() - 0.5)]);
     } catch (err: any) {
       console.error(err.message);
     }
