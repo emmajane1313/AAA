@@ -169,7 +169,7 @@ fn read_from_secret(private_key: u32) -> Option<LocalWallet> {
                                         let chain_id = *LENS_CHAIN_ID;
                                         wallet = wallet.with_chain_id(chain_id);
                                         *WALLET.lock().unwrap() = Some(wallet.clone());
-                                        println!("Key Found for ID_{} in var/data", private_key);
+                                        println!("Key Found for ID_{} in etc/secrets", private_key);
                                         return Some(wallet);
                                     }
                                     Err(e) => {

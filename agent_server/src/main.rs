@@ -297,6 +297,8 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
                 .collect();
         }
 
+        println!("Agents to trigger {}", agent_ids.len());
+
         for id in agent_ids {
             let agents_clone = agents.clone();
 

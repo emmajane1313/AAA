@@ -332,36 +332,9 @@ impl AgentManager {
                         };
 
                         println!("Agent {} TX Hash: {:?}", self.agent.id, tx_hash);
-                        for collection in &rent_collection_ids {
-                            self.current_queue
-                                .retain(|item| &item.collection_id == collection);
 
-                            let relevant_items: Vec<_> =
-                                self.current_queue.iter().cloned().collect();
-
-                            let mut expanded_list: Vec<_> = relevant_items
-                                .iter()
-                                .flat_map(|item| {
-                                    vec![item.clone(); item.daily_frequency.low_u64() as usize]
-                                })
-                                .collect();
-
-                            expanded_list.sort_by(|a, b| a.collection_id.cmp(&b.collection_id));
-
-                            let mut reordered_list = Vec::new();
-                            let mut i = 0;
-
-                            while !expanded_list.is_empty() {
-                                if let Some(item) = expanded_list.get(i % expanded_list.len()) {
-                                    reordered_list.push(item.clone());
-                                    expanded_list.remove(i % expanded_list.len());
-                                }
-                                i = (i + 1) % expanded_list.len().max(1);
-                            }
-
-                            self.current_queue.clear();
-                            self.current_queue.extend(reordered_list);
-                        }
+                        self.current_queue
+                            .retain(|item| rent_collection_ids.contains(&item.collection_id));
 
                         println!(
                             "Final queue for agent{}: {:?}",
