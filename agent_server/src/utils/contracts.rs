@@ -97,15 +97,18 @@ pub fn initialize_wallet(private_key: u32) -> Option<LocalWallet> {
             }
         },
         Err(_) => {
-            eprintln!("PRIVATE_KEY not found in .env for agent_{}, looking in /var/data/data.json...", private_key);
+            eprintln!(
+                "PRIVATE_KEY not found in .env for agent_{}, looking in /var/data/data.json...",
+                private_key
+            );
 
             match std::fs::
             read_to_string("/var/data/data.json")
             // read_to_string("var/data/data.json")  
              {
                 Ok(json_data) => {
-                    let parsed_json: serde_json::Value =
-                        serde_json::from_str(&json_data).expect("Failed to parse data.json");
+                    let parsed_json: Value =
+                        from_str(&json_data).expect("Failed to parse data.json");
                     if let Some(encrypted_data) =
                         parsed_json[format!("ID_{}", private_key)].as_str()
                     {
@@ -121,22 +124,26 @@ pub fn initialize_wallet(private_key: u32) -> Option<LocalWallet> {
                                     }
                                     Err(e) => {
                                         eprintln!("Error parsing decrypted private key: {:?}", e);
+                                        read_from_secret(private_key);
                                         None
                                     }
                                 }
                             }
                             Err(e) => {
                                 eprintln!("Error decrypting private key: {:?}", e);
+                                read_from_secret(private_key);
                                 None
                             }
                         }
                     } else {
                         eprintln!("ID_{} not found in data.json", private_key);
+                        read_from_secret(private_key);
                         None
                     }
                 }
                 Err(e) => {
                     eprintln!("Failed to read /var/data/data.json: {:?}", e);
+                    read_from_secret(private_key);
                     None
                 }
             }
@@ -144,12 +151,63 @@ pub fn initialize_wallet(private_key: u32) -> Option<LocalWallet> {
     }
 }
 
+fn read_from_secret(private_key: u32) -> Option<LocalWallet> {
+    eprintln!(
+        "PRIVATE_KEY not found in .env or /var/data/data.json, looking in /etc/secrets/data.txt..."
+    );
+
+    match std::fs::read_to_string("/etc/secrets/data.txt") {
+        Ok(data) => {
+            let entries: Vec<&str> = data.lines().collect();
+            for entry in entries {
+                if entry.starts_with(&format!("ID_{}=", private_key)) {
+                    if let Some(encrypted_data) = entry.split('=').nth(1) {
+                        match configure_key(encrypted_data) {
+                            Ok(decrypted_private_key) => {
+                                match decrypted_private_key.parse::<LocalWallet>() {
+                                    Ok(mut wallet) => {
+                                        let chain_id = *LENS_CHAIN_ID;
+                                        wallet = wallet.with_chain_id(chain_id);
+                                        *WALLET.lock().unwrap() = Some(wallet.clone());
+                                        println!("Key Found for ID_{} in var/data", private_key);
+                                        return Some(wallet);
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Error parsing decrypted private key: {:?}", e);
+                                        return None;
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("Error decrypting private key: {:?}", e);
+                                return None;
+                            }
+                        }
+                    } else {
+                        eprintln!(
+                            "Details not found for ID_{} in /etc/secrets/data.txt",
+                            private_key
+                        );
+                        return None;
+                    }
+                }
+            }
+            eprintln!("ID_{} not found in /etc/secrets/data.txt", private_key);
+            return None;
+        }
+        Err(e) => {
+            eprintln!("Failed to read /etc/secrets/data.txt: {:?}", e);
+            return None;
+        }
+    }
+}
+
 pub fn initialize_contracts(
     private_key: u32,
-) -> (Option<(
+) -> Option<(
     Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
     Arc<Contract<SignerMiddleware<Arc<Provider<Http>>, LocalWallet>>>,
-)>) {
+)> {
     let provider = initialize_provider();
     dotenv().ok();
 

@@ -28,7 +28,7 @@ export function handleCollectionPurchased(
   entity.save();
 
   let market = AAAMarket.bind(
-    Address.fromString("0x79d7C37612737A7a6bE306F5E0B2aB0281dc6Ea6")
+    Address.fromString("0x0545422AB9e96786d95d008301aa5664513e482E")
   );
 
   let entityOrder = new Order(
@@ -52,7 +52,7 @@ export function handleCollectionPurchased(
   entityOrder.save();
 
   let collectionManager = AAACollectionManager.bind(
-    Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
+    Address.fromString("0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1")
   );
 
   let entityCollection = CollectionCreated.load(

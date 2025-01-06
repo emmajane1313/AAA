@@ -74,7 +74,7 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
         <div className="relative w-full h-full flex flex-col gap-6 items-center justify-between">
           <div className="relative w-full h-full flex flex-row items-center justify-center gap-4">
             <div className="relative w-full h-full flex items-center justify-center">
-              <div className="relative w-80 h-full flex items-center justify-center">
+              <div className="relative w-80 h-80 md:h-full flex items-center justify-center">
                 {agentDetails.cover && (
                   <Image
                     src={URL.createObjectURL(agentDetails.cover)}
@@ -99,7 +99,7 @@ const CreateSwitch: FunctionComponent<CreateSwitchProps> = ({
           </div>
           <div className="relative w-full h-fit flex items-center justify-center">
             <div
-              className={`relative w-1/2 h-14 font-jackey pixel-border-2 text-black flex items-center justify-center ${
+              className={`relative w-full sm:w-1/2 h-14 font-jackey pixel-border-2 text-black flex items-center justify-center md:text-base text-sm text-center ${
                 !createAgentLoading ? "cursor-pixel" : "opacity-70"
               }`}
               onClick={() => !createAgentLoading && handleCreateAgent()}

@@ -238,8 +238,13 @@ const useInteractions = (
 
                 activity[index] = {
                   ...activity[index],
+                  stats: {
+                    ...activity[index].stats!,
+                    reactions: activity[index].stats?.reactions + 1,
+                  },
                   operations: {
                     ...activity[index].operations!,
+
                     hasUpvoted: true,
                   },
                 };
@@ -251,6 +256,10 @@ const useInteractions = (
 
                 activity[index] = {
                   ...activity[index],
+                  stats: {
+                    ...activity[index].stats!,
+                    reactions: activity[index].stats?.reactions + 1,
+                  },
                   operations: {
                     ...activity[index].operations!,
 
@@ -267,6 +276,10 @@ const useInteractions = (
 
               activity[index] = {
                 ...activity[index],
+                stats: {
+                  ...activity[index].stats!,
+                  reactions: activity[index].stats?.reactions + 1,
+                },
                 operations: {
                   ...activity[index].operations!,
                   hasUpvoted: true,
@@ -367,6 +380,10 @@ const useInteractions = (
 
                 activity[index] = {
                   ...activity[index],
+                  stats: {
+                    ...activity[index].stats!,
+                    reposts: activity[index].stats?.reposts + 1,
+                  },
                   operations: {
                     ...activity[index].operations!,
                     hasReposted: {
@@ -384,6 +401,10 @@ const useInteractions = (
 
                 activity[index] = {
                   ...activity[index],
+                  stats: {
+                    ...activity[index].stats!,
+                    reposts: activity[index].stats?.reposts + 1,
+                  },
                   operations: {
                     ...activity[index].operations!,
 
@@ -404,6 +425,10 @@ const useInteractions = (
 
               activity[index] = {
                 ...activity[index],
+                stats: {
+                  ...activity[index].stats!,
+                  reposts: activity[index].stats?.reposts + 1,
+                },
                 operations: {
                   ...activity[index].operations!,
                   hasReposted: {

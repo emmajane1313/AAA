@@ -62,7 +62,7 @@ const Sales: FunctionComponent<SalesProps> = ({
                 return (
                   <div
                     key={key}
-                    className={`relative w-60 h-full bg-morado rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2`}
+                    className={`relative w-60 h-96 md:h-full bg-morado rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2`}
                   >
                     <div
                       className="relative w-full h-full rounded-2xl flex cursor-pixel pixel-border-2"

@@ -78,7 +78,7 @@ const Agents: FunctionComponent<AgentProps> = ({
                     return (
                       <div
                         key={key}
-                        className={`relative w-60 h-full bg-morado rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2 cursor-pixel`}
+                        className={`relative w-60 h-96 md:h-full bg-morado rounded-xl pixel-border-4 flex flex-col items-center justify-between p-2 cursor-pixel`}
                         onClick={() => {
                           setCurrentAgent(agent);
 
@@ -141,9 +141,9 @@ const Agents: FunctionComponent<AgentProps> = ({
                 </svg>
               </div>
             </div>
-            <div className="relative font-jackey2 w-full h-full flex flex-row gap-6 items-center justify-center">
+            <div className="relative font-jackey2 w-full h-full flex flex-col md:flex-row gap-6 items-center justify-center">
               <label
-                className="relative w-full h-full flex items-center justify-center cursor-pixel"
+                className="relative w-full h-80 md:h-full flex items-center justify-center cursor-pixel"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
@@ -251,7 +251,7 @@ const Agents: FunctionComponent<AgentProps> = ({
                 </div>
                 <div className="relative w-full h-fit flex items-center justify-center">
                   <div
-                    className={`relative w-1/2 h-14 font-jackey pixel-border-2 text-black flex items-center justify-center ${
+                    className={`relative w-full md:w-1/2 h-14 font-jackey pixel-border-2 text-black flex items-center justify-center md:text-sm text-center text-xs ${
                       !agentEditLoading ? "cursor-pixel" : "opacity-70"
                     }`}
                     onClick={() => !agentEditLoading && handleEditAgent()}

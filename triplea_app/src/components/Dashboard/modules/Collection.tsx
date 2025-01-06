@@ -53,7 +53,7 @@ const Collection: FunctionComponent<CollectionProps> = ({
                   return (
                     <div
                       key={key}
-                      className={`relative w-60 h-full bg-morado pixel-border-4 rounded-lg flex flex-col items-center justify-between cursor-pixel p-2`}
+                      className={`relative w-60 h-96 md:h-full bg-morado pixel-border-4 rounded-lg flex flex-col items-center justify-between cursor-pixel p-2`}
                       onClick={() => {
                         setCollection(collection);
                         setDropSwitcher(DropSwitcher.AgentsCollection);

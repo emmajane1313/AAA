@@ -44,6 +44,7 @@ contract AAADevTreasury {
     event FundsWithdrawnTreasury(address indexed token, uint256 amount);
     event FundsWithdrawnServices(address indexed token, uint256 amount);
     event FundsWithdrawnWithoutReceive(address indexed token, uint256 amount);
+    event TreasuryReceived(address token, uint256 amount);
     event AgentPaidRent(
         address[] tokens,
         uint256[] collectionIds,
@@ -78,11 +79,19 @@ contract AAADevTreasury {
         emit FundsReceived(buyer, paymentToken, amount);
     }
 
+    function receiveTreasury(
+        address token,
+        uint256 amount
+    ) external onlyAgents {
+        _treasury[token] += amount;
+
+        emit TreasuryReceived(token, amount);
+    }
+
     function withdrawFundsTreasury(
         address token,
         uint256 amount
     ) external onlyAdmin {
-
         if (amount > _treasury[token]) {
             revert AAAErrors.InsufficientBalance();
         }

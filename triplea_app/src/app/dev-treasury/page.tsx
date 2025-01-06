@@ -19,7 +19,7 @@ export default function DevTreasury() {
               treasuryLoading && "animate-pulse"
             }`}
           >
-            <div className="relative w-fit h-fit font-start uppercase flex items-center justify-center text-xl">
+            <div className="relative w-fit h-fit font-start uppercase flex items-center justify-center text-center text-base sm:text-xl">
               {" "}
               {Number(treasury?.amount) / 10 ** 18}{" "}
               {

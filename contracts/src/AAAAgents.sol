@@ -49,6 +49,12 @@ contract AAAAgents {
         uint256 agentId,
         uint256 collectionId
     );
+    event SwapFundsToTreasury(
+        address token,
+        uint256 agentId,
+        uint256 collectionId,
+        uint256 amount
+    );
 
     modifier onlyAdmin() {
         if (!accessControls.isAdmin(msg.sender)) {
@@ -278,6 +284,23 @@ contract AAAAgents {
         );
 
         emit BalanceWithdrawn(tokens, collectionIds, _amounts, agentId);
+    }
+
+    function sendFundsToTreasury(
+        address token,
+        uint256 agentId,
+        uint256 amount,
+        uint256 collectionId
+    ) external onlyAdmin {
+        if (amount > _agentActiveBalances[agentId][token][collectionId]) {
+            revert AAAErrors.InsufficientBalance();
+        }
+
+        _agentActiveBalances[agentId][token][collectionId] -= amount;
+
+        devTreasury.receiveTreasury(token, amount);
+
+        emit SwapFundsToTreasury(token, agentId, collectionId, amount);
     }
 
     function rechargeAgentActiveBalance(

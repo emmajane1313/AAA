@@ -153,7 +153,7 @@ export default function User() {
                         onClick={() => {
                           animationContext?.setPageChange?.(true);
                           router.push(
-                            `/nft/${userInfo?.username?.localName}/${item?.id}`
+                            `/nft/${userInfo?.username?.localName}/${(item as any)?.collection?.id}`
                           );
                         }}
                       >
@@ -163,19 +163,22 @@ export default function User() {
                             layout="fill"
                             draggable={false}
                             className="rounded-md"
-                            alt={item?.title}
+                            alt={ (item as any)?.collection?.metadata?.title}
                             src={`${INFURA_GATEWAY}/ipfs/${
-                              (item as NFTData)?.image?.includes("ipfs://")
-                                ? (item as NFTData)?.image?.split(
+                              (item as any)?.collection?.metadata?.image?.includes("ipfs://")
+                                ? (item as any)?.collection?.metadata?.image?.split(
                                     "ipfs://"
                                   )?.[1]
-                                : (item as NFTData)?.image
+                                : (item as any)?.collection?.metadata?.image
                             }`}
                           />
                         </div>
-                        <div className="relative w-full h-fit flex flex-col items-start justify-start gap-3 pt-4">
-                          <div className="relative w-fit h-fit flex text-lg font-start uppercase">
-                            {(item as NFTData).title}
+                        <div className="relative w-full h-fit flex flex-row items-start justify-between gap-3 pt-4">
+                          <div className="relative w-fit h-fit flex text-sm font-start uppercase">
+                            {(item as any)?.collection?.metadata?.title}
+                          </div>
+                          <div className="relative w-fit h-fit flex text-sm font-start uppercase">
+                            x {Number((item as any)?.amount || 0)}
                           </div>
                         </div>
                       </div>

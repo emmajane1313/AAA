@@ -45,7 +45,6 @@
       },
       { "name": "amounts", "type": "uint256[]", "internalType": "uint256[]" },
       { "name": "bonuses", "type": "uint256[]", "internalType": "uint256[]" },
-      { "name": "agentWallet", "type": "address", "internalType": "address" },
       { "name": "agentId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
@@ -141,6 +140,16 @@
     "inputs": [
       { "name": "buyer", "type": "address", "internalType": "address" },
       { "name": "paymentToken", "type": "address", "internalType": "address" },
+      { "name": "amount", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "receiveTreasury",
+    "inputs": [
+      { "name": "token", "type": "address", "internalType": "address" },
       { "name": "amount", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
@@ -285,6 +294,12 @@
         "internalType": "address[]"
       },
       {
+        "name": "collectionIds",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
         "name": "amounts",
         "type": "uint256[]",
         "indexed": false,
@@ -418,6 +433,25 @@
       },
       {
         "name": "recipient",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "TreasuryReceived",
+    "inputs": [
+      {
+        "name": "token",
         "type": "address",
         "indexed": false,
         "internalType": "address"

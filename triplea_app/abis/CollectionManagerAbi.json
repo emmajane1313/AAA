@@ -320,6 +320,7 @@
         "type": "uint256[]",
         "internalType": "uint256[]"
       },
+      { "name": "agentIds", "type": "uint256[]", "internalType": "uint256[]" },
       { "name": "collectionId", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
@@ -352,6 +353,12 @@
       },
       {
         "name": "dailyFrequency",
+        "type": "uint256[]",
+        "indexed": false,
+        "internalType": "uint256[]"
+      },
+      {
+        "name": "agentIds",
         "type": "uint256[]",
         "indexed": false,
         "internalType": "uint256[]"

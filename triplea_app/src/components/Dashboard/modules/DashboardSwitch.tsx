@@ -166,7 +166,7 @@ const DashboardSwitch: FunctionComponent = (): JSX.Element => {
 
     default:
       return (
-        <div className="relative w-full  h-full flex items-center justify-center">
+        <div className="relative w-full h-screen md:h-full flex items-center justify-center">
           <div className="relative w-full h-fit flex flex-wrap gap-10 items-center justify-center">
             {[
               {

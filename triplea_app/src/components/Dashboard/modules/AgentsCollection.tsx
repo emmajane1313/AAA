@@ -70,7 +70,7 @@ const AgentsCollection: FunctionComponent<AgentsCollectionProps> = ({
         </div>
         <div className="flex relative w-full h-full items-center justify-start overflow-x-scroll">
           <div
-            className={`relative h-full flex flex-row gap-6 ${
+            className={`relative h-96 md:h-full flex flex-row gap-6 ${
               collection?.agents?.length > 1 ? "w-fit" : "w-full"
             }`}
           >

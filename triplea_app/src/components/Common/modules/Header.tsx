@@ -14,7 +14,7 @@ import { useModal } from "connectkit";
 
 const Header: FunctionComponent = (): JSX.Element => {
   const router = useRouter();
-  const { open, openProfile, openSwitchNetworks , openOnboarding} = useModal();
+  const { open, openProfile, openSwitchNetworks, openOnboarding } = useModal();
   const animationContext = useContext(AnimationContext);
   const { isConnected, address, chainId } = useAccount();
   const context = useContext(ModalContext);
@@ -347,11 +347,14 @@ const Header: FunctionComponent = (): JSX.Element => {
                   className={`relative flex w-full h-10  pixel-border-3 items-center justify-center text-center text-sm hover:opacity-80 ${
                     !isConnected ? "opacity-60" : "active:scale-95 cursor-pixel"
                   }`}
-                  onClick={() =>
-                    !context?.lensConnected?.profile
-                      ? handleLensConnect()
-                      : logout()
-                  }
+                  onClick={() => {
+                    setOpenAccount(false);
+                    if (!context?.lensConnected?.profile) {
+                      handleLensConnect();
+                    } else {
+                      logout();
+                    }
+                  }}
                 >
                   {lensLoading ? (
                     <svg

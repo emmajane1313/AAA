@@ -366,7 +366,6 @@ contract AAAAgentsTest is Test {
             1,
             1
         );
-        console.log(activeBalance_after, bonusBalance_after);
 
         assertEq(bonusBalance_after, ((10 / 100) * 10 ether) - rent * 2);
         assertEq(activeBalance_after, 123400000 + rent * 2);

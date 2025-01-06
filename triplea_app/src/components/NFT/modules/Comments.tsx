@@ -21,6 +21,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
 }): JSX.Element => {
   const router = useRouter();
   const animationContext = useContext(AnimationContext);
+
   return (
     <div
       className={`relative w-full flex flex-col items-start justify-start gap-3 h-fit ${
@@ -162,7 +163,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       />{" "}
                     </svg>
                   ),
-                  stats: (activity as any)?.stats?.upvotes,
+                  stats: activity?.stats?.reactions,
                   reacted: activity?.operations?.hasUpvoted,
                   loader: interactionsLoading?.find(
                     (int) => int.id == activity?.id
@@ -200,7 +201,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       />{" "}
                     </svg>
                   ),
-                  stats: (activity as any)?.stats?.reposts,
+                  stats: activity?.stats?.reposts,
                   loader: interactionsLoading?.find(
                     (int) => int.id == activity?.id
                   )?.mirror,
@@ -242,7 +243,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       />{" "}
                     </svg>
                   ),
-                  stats: (activity as any)?.stats?.comments,
+                  stats: activity?.stats?.comments,
                   loader: postLoading && commentQuote?.type == "Comment",
                 },
                 {
@@ -279,7 +280,7 @@ const Comments: FunctionComponent<CommentsProps> = ({
                       />
                     </svg>
                   ),
-                  stats: (activity as any)?.stats?.quotes,
+                  stats: activity?.stats?.quotes,
                   loader: postLoading && commentQuote?.type == "Quote",
                 },
               ].map((item, key) => {

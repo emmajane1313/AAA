@@ -28,7 +28,7 @@ const Drop: FunctionComponent<DropProps> = ({
           />
         </div>
         <label
-          className="relative w-full h-full flex items-center justify-center cursor-pixel"
+          className="relative w-full h-96 md:h-full flex items-center justify-center cursor-pixel"
           onClick={(e) => {
             e.stopPropagation();
           }}
@@ -103,7 +103,7 @@ const Drop: FunctionComponent<DropProps> = ({
             return (
               <div
                 key={key}
-                className={`relative w-full h-40 rounded-md flex cursor-pixel pixel-border-4 ${
+                className={`relative w-full h-96 sm:h-40 rounded-md flex cursor-pixel pixel-border-4 ${
                   mintData.dropId == Number(drop.id) && "opacity-80"
                 }`}
                 onClick={() => {

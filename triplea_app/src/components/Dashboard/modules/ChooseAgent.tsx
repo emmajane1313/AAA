@@ -39,7 +39,7 @@ const ChooseAgent: FunctionComponent<ChooseAgentProps> = ({
               return (
                 <div
                   key={key}
-                  className={`relative w-60 pixel-border-4 h-full bg-morado rounded-xl flex flex-col items-center justify-between cursor-pixel p-2 ${
+                  className={`relative w-60 pixel-border-4 h-96 md:h-full bg-morado rounded-xl flex flex-col items-center justify-between cursor-pixel p-2 ${
                     mintData.agents
                       ?.map((ag) => ag?.agent?.id)
                       .includes(agent?.id) && "border border-black opacity-70"

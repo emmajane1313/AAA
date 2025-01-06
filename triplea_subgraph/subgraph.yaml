@@ -8,7 +8,7 @@ dataSources:
     name: AAACollectionManager
     network: lens-testnet
     source:
-      address: "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C"
+      address: "0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1"
       abi: AAACollectionManager
       startBlock: 103090
     mapping:
@@ -47,7 +47,7 @@ dataSources:
     name: AAAAgents
     network: lens-testnet
     source:
-      address: "0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712"
+      address: "0x2459B9cfC5CF8AF472F0D83074fd025fB306A904"
       abi: AAAAgents
       startBlock: 103090
     mapping:
@@ -84,7 +84,7 @@ dataSources:
     name: AAAMarket
     network: lens-testnet
     source:
-      address: "0x79d7C37612737A7a6bE306F5E0B2aB0281dc6Ea6"
+      address: "0x0545422AB9e96786d95d008301aa5664513e482E"
       abi: AAAMarket
       startBlock: 103090
     mapping:
@@ -106,7 +106,7 @@ dataSources:
     name: AAADevTreasury
     network: lens-testnet
     source:
-      address: "0x46335C789aBc15f735a7527342B864BF6a48B661"
+      address: "0xCD8bef8Af60001EDFBEf125F7B8A26CCd6e9E036"
       abi: AAADevTreasury
       startBlock: 103090
     mapping:
@@ -148,7 +148,7 @@ dataSources:
     name: AAAAccessControls
     network: lens-testnet
     source:
-      address: "0x3ee3A2bAF1620a59fEC0FB2E6E248CcBF0CE55d7"
+      address: "0x666912d82523f83f890612e4C212958157958c9D"
       abi: AAAAccessControls
       startBlock: 103090
     mapping:

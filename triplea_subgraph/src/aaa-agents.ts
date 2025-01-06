@@ -43,7 +43,7 @@ export function handleAgentCreated(event: AgentCreatedEvent): void {
   entity.transactionHash = event.transaction.hash;
 
   let agents = AAAAgents.bind(
-    Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
+    Address.fromString("0x2459B9cfC5CF8AF472F0D83074fd025fB306A904")
   );
   entity.owner = agents.getAgentOwner(entity.AAAAgents_id) as Bytes;
   entity.uri = agents.getAgentMetadata(entity.AAAAgents_id);
@@ -99,7 +99,7 @@ export function handleAgentEdited(event: AgentEditedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
+      Address.fromString("0x2459B9cfC5CF8AF472F0D83074fd025fB306A904")
     );
 
     entityAgent.uri = agents.getAgentMetadata(entity.AAAAgents_id);
@@ -133,10 +133,10 @@ export function handleAgentRecharged(event: AgentRechargedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
+      Address.fromString("0x2459B9cfC5CF8AF472F0D83074fd025fB306A904")
     );
     let collections = AAACollectionManager.bind(
-      Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
+      Address.fromString("0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1")
     );
 
     let collectionIdHex = entity.collectionId.toHexString();
@@ -235,10 +235,10 @@ export function handleBalanceAdded(event: BalanceAddedEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
+      Address.fromString("0x2459B9cfC5CF8AF472F0D83074fd025fB306A904")
     );
     let collections = AAACollectionManager.bind(
-      Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
+      Address.fromString("0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1")
     );
 
     let collectionIdHex = entity.collectionId.toHexString();
@@ -336,10 +336,10 @@ export function handleBalanceWithdrawn(event: BalanceWithdrawnEvent): void {
 
   if (entityAgent) {
     let agents = AAAAgents.bind(
-      Address.fromString("0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712")
+      Address.fromString("0x2459B9cfC5CF8AF472F0D83074fd025fB306A904")
     );
     let collections = AAACollectionManager.bind(
-      Address.fromString("0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C")
+      Address.fromString("0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1")
     );
 
     let collectionIds: BigInt[] = entity.collectionIds as BigInt[];

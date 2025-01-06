@@ -280,7 +280,6 @@
   { "type": "error", "name": "CannotRemoveSelf", "inputs": [] },
   { "type": "error", "name": "InsufficientFunds", "inputs": [] },
   { "type": "error", "name": "NotAdmin", "inputs": [] },
-  { "type": "error", "name": "NotAgentOrAdmin", "inputs": [] },
   { "type": "error", "name": "OnlyAgentContract", "inputs": [] },
   { "type": "error", "name": "TokenAlreadyExists", "inputs": [] },
   { "type": "error", "name": "TokenDoesntExist", "inputs": [] },

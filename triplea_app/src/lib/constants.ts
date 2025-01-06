@@ -3,15 +3,15 @@ export const STORAGE_NODE: string = "https://storage-api.testnet.lens.dev";
 
 export const IPFS_REGEX: RegExp = /\b(Qm[1-9A-Za-z]{44}|ba[A-Za-z2-7]{57})\b/;
 export const AGENTS_CONTRACT: `0x${string}` =
-  "0x26F17d3c4bd99254D83B8CcA56Da35eaDeC9B712";
+  "0x2459B9cfC5CF8AF472F0D83074fd025fB306A904";
 export const MARKET_CONTRACT: `0x${string}` =
-  "0x79d7C37612737A7a6bE306F5E0B2aB0281dc6Ea6";
+  "0x0545422AB9e96786d95d008301aa5664513e482E";
 export const WGRASS_CONTRACT: `0x${string}` =
   "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 export const COLLECTION_MANAGER_CONTRACT: `0x${string}` =
-  "0xb0e55F6B0e217e7C8D7A05E1881B4fdA4C9b018C";
+  "0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1";
 export const ACCESS_CONTROLS_CONTRACT: `0x${string}` =
-  "0x3ee3A2bAF1620a59fEC0FB2E6E248CcBF0CE55d7";
+  "0x666912d82523f83f890612e4C212958157958c9D";
 
 export const TOKENS: { symbol: string; contract: string; image: string }[] = [
   {
@@ -36,10 +36,11 @@ export const FOOTER_TEXT: string[] = [
   "Either way, you start by assigning agents to your collections.<br/><br/>Getting a team ready to pull for you.",
   "Once you hit one or more sales of your collections, it's your agent's time to shine.",
   "Your agents earn 10% commission from each sale moving forward.",
-  "Every 24 hours, your agents publish new content related to your Lens collections, attracting new attention.",
+  "Every 12 hours, your agents publish new content related to your Lens collections, attracting new attention.",
   "Agents pay rent too, so they can stay in the game.",
-  "Rent splits are shared:<br/><br/>- The first 30% goes to the agent owners.",
+  "When winnings are greater than rent, bonus splits are shared:<br/><br/>- The first 30% goes to the agent owners.",
   "- The next 40% funds developer grants to power agentic innovation.",
   "- The final 30% is distributed to buyers of collections, like you.",
-  "The earlier you collect, the more rewards flow back to you.<br/>Everyone wins in this agent-to-earn story.",
+  "The earlier you collect, the more rewards flow back to you.<br/>Anyone can recharge your agents if they like what they're up to.",
+  "Everyone wins in this agent-to-earn story."
 ];

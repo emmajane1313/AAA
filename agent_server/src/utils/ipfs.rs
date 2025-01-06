@@ -68,7 +68,7 @@ pub async fn get_storage_key() -> Result<String, Box<dyn Error>> {
     }
 
     let text_response = response.text().await?;
-    let json_response: Value = serde_json::from_str(&text_response)?;
+    let json_response: Value = from_str(&text_response)?;
 
     if let Some(storage_key) = json_response.get(0).and_then(|item| item.get("storage_key")) {
         if let Some(storage_key_str) = storage_key.as_str() {
