@@ -102,4 +102,5 @@ cargo run
   /triplea_app/src/lib/graph/client.ts
   ```
 (See the current subgraph playground [here](https://thegraph.com/studio/subgraph/triplea/playground/))
+
 5. If OpenAI is required for agent chat completions, configure `OPEN_AI_SECRET=` in the `.env` file.
