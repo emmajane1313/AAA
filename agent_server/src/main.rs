@@ -245,50 +245,25 @@ async fn handle_connection(
                                 file.write_all(data.as_bytes())
                                     .await
                                     .unwrap_or_else(|err| eprintln!("Error writing: {:?}", err));
+                                let new_agent = AgentManager::new(&TripleAAgent {
+                                    id: new_id,
+                                    name: title.to_string(),
+                                    description: description.to_string(),
+                                    cover: cover.to_string(),
+                                    custom_instructions: custom_instructions.to_string(),
+                                    wallet: public_address.to_string(),
+                                    clock,
+                                    last_active_time: Utc::now().timestamp() as u32,
+                                    account_address: account_address.to_string(),
+                                });
 
-                                let secret_file = OpenOptions::new()
-                                    .append(true)
-                                    .create(true)
-                                    .open("/etc/secrets/data.txt")
-                                    .await;
-
-                                match secret_file {
-                                    Ok(mut secret_file) => {
-                                        secret_file
-                                            .write_all(data.as_bytes())
-                                            .await
-                                            .expect("Error writing to the secret file");
-
-                                        let new_agent = AgentManager::new(&TripleAAgent {
-                                            id: new_id,
-                                            name: title.to_string(),
-                                            description: description.to_string(),
-                                            cover: cover.to_string(),
-                                            custom_instructions: custom_instructions.to_string(),
-                                            wallet: public_address.to_string(),
-                                            clock,
-                                            last_active_time: Utc::now().timestamp() as u32,
-                                            account_address: account_address.to_string(),
-                                        });
-
-                                        match new_agent {
-                                            Some(agent) => {
-                                                agents_write.insert(new_id, agent);
-                                                println!(
-                                                    "Agent added at address: {}",
-                                                    public_address
-                                                );
-                                            }
-                                            None => {
-                                                eprintln!(
-                                                    "Agent not added at address: {}",
-                                                    public_address
-                                                );
-                                            }
-                                        }
+                                match new_agent {
+                                    Some(agent) => {
+                                        agents_write.insert(new_id, agent);
+                                        println!("Agent added at address: {}", public_address);
                                     }
-                                    Err(err) => {
-                                        eprintln!("Failed to create secret file: {:?}", err);
+                                    None => {
+                                        eprintln!("Agent not added at address: {}", public_address);
                                     }
                                 }
                             }
