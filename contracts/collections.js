@@ -6,7 +6,7 @@ const provider = new ethers.JsonRpcProvider(
   "https://rpc.testnet.lens.dev",
   37111
 );
-const collectionAddress = "0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1";
+const collectionAddress = "0xE112A7Eb684Ae26a01C301A3df4b049BECAEF7E1";
 const artistsWallets = [
   new ethers.Wallet(process.env.ARTIST_1, provider),
   new ethers.Wallet(process.env.ARTIST_2, provider),

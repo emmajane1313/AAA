@@ -599,7 +599,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                             )?.activeBalance || 0
                           ) /
                             (Number(
-                              agent?.balance?.find(
+                              agent?.details?.find(
                                 (bal) =>
                                   Number(bal?.collectionId) == Number(nft?.id)
                               )?.dailyFrequency || 0
@@ -620,7 +620,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                   )?.activeBalance || 0
                                 ) /
                                   (Number(
-                                    agent?.balance?.find(
+                                    agent?.details?.find(
                                       (bal) =>
                                         Number(bal?.collectionId) ==
                                         Number(nft?.id)

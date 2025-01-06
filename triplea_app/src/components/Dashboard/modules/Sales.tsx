@@ -70,7 +70,7 @@ const Sales: FunctionComponent<SalesProps> = ({
                         animationContext?.setPageChange?.(true);
                         router.push(
                           `/nft/${
-                            sale?.collection?.profile?.username?.value?.split(
+                            (sale as any)?.profile?.username?.value?.split(
                               "lens/"
                             )?.[1]
                           }/${sale?.collection?.id}`

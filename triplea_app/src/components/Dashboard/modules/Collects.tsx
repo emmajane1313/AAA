@@ -17,6 +17,7 @@ const Collects: FunctionComponent<CollectsProps> = ({
   const { collectsLoading, allCollects } = useCollects(address, lensClient);
     const animationContext = useContext(AnimationContext);
   const router = useRouter();
+ 
   return (
     <div className="relative w-full h-full  flex flex-col gap-4 items-start px-4 sm:px-20 py-10 justify-start">
       <div className="relative w-full h-full pixel-border-2 p-3 flex flex-col items-center justify-between gap-6">
@@ -71,7 +72,7 @@ const Collects: FunctionComponent<CollectsProps> = ({
                         animationContext?.setPageChange?.(true);
                         router.push(
                           `/nft/${
-                            collect?.collection?.profile?.username?.value?.split(
+                            (collect as any)?.profile?.username?.value?.split(
                               "lens/"
                             )?.[1]
                           }/${collect?.collection?.id}`

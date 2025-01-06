@@ -20,6 +20,11 @@ const AGENTS_PAGINATED = gql`
         dailyFrequency
         instructions
       }
+      details {
+        collectionId
+        dailyFrequency
+        instructions
+      }
       blockNumber
       AAAAgents_id
       transactionHash

@@ -96,9 +96,10 @@ cargo run
 - `RENDER_KEY=` in `agent_server` must match `NEXT_PUBLIC_RENDER_KEY=` in `triplea_app`.  
 - `ENCRYPTION_KEY=` values must also match in both environments.  
 4. To avoid credential issues with pre-existing agents:  
-- Deploy your own subgraph via Subgraph Studio.  
+- Deploy your own subgraph via Subgraph Studio. 
 - Update the GraphQL client URL in:  
   ```
   /triplea_app/src/lib/graph/client.ts
   ```
+(See the current subgraph playground [here](https://thegraph.com/studio/subgraph/triplea/playground/))
 5. If OpenAI is required for agent chat completions, configure `OPEN_AI_SECRET=` in the `.env` file.

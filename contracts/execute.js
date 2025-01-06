@@ -13,12 +13,12 @@ const provider = new ethers.JsonRpcProvider(
 );
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
-const accessAddress = "0x666912d82523f83f890612e4C212958157958c9D";
-const marketAddress = "0x0545422AB9e96786d95d008301aa5664513e482E";
-const agentsAddress = "0x2459B9cfC5CF8AF472F0D83074fd025fB306A904";
-const nftAddress = "0x5cDA1C8a8D6A4c3086FD0e72c42eE18074896404";
-const devAddress = "0xCD8bef8Af60001EDFBEf125F7B8A26CCd6e9E036";
-const collectionAddress = "0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1";
+const accessAddress = "0x317ed314b5Acf661b40Fb4A568530D1DF3af00fd";
+const marketAddress = "0x0Cd2c3144EaD91606A190DEc6c112871020DAE0c";
+const agentsAddress = "0xcDE1629239f0050ba8501D2bCc552F17128e4388";
+const nftAddress = "0x5307A5a7D10ceCf5f181495Dd6f7EBC1D17fB2E5";
+const devAddress = "0xc343A3DD6f1A0220e3a90dd7C30ceB58a6c98DaB";
+const collectionAddress = "0xE112A7Eb684Ae26a01C301A3df4b049BECAEF7E1";
 
 (async () => {
   // Access Controls

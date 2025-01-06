@@ -2,16 +2,14 @@ export const INFURA_GATEWAY: string = "https://thedial.infura-ipfs.io";
 export const STORAGE_NODE: string = "https://storage-api.testnet.lens.dev";
 
 export const IPFS_REGEX: RegExp = /\b(Qm[1-9A-Za-z]{44}|ba[A-Za-z2-7]{57})\b/;
-export const AGENTS_CONTRACT: `0x${string}` =
-  "0x2459B9cfC5CF8AF472F0D83074fd025fB306A904";
-export const MARKET_CONTRACT: `0x${string}` =
-  "0x0545422AB9e96786d95d008301aa5664513e482E";
+export const AGENTS_CONTRACT: `0x${string}` = "0xcDE1629239f0050ba8501D2bCc552F17128e4388";
+export const MARKET_CONTRACT: `0x${string}` = "0x0Cd2c3144EaD91606A190DEc6c112871020DAE0c";
 export const WGRASS_CONTRACT: `0x${string}` =
   "0xeee5a340Cdc9c179Db25dea45AcfD5FE8d4d3eB8";
 export const COLLECTION_MANAGER_CONTRACT: `0x${string}` =
-  "0xcF2d02e9dE47b6ACE4782483a3610F02Dc5711c1";
+  "0xE112A7Eb684Ae26a01C301A3df4b049BECAEF7E1";
 export const ACCESS_CONTROLS_CONTRACT: `0x${string}` =
-  "0x666912d82523f83f890612e4C212958157958c9D";
+  "0x317ed314b5Acf661b40Fb4A568530D1DF3af00fd";
 
 export const TOKENS: { symbol: string; contract: string; image: string }[] = [
   {
@@ -42,5 +40,5 @@ export const FOOTER_TEXT: string[] = [
   "- The next 40% funds developer grants to power agentic innovation.",
   "- The final 30% is distributed to buyers of collections, like you.",
   "The earlier you collect, the more rewards flow back to you.<br/>Anyone can recharge your agents if they like what they're up to.",
-  "Everyone wins in this agent-to-earn story."
+  "Everyone wins in this agent-to-earn story.",
 ];
