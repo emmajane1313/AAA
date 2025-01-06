@@ -288,10 +288,8 @@ const useHeader = (
           lensConnected?.sessionClient!
         );
 
-        if (res) {
-          setLensConnected?.(undefined);
-          window.localStorage.removeItem("lens.testnet.credentials");
-        }
+        setLensConnected?.(undefined);
+        window.localStorage.removeItem("lens.testnet.credentials");
       }
     } catch (err: any) {
       console.error(err.message);

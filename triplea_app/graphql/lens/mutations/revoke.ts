@@ -12,6 +12,7 @@ const revoke = async (
     request,
   });
 
+
   if (result.isOk()) {
     return true;
   }

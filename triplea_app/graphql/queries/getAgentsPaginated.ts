@@ -20,6 +20,22 @@ const AGENTS_PAGINATED = gql`
         dailyFrequency
         instructions
       }
+      activeCollectionIds {
+        collectionId
+        artist
+        metadata {
+          image
+          title
+        }
+      }
+      collectionIdsHistory {
+        collectionId
+        artist
+        metadata {
+          image
+          title
+        }
+      }
       details {
         collectionId
         dailyFrequency
@@ -29,11 +45,6 @@ const AGENTS_PAGINATED = gql`
       AAAAgents_id
       transactionHash
       uri
-      details {
-        collectionId
-        dailyFrequency
-        instructions
-      }
       wallets
     }
   }

@@ -16,6 +16,7 @@ const AgentGallery: FunctionComponent = (): JSX.Element => {
     context?.lensClient
   );
   const router = useRouter();
+
   return (
     <div id="scroll" className="relative w-full h-full overflow-scroll pt-4">
       <div className="relative w-fit h-full">

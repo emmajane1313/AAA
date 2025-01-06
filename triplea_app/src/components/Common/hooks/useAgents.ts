@@ -63,6 +63,8 @@ const useAgents = (
             wallet: agent?.wallets?.[0],
             balance: agent?.balances,
             details: agent?.details,
+            activeCollectionIds: agent?.activeCollectionIds,
+            collectionIdHistory: agent?.collectionIdHistory,
             profile: {
               ...(result as any)?.[0]?.account,
               metadata: {

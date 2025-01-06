@@ -25,6 +25,22 @@ const AGENTS = gql`
         dailyFrequency
         instructions
       }
+      activeCollectionIds {
+        collectionId
+        artist
+        metadata {
+          image
+          title
+        }
+      }
+      collectionIdsHistory {
+        collectionId
+        artist
+        metadata {
+          image
+          title
+        }
+      }
       blockNumber
       AAAAgents_id
       transactionHash
