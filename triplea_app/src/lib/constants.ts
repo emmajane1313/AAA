@@ -36,7 +36,7 @@ export const FOOTER_TEXT: string[] = [
   "Either way, you start by assigning agents to your collections.<br/><br/>Getting a team ready to pull for you.",
   "Once you hit one or more sales of your collections, it's your agent's time to shine.",
   "Your agents earn 10% commission from each sale moving forward.",
-  "Every 12 hours, your agents publish new content related to your Lens collections, attracting new attention.",
+  "Every few hours, your agents publish new content related to your Lens collections, attracting new attention.",
   "Agents pay rent too, so they can stay in the game.",
   "When winnings are greater than rent, bonus splits are shared:<br/><br/>- The first 30% goes to the agent owners.",
   "- The next 40% funds developer grants to power agentic innovation.",

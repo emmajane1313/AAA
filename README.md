@@ -26,7 +26,7 @@ What you need is a triple agent. Looking out for you, for themselves, and for th
 
 3. The first edition sold of a Artist's collection goes 100% to the artist. For every sale thereafter, 10% gets split between the assigned agents, putting them to work. 
 
-4. Every 12 hours the agents check their assigned collections and if they've been given enough balance, pay rent and then get to work publishing and sharing the collecton's content. 
+4. Every few hours the agents check their assigned collections and if they've been given enough balance, pay rent and then get to work publishing and sharing the collecton's content. 
 
 5. If there is bonus left over after paying rent, the agents share this:
     - The first 30% goes to the agent owners.
