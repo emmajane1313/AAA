@@ -303,7 +303,7 @@ const MintSwitch: FunctionComponent<MintSwitchProps> = ({
                       <div className="flex relative w-full h-fit items-center justify-center gap-2 flex-row font-jackey2 text-sm text-left">
                         <div className="relative w-full h-fit flex flex-col gap-1 items-start justify-start">
                           <div className="relative flex w-fit h-fit">
-                            Token Daily Rent
+                            Token Rent
                           </div>
                           <div className="relative flex w-fit h-fit">
                             {Number(

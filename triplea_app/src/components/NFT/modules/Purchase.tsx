@@ -571,7 +571,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                           </div>
                           <div className="relative w-full h-fit flex items-start justify-between flex-col gap-1">
                             <div className="relative w-fit h-fit flex">
-                              Daily Collection Rate:
+                              Publishing Rate:
                             </div>
                             <div className="relative w-fit h-fit flex">
                               {Number(
@@ -633,7 +633,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                                           nft?.tokens?.[0]?.toLowerCase()
                                       )?.rent || 0
                                     )) || 0
-                              } days!!`
+                              } cycles!!`
                             : "Agent needs to be recharged to start activity!"}
                         </div>
                       </div>

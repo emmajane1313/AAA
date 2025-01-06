@@ -50,7 +50,7 @@ const Mint: FunctionComponent<MintProps> = ({
           {mintData?.agents?.length > 0 && (
             <div className="relative flex w-fit h-fit flex flex-col gap-2 font-start items-start justify-start">
               <div className="relative flex w-fit h-fit max-h-60 overflow-y-scroll text-left text-black text-base font-jack">
-                Daily Agent Costs
+                Agent Costs
               </div>
               {mintData?.agents?.map((agent, index) => {
                 return (

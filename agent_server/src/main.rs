@@ -174,14 +174,14 @@ async fn handle_connection(
                             let mut rng = StdRng::from_entropy();
                             let mut clock;
                             loop {
-                                let random_hour = rng.gen_range(0..12);
+                                let random_hour = rng.gen_range(0..5);
                                 let random_minute = rng.gen_range(0..60);
                                 let random_second = rng.gen_range(0..60);
                                 clock = random_hour * 3600 + random_minute * 60 + random_second;
 
                                 if !agents_snapshot.values().any(|agent| {
                                     let agent_clock = agent.agent.clock;
-                                    (clock as i32 - agent_clock as i32).abs() < 600
+                                    (clock as i32 - agent_clock as i32).abs() < 60
                                 }) {
                                     break;
                                 }
@@ -348,10 +348,10 @@ async fn activity_loop(agents: Arc<RwLock<HashMap<u32, AgentManager>>>) {
 
 fn should_trigger(agent: &TripleAAgent) -> bool {
     let now_seconds = Utc::now().timestamp() as u32;
-    let day_seconds = now_seconds % 43200;
+    let day_seconds = now_seconds % 18000;
     let diff = (agent.clock as i32 - day_seconds as i32).abs();
 
-    diff <= 60
+    diff <= 500
 }
 
 async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + Send + Sync>> {
@@ -414,14 +414,14 @@ async fn handle_agents() -> Result<HashMap<u32, AgentManager>, Box<dyn Error + S
                 let mut rng = StdRng::from_entropy();
                 let mut clock;
                 loop {
-                    let random_hour = rng.gen_range(0..12);
+                    let random_hour = rng.gen_range(0..5);
                     let random_minute = rng.gen_range(0..60);
                     let random_second = rng.gen_range(0..60);
                     clock = random_hour * 3600 + random_minute * 60 + random_second;
 
                     if !agents_snapshot.values().any(|agent| {
                         let agent_clock = agent.agent.clock;
-                        (clock as i32 - agent_clock as i32).abs() < 600
+                        (clock as i32 - agent_clock as i32).abs() < 60
                     }) {
                         break;
                     }
