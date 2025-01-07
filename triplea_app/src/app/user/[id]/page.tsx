@@ -135,7 +135,9 @@ export default function User() {
                             alt={item?.title}
                             src={`${INFURA_GATEWAY}/ipfs/${
                               (item as any).metadata?.cover?.includes("ipfs")
-                                ? (item as any).metadata?.cover?.split("ipfs://")?.[1]
+                                ? (item as any).metadata?.cover?.split(
+                                    "ipfs://"
+                                  )?.[1]
                                 : (item as any).metadata?.cover
                             }`}
                           />
@@ -153,7 +155,9 @@ export default function User() {
                         onClick={() => {
                           animationContext?.setPageChange?.(true);
                           router.push(
-                            `/nft/${userInfo?.username?.localName}/${(item as any)?.collection?.id}`
+                            `/nft/${userInfo?.username?.localName}/${
+                              (item as any)?.collection?.id
+                            }`
                           );
                         }}
                       >
@@ -163,10 +167,16 @@ export default function User() {
                             layout="fill"
                             draggable={false}
                             className="rounded-md"
-                            alt={ (item as any)?.collection?.metadata?.title}
+                            alt={(item as any)?.collection?.metadata?.title}
                             src={`${INFURA_GATEWAY}/ipfs/${
-                              (item as any)?.collection?.metadata?.image?.includes("ipfs://")
-                                ? (item as any)?.collection?.metadata?.image?.split(
+                              (
+                                item as any
+                              )?.collection?.metadata?.image?.includes(
+                                "ipfs://"
+                              )
+                                ? (
+                                    item as any
+                                  )?.collection?.metadata?.image?.split(
                                     "ipfs://"
                                   )?.[1]
                                 : (item as any)?.collection?.metadata?.image

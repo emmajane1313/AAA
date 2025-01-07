@@ -21,6 +21,7 @@ import fetchStats from "../../../../graphql/lens/queries/accountStats";
 import unfollow from "../../../../graphql/lens/mutations/unfollow";
 import follow from "../../../../graphql/lens/mutations/follow";
 import { getAgentRent } from "../../../../graphql/queries/getAgentRent";
+import { getCollectionArtist } from "../../../../graphql/queries/getCollectionArtist";
 
 const useAgent = (
   id: string | undefined,
@@ -148,8 +149,6 @@ const useAgent = (
         lensConnected?.sessionClient || lensClient
       );
 
-
-
       let posts: Post[] = [];
 
       if ((postsRes as any)?.items?.length > 0) {
@@ -168,7 +167,7 @@ const useAgent = (
           (pos?.metadata as TextOnlyMetadata)?.tags?.includes("tripleA")
         );
       }
-   
+
       posts = await Promise.all(
         posts?.map(async (post) => {
           let picture = post?.author?.metadata?.picture;
@@ -310,6 +309,7 @@ const useAgent = (
 
       let activeCollectionIds: AgentCollection[] = [];
       let collectionIdsHistory: AgentCollection[] = [];
+      let details: any[] = [];
 
       await Promise.all(
         res?.data?.agentCreateds?.[0]?.activeCollectionIds?.map(
@@ -349,6 +349,31 @@ const useAgent = (
         )
       );
 
+      await Promise.all(
+        res?.data?.agentCreateds?.[0]?.details?.map(async (id: any) => {
+          const col = await getCollectionArtist(Number(id?.collectionId));
+
+          const result = await fetchAccountsAvailable(
+            {
+              managedBy: evmAddress(col?.data?.collectionCreateds?.[0]?.artist),
+            },
+            lensConnected?.sessionClient || lensClient
+          );
+
+          details.push({
+            profile: (result as any)?.[0]?.account as Account,
+            collectionId: id?.collectionId,
+            instructions: id?.instructions,
+            dailyFrequency: id?.dailyFrequency,
+            tokens: col?.data?.collectionCreateds?.[0]?.tokens,
+            metadata: {
+              image: col?.data?.collectionCreateds?.[0]?.metadata?.image,
+              title: col?.data?.collectionCreateds?.[0]?.metadata?.title,
+            },
+          });
+        })
+      );
+
       const stats = await fetchStats(
         {
           account: (result as any)?.[0]?.account?.owner,
@@ -373,7 +398,7 @@ const useAgent = (
         wallet: res?.data?.agentCreateds?.[0]?.wallets?.[0],
         balance: res?.data?.agentCreateds?.[0]?.balances,
         owner: res?.data?.agentCreateds?.[0]?.owner,
-        details: res?.data?.agentCreateds?.[0]?.details,
+        details,
         profile,
         activity: posts || [],
         activeCollectionIds,

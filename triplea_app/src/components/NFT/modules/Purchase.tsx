@@ -516,7 +516,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                           <div className="relative w-fit h-fit flex">
                             <div
                               className={`relative w-24 h-8 pixel-border-2 text-black flex items-center justify-center text-xxs font-start ${
-                                !purchaseLoading ? "cursor-pixel" : "opacity-70"
+                                !rechargeLoading[key] ? "cursor-pixel" : "opacity-70"
                               }`}
                               onClick={() => {
                                 if (!rechargeLoading[key]) {
@@ -575,7 +575,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                             </div>
                             <div className="relative w-fit h-fit flex">
                               {Number(
-                                agent?.balance?.find(
+                                agent?.details?.find(
                                   (bal) =>
                                     Number(bal?.collectionId) == Number(nft?.id)
                                 )?.dailyFrequency || 0

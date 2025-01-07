@@ -213,6 +213,40 @@ export function handleCollectionCreated(event: CollectionCreatedEvent): void {
   entity.prices = collectionManager.getCollectionPrices(entity.collectionId);
 
   entity.save();
+
+  let entityDrop = DropCreated.load(
+    Bytes.fromByteArray(ByteArray.fromBigInt(event.params.dropId))
+  );
+
+  if (entityDrop) {
+    let collectionIds = collectionManager.getDropCollectionIds(entity.dropId);
+    let collections = entityDrop.collections;
+
+    if (!collections) {
+      collections = [];
+    }
+
+    for (let i = 0; i < (collectionIds as BigInt[]).length; i++) {
+      let collectionIdAsBytes = Bytes.fromByteArray(
+        ByteArray.fromBigInt(collectionIds[i])
+      );
+
+      let exists = false;
+
+      for (let j = 0; j < collections.length; j++) {
+        if (collections[j] == collectionIdAsBytes) {
+          exists = true;
+          break;
+        }
+      }
+
+      if (!exists) {
+        collections.push(collectionIdAsBytes);
+      }
+    }
+    entityDrop.collections = collections;
+    entityDrop.save();
+  }
 }
 
 export function handleDropCreated(event: DropCreatedEvent): void {
