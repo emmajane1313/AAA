@@ -208,7 +208,7 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                   </div>
                 </div>
                 <div className="relative w-fit h-fit flex">
-                  {nft?.blocktimestamp}
+                  {moment.unix(Number(nft?.blocktimestamp)).fromNow()}
                 </div>
               </div>
               <div className="relative w-full font-start justify-between items-center flex flex-wrap sm:flex-nowrap flex-row gap-3">
@@ -516,7 +516,9 @@ const Purchase: FunctionComponent<PurchaseProps> = ({
                           <div className="relative w-fit h-fit flex">
                             <div
                               className={`relative w-24 h-8 pixel-border-2 text-black flex items-center justify-center text-xxs font-start ${
-                                !rechargeLoading[key] ? "cursor-pixel" : "opacity-70"
+                                !rechargeLoading[key]
+                                  ? "cursor-pixel"
+                                  : "opacity-70"
                               }`}
                               onClick={() => {
                                 if (!rechargeLoading[key]) {

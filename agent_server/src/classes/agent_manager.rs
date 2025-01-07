@@ -59,7 +59,10 @@ impl AgentManager {
                 self.current_queue = info.clone();
 
                 if info.len() < 1 {
-                    println!("No collections for agent this round.");
+                    println!(
+                        "No collections for agent this round for agent_{}",
+                        self.agent.id
+                    );
                     return Ok(());
                 }
 
@@ -510,7 +513,6 @@ impl AgentManager {
 
     async fn chat_and_post(
         &mut self,
-
         collection: &Collection,
         collection_instructions: &str,
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -581,16 +583,8 @@ impl AgentManager {
             7200
         };
 
-        // let total_time = 500;
-
         let queue = self.current_queue.clone();
         let queue_size = queue.len() as i64;
-
-        // let interval = if queue_size > 0 {
-        //     total_time / queue_size
-        // } else {
-        //     0
-        // };
 
         let interval = if queue_size > 0 {
             adjusted_remaining_time / queue_size

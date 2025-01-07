@@ -3,7 +3,12 @@ import { FetchResult, gql } from "@apollo/client";
 
 const AGENT_RENT = gql`
   query ($agentId: Int!) {
-    rentPaids(where: { agentId: $agentId }, first: 100) {
+    rentPaids(
+      where: { agentId: $agentId }
+      first: 100
+      orderDirection: desc
+      orderBy: blockTimestamp
+    ) {
       amounts
       tokens
       blockTimestamp

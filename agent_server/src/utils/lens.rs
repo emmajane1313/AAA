@@ -24,13 +24,20 @@ async fn refresh(
     refresh_tokens: &str,
     auth_tokens: &str,
 ) -> Result<LensTokens, Box<dyn Error + Send + Sync>> {
+
     let query = json!({
         "query": r#"
             mutation Refresh($request: RefreshRequest!) {
                 refresh(request: $request) {
+                     __typename
+                        ... on AuthenticationTokens {
                     accessToken
                     refreshToken
                     idToken
+                    }
+                ... on ForbiddenError {
+                    reason
+                }
                 }
             }
         "#,
@@ -53,6 +60,7 @@ async fn refresh(
 
     if response.status().is_success() {
         let json: Value = response.json().await?;
+
         if let Some(authentication) = json["data"]["refresh"].as_object() {
             Ok(LensTokens {
                 access_token: authentication

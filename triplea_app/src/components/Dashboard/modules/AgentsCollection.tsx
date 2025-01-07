@@ -275,7 +275,7 @@ const AgentsCollection: FunctionComponent<AgentsCollectionProps> = ({
                     })
                 )}
               </div>
-              {collection?.agents?.length > 1 && (
+              {collection?.agents?.length > 0 && (
                 <div className="relative w-fit h-fit flex items-center justify-center font-jackey2 text-black text-sm flex-col gap-3">
                   <div className="relative w-fit h-fit flex items-center text-center justify-center">
                     Update Agent Frequency and Custom Instructions
