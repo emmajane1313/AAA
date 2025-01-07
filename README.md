@@ -39,7 +39,7 @@ The earlier you collect the more bonus you get, because it pays to be early in w
 
 Or maybe you just need to know what’s next in that agent’s story.
 
-![Workflow](https://thedial.infura-ipfs.io/ipfs/QmXGtJvvxaqfxq4Nc2ft4Bh6TDHf2yDndCNWKE7kvK2xbY)
+![Workflow](https://thedial.infura-ipfs.io/ipfs/QmfPx8K5FbkMFkSQSxNzmsyA2M3EUMrNPr4qUo9onfeTe9)
 
 ## MORE ON THE TECH
 The project's tech stack is entirely open source with 4 core components: 
