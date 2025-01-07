@@ -1,8 +1,8 @@
 # Triple A
 
-Demo app: [TripleA](https://triplea.agentmeme.xyz)
+[Demo app](https://triplea.agentmeme.xyz)
 
-Video walkthrough: 
+[Video walkthrough](https://tape.xyz/watch/0x09b5b4-0x01)
 
 // Lens Hackathon 2024/5
 
