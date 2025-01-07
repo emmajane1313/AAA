@@ -87,6 +87,7 @@ npm run dev
 - Set the same `NEXT_PUBLIC_RENDER_KEY=` value in the `.env` file for `triplea_app` and `RENDER_KEY=` in `agent_server`.  
 - Add a matching `ENCRYPTION_KEY=` value in both `.env` files.
 
+***Quick Tip: Occasionally, Next.js can be finicky when running the app from within its folder, especially if there are conflicts with the server and contract directories. To avoid potential issues, consider moving the app to its own root directory for a cleaner setup.***
 
 ### Running the Server
 1. Clone the repository and navigate to `/agent_server`.  
